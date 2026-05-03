@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Caça Cores - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gColors(){ctrl.style.display='none';const COLS2=[{n:'VERMELHO',h:'#ff3333',e:'🔴'},{n:'AZUL',h:'#3388ff',e:'🔵'},{n:'VERDE',h:'#33cc44',e:'🟢'},{n:'AMARELO',h:'#ffcc00',e:'🟡'},{n:'ROXO',h:'#aa44ff',e:'🟣'},{n:'LARANJA',h:'#ff8800',e:'🟠'}];let target=null,opts=[],streak=0,pts2=[],fr=0,cel=0;const CS=Math.min(W*.44,170);const POS=[[W*.08,H*.52],[W*.52,H*.52],[W*.08,H*.78],[W*.52,H*.78]];function newR(){target=COLS2[rndI(0,COLS2.length-1)];const pool=[target];while(pool.length<4){const c=COLS2[rndI(0,COLS2.length-1)];if(!pool.find(p=>p.n===c.n))pool.push(c);}opts=pool.sort(()=>Math.random()-.5);}newR();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;opts.forEach((c,i)=>{const[px,py]=POS[i];if(x>px&&x<px+CS&&y>py&&y<py+CS*.7){if(c.n===target.n){addPts(10*(streak+1));streak++;cel=60;playBeep(880,.1,'sine',.4);mkP(pts2,px+CS/2,py+CS*.35,20,['#ff0','#f0f','#0ff','#0f0'],8);setTimeout(newR,480);}else{streak=0;playBeep(200,.15,'sawtooth',.3);mkP(pts2,px+CS/2,py+CS*.35,10,['#f33'],5);}}});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1a0a3a');bg.addColorStop(1,'#0a1a3a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<20;i++){ctx.fillStyle=`hsl(${(i*30+fr*3)%360},100%,70%)`;ctx.beginPath();ctx.arc(((i*137.5+fr*.5)%W),(i*73.9%H*.45),2+Math.sin(fr*.1+i)*1,0,7);ctx.fill();}ctx.font=`bold ${clamp(W*.075,24,46)}px Fredoka`;ctx.textAlign='center';ctx.fillStyle='#fff';ctx.shadowBlur=8;ctx.shadowColor='#fff';ctx.fillText('TOQUE NA COR:',W/2,H*.1);ctx.shadowBlur=0;if(target){ctx.fillStyle=target.h;ctx.shadowBlur=18;ctx.shadowColor=target.h;ctx.beginPath();ctx.roundRect(W*.22,H*.14,W*.56,H*.2,18);ctx.fill();ctx.shadowBlur=0;ctx.font=`bold ${clamp(W*.065,20,40)}px Fredoka`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(target.e+' '+target.n,W/2,H*.27);}opts.forEach((c,i)=>{const[px,py]=POS[i];ctx.fillStyle=c.h;ctx.shadowBlur=7;ctx.shadowColor=c.h;ctx.beginPath();ctx.roundRect(px,py,CS,CS*.7,14);ctx.fill();ctx.shadowBlur=0;ctx.font=`bold ${clamp(CS*.13,13,22)}px Fredoka`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(c.e,px+CS/2,py+CS*.45);});if(cel>0){cel--;ctx.fillStyle=`rgba(255,255,255,${cel/120})`;ctx.fillRect(0,0,W,H);ctx.font=`bold ${clamp(W*.1,34,58)}px Fredoka`;ctx.textAlign='center';ctx.shadowBlur=20;ctx.shadowColor='#ffdd00';ctx.fillStyle='#ffdd00';ctx.fillText('🎉 CERTO!',W/2,H/2);ctx.shadowBlur=0;}if(streak>1){ctx.fillStyle='#ffcc00';ctx.font=`bold ${clamp(W*.044,15,26)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`🔥 ${streak} SEGUIDOS!`,W/2,H*.47);}pts2=tickP(pts2);setHUD(`⭐ ${score} 🎯 ${streak}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gColors();
+    </script>
+</body>
+</html>

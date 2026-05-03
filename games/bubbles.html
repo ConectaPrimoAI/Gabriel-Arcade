@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Estoura Bolha - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gBubbles(){ctrl.style.display='none';let bubbles=[],pts2=[],fr=0,spT=0,timeLeft=45,lastSec=Date.now();const addB=()=>{const r=rnd(26,50);bubbles.push({x:rnd(r+10,W-r-10),y:H+r,vy:rnd(-3.8,-1.8),r,hue:rndI(0,360),w:rnd(0,6),a:1});};for(let i=0;i<7;i++)addB();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;bubbles=bubbles.filter(b=>{if(Math.hypot(x-b.x,y-b.y)<b.r+12){addPts(5);playBeep(600+b.hue*.5,.06,'sine',.3);mkP(pts2,b.x,b.y,16,[`hsl(${b.hue},100%,70%)`,`hsl(${b.hue+30},100%,80%)`,`#fff`],7);return false;}return true;});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;if(Date.now()-lastSec>=1000){timeLeft--;lastSec=Date.now();if(timeLeft<=0){goOver();return;}}spT++;if(spT>16){spT=0;addB();}const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a1a3a');bg.addColorStop(1,'#1a2a5a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(100,180,255,${.04+i*.01})`;ctx.lineWidth=1;ctx.beginPath();for(let x2=0;x2<W;x2+=20)ctx.lineTo(x2,H*.6+Math.sin(x2*.05+fr*.04+i)*(20+i*5));ctx.stroke();}bubbles=bubbles.filter(b=>{b.y+=b.vy;b.x+=Math.sin(fr*.04+b.w)*.7;b.a=Math.min(1,b.a+.05);if(b.y<-b.r*2)return false;const g=ctx.createRadialGradient(b.x-b.r*.3,b.y-b.r*.3,b.r*.05,b.x,b.y,b.r);g.addColorStop(0,`hsla(${b.hue},90%,90%,.3)`);g.addColorStop(.6,`hsla(${b.hue},80%,60%,.5)`);g.addColorStop(1,`hsla(${b.hue},80%,40%,.7)`);ctx.fillStyle=g;ctx.shadowBlur=10;ctx.shadowColor=`hsl(${b.hue},100%,60%)`;ctx.globalAlpha=b.a;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.strokeStyle=`hsla(${b.hue},100%,90%,.8)`;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.ellipse(b.x-b.r*.3,b.y-b.r*.3,b.r*.3,b.r*.2,-.5,0,7);ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;return true;});pts2=tickP(pts2);ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,W,28);ctx.fillStyle=`hsl(${(timeLeft/45)*120},100%,55%)`;ctx.fillRect(0,0,W*(timeLeft/45),28);ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.048,14,24)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`⏱ ${timeLeft}s — ESTOURA AS BOLHAS! ⭐${score}`,W/2,20);setHUD('');}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gBubbles();
+    </script>
+</body>
+</html>

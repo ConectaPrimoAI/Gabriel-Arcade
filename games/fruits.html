@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Caça Frutas - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gFruits(){ctrl.style.display='none';const FR=['🍎','🍊','🍋','🍇','🍓','🍌','🍉','🥝','🍑','🍒'],BD=['💀','⚡','🔥','💣','👾'];let items=[],pts2=[],fr=0,lives=3,timeLeft=60,lastSec=Date.now();const spawn=()=>{const good=Math.random()<.65;items.push({x:rnd(40,W-40),y:-50,vy:rnd(2.8,5.5),r:28,good,emoji:good?FR[rndI(0,FR.length-1)]:BD[rndI(0,BD.length-1)],alive:true,rot:0,rv:rnd(-.05,.05)});};for(let i=0;i<3;i++)spawn();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;items.forEach(it=>{if(!it.alive)return;if(Math.hypot(x-it.x,y-it.y)<it.r+14){it.alive=false;if(it.good){addPts(10);playBeep(660,.08,'sine',.3);mkP(pts2,it.x,it.y,16,['#ff4','#f4f','#4ff','#4f4'],7);}else{lives--;playBeep(150,.2,'sawtooth',.3);mkP(pts2,it.x,it.y,10,['#f33','#f88'],5);if(lives<=0)goOver();}}});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;if(Date.now()-lastSec>=1000){timeLeft--;lastSec=Date.now();if(timeLeft<=0){goWin();return;}}if(fr%35===0)spawn();const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#87ceeb');bg.addColorStop(1,'#d0f0a0');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<3;i++){const cx2=(i*W/3+fr*.5)%W;ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(cx2+20,H*.12,35,0,7);ctx.arc(cx2+55,H*.1,28,0,7);ctx.arc(cx2+80,H*.13,30,0,7);ctx.fill();}ctx.fillStyle='#6aac2c';ctx.fillRect(0,H*.85,W,H*.15);ctx.fillStyle='#8dc641';ctx.fillRect(0,H*.85,W,14);items=items.filter(it=>{if(!it.alive)return false;it.y+=it.vy;it.rot+=it.rv;if(it.y>H+60)return false;ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);ctx.font=`${it.r*1.5}px sans-serif`;ctx.textAlign='center';ctx.fillText(it.emoji,0,it.r*.5);ctx.restore();return true;});pts2=tickP(pts2);for(let i=0;i<3;i++){ctx.font='22px sans-serif';ctx.textAlign='left';ctx.fillText(i<lives?'❤️':'🖤',16+i*28,H*.9+28);}ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,30);ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.046,13,23)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`🍎 PEGA FRUTAS! EVITA RUINS! ⏱${timeLeft}s`,W/2,21);setHUD(`⭐ ${score}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gFruits();
+    </script>
+</body>
+</html>

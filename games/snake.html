@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Snake Neon - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gSnake(){showCtrl('','',false);const S=18,COLS=Math.floor(W/S),ROWS=Math.floor(H/S);let seg=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2)}];for(let i=1;i<5;i++)seg.push({x:Math.floor(COLS/2)-i,y:Math.floor(ROWS/2)});let dir={x:1,y:0},nd={x:1,y:0},food=nf(),parts=[],tick=0,sp=9,fr=0;function nf(){let f;do f={x:rndI(1,COLS-2),y:rndI(1,ROWS-2)};while(seg.some(s=>s.x===f.x&&s.y===f.y));return f;}function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;if(K.up&&dir.y===0)nd={x:0,y:-1};if(K.dn&&dir.y===0)nd={x:0,y:1};if(K.lt&&dir.x===0)nd={x:-1,y:0};if(K.rt&&dir.x===0)nd={x:1,y:0};ctx.fillStyle='#030510';ctx.fillRect(0,0,W,H);ctx.strokeStyle='rgba(0,242,255,.03)';ctx.lineWidth=1;for(let x2=0;x2<W;x2+=S){ctx.beginPath();ctx.moveTo(x2,0);ctx.lineTo(x2,H);ctx.stroke();}for(let y2=0;y2<H;y2+=S){ctx.beginPath();ctx.moveTo(0,y2);ctx.lineTo(W,y2);ctx.stroke();}tick++;if(tick>=sp){tick=0;dir={...nd};const h={x:(seg[0].x+dir.x+COLS)%COLS,y:(seg[0].y+dir.y+ROWS)%ROWS};if(seg.some(s=>s.x===h.x&&s.y===h.y)){goOver();return;}seg.unshift(h);if(h.x===food.x&&h.y===food.y){addPts(10);food=nf();sp=Math.max(3,sp-.2);mkP(parts,h.x*S+S/2,h.y*S+S/2,14,['#ff0088','#ff88cc','#fff']);}else seg.pop();}ctx.shadowBlur=18;ctx.shadowColor='#ff0088';ctx.fillStyle='#ff0088';ctx.beginPath();ctx.arc(food.x*S+S/2,food.y*S+S/2,S*.38+Math.sin(fr*.1)*1.5,0,7);ctx.fill();ctx.shadowBlur=0;seg.forEach((s,i)=>{const h2=150+i*3.5;ctx.shadowBlur=i===0?20:5;ctx.shadowColor=`hsl(${h2},100%,55%)`;const g=ctx.createRadialGradient(s.x*S+4,s.y*S+4,1,s.x*S+S/2,s.y*S+S/2,S*.55);g.addColorStop(0,`hsl(${h2},100%,78%)`);g.addColorStop(1,`hsl(${h2},100%,32%)`);ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(s.x*S+1,s.y*S+1,S-2,S-2,3);ctx.fill();});ctx.shadowBlur=0;const hd=seg[0],ex=hd.x*S+S/2,ey=hd.y*S+S/2;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ex+dir.y*4-dir.x*3,ey+dir.x*4-dir.y*3,2.5,0,7);ctx.fill();ctx.beginPath();ctx.arc(ex-dir.y*4-dir.x*3,ey-dir.x*4-dir.y*3,2.5,0,7);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(ex+dir.y*4-dir.x*2,ey+dir.x*4-dir.y*2,1.2,0,7);ctx.fill();ctx.beginPath();ctx.arc(ex-dir.y*4-dir.x*2,ey-dir.x*4-dir.y*2,1.2,0,7);ctx.fill();parts=tickP(parts);clrT();setHUD(`⭐ ${score} 🐍 ${seg.length}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gSnake();
+    </script>
+</body>
+</html>

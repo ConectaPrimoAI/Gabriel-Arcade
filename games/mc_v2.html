@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Voxel Clone</title>
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('../assets/fonts/Minecraft.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Minecraft', 'Courier New', Courier, monospace; }
+        canvas { display: block; }
+
+        /* Title Screen Styles */
+        #title-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('IMG_1163.webp');
+            background-size: 64px;
+            image-rendering: pixelated;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        #title-logo {
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 4px 4px 0px #3f3f3f;
+            margin-bottom: 50px;
+            position: relative;
+            text-align: center;
+        }
+        #splash-text {
+            position: absolute;
+            right: -40px;
+            bottom: -20px;
+            color: #ffff00;
+            font-size: 18px;
+            transform: rotate(-20deg);
+            animation: splash 0.5s infinite alternate;
+            text-shadow: 2px 2px 0px #3f3f00;
+            pointer-events: none;
+        }
+        @keyframes splash {
+            from { transform: rotate(-20deg) scale(1); }
+            to { transform: rotate(-20deg) scale(1.1); }
+        }
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 300px;
+        }
+        .mc-btn {
+            background: #aaaaaa;
+            border: 2px solid #000;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #3f3f3f;
+            border-right-color: #3f3f3f;
+            padding: 10px;
+            color: white;
+            text-shadow: 2px 2px 0px #3f3f3f;
+            font-family: 'Minecraft', sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            text-align: center;
+            user-select: none;
+        }
+        .mc-btn:hover {
+            background: #7c86d8;
+            border-color: #000;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            outline: 2px solid #ffffff;
+        }
+        .mc-btn:active {
+            padding-top: 12px;
+            padding-bottom: 8px;
+        }
+
+        #options-screen, #world-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('IMG_1163.webp');
+            background-size: 64px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+        }
+
+        /* Game UI */
+        #game-ui {
+            display: none;
+        }
+        /* Crafting UI */
+        #inventory-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            color: #3f3f3f;
+        }
+        .mc-container {
+            background: #c6c6c6;
+            border: 3px solid #000;
+            border-top-color: #ffffff;
+            border-left-color: #ffffff;
+            border-bottom-color: #555555;
+            border-right-color: #555555;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+        }
+        .mc-grid {
+            display: grid;
+            gap: 4px;
+        }
+        .grid-2x2 { grid-template-columns: repeat(2, 50px); }
+        .grid-3x3 { grid-template-columns: repeat(3, 50px); }
+        .inv-slot {
+            width: 50px;
+            height: 50px;
+            background: #8b8b8b;
+            border: 3px solid #373737;
+            border-top-color: #555555;
+            border-left-color: #555555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            image-rendering: pixelated;
+            cursor: pointer;
+            position: relative;
+        }
+        .inv-slot:hover { background: #bebebe; }
+        .inv-slot img { width: 40px; height: 40px; pointer-events: none; }
+        .slot-count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 0px #3f3f3f;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .craft-result-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .arrow-right {
+            width: 0; 
+            height: 0; 
+            border-top: 15px solid transparent;
+            border-bottom: 15px solid transparent;
+            border-left: 25px solid #555;
+        }
+        #btn-close-inv {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: #ff4444;
+            color: white;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        #ui {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .slot {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+            image-rendering: pixelated;
+            position: relative;
+        }
+        .slot.active {
+            border-color: #ffff00;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .slot img {
+            width: 40px;
+            height: 40px;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            mix-blend-mode: difference;
+        }
+        #joystick-container {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            z-index: 10;
+        }
+        #action-buttons {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 70px);
+            grid-template-rows: auto repeat(2, 70px);
+            gap: 15px;
+            z-index: 10;
+        }
+        .btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(255,255,255,0.8);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            user-select: none;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            pointer-events: auto;
+            backdrop-filter: blur(2px);
+        }
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.2);
+        }
+        .btn.active {
+            background: rgba(255,255,0,0.3);
+            border-color: #ffff00;
+        }
+        #btn-jump { grid-area: 2 / 2 / 3 / 3; }
+        #btn-run { grid-area: 2 / 1 / 3 / 2; }
+        #btn-break { grid-area: 3 / 1 / 4 / 2; }
+        #btn-place { grid-area: 3 / 2 / 4 / 3; }
+        #btn-inv { grid-area: 1 / 1 / 2 / 3; width: 100%; height: 40px; margin-bottom: 5px; background: rgba(0,0,0,0.6); }
+
+        #floating-item {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            image-rendering: pixelated;
+            transform: translate(-50%, -50%); /* Center on cursor */
+        }
+        #floating-item img {
+            width: 100%;
+            height: 100%;
+        }
+        #floating-item .slot-count {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 0px #3f3f3f;
+        }
+
+    </style>
+</head>
+<body><a href="../index.html" style="position:absolute; top:10px; left:10px; padding:10px 20px; background:rgba(0,0,0,0.5); color:#fff; border:2px solid #fff; border-radius:5px; cursor:pointer; z-index:1000; font-family:sans-serif; text-decoration:none; font-size:12px;">⬅ VOLTAR</a>
+    <div id="title-screen">
+        <div id="title-logo">
+            MINECRAFT CLONE
+            <div id="splash-text">Browser Edition!</div>
+        </div>
+        <div class="menu-buttons">
+            <div class="mc-btn" id="btn-play">Singleplayer</div>
+            <div class="mc-btn" id="btn-multiplayer">Multiplayer (Demo)</div>
+            <div class="mc-btn" id="btn-options-open">Options...</div>
+            <div class="mc-btn" id="btn-quit">Quit Game</div>
+        </div>
+    </div>
+
+    <div id="options-screen">
+        <h1 style="color: white; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;">Options</h1>
+        <div class="menu-buttons" style="width: 340px;">
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <div class="mc-btn" id="btn-fov" style="flex: 1;">FOV: 75</div>
+                <div class="mc-btn" id="btn-render-dist" style="flex: 1;">Render: 4</div>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <div class="mc-btn" id="btn-sensitivity" style="flex: 1;">Sensitivity: 100%</div>
+                <div class="mc-btn" id="btn-bobbing" style="flex: 1;">Bobbing: ON</div>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <div class="mc-btn" id="btn-brightness" style="flex: 1;">Brightness: Bright</div>
+                <div class="mc-btn" id="btn-wendrent" style="flex: 1; font-size: 14px; color: #ffaa00;">Wendrent Minerals: OFF</div>
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%; margin-top:8px;">
+                <div class="mc-btn" id="btn-pc-controls" style="flex: 1; font-size: 14px; background:#9aaaff; color:#111;">PC Controls</div>
+            </div>
+            <div style="display:flex; gap:10px; width:100%; margin-top:8px;">
+                <div class="mc-btn" id="btn-coords" style="flex:1; font-size:14px; background:#77ffaa; color:#111;">Coordinates: OFF</div>
+            </div>
+            <div class="mc-btn" id="btn-options-close" style="margin-top: 10px;">Done</div>
+        </div>
+    </div>
+
+    <div id="pc-controls-screen" style="display:none; position: absolute; top:0; left:0; width:100%; height:100%; z-index:102; align-items:center; justify-content:center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('IMG_1163.webp'); background-size:64px;">
+        <div class="mc-container" style="width: 420px;">
+            <div id="btn-close-pc" style="position:absolute; top:-12px; right:-12px; width:30px; height:30px; background:#ff4444; color:white; border:2px solid #000; display:flex; align-items:center; justify-content:center; cursor:pointer;">X</div>
+            <h3 style="margin:0 0 10px 0; color:#fff;">PC Controls</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; color:#fff;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>Jump</div><div class="mc-btn" id="bind-jump" style="width:160px; text-align:center; background:#777;">Space</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>Inventory</div><div class="mc-btn" id="bind-inv" style="width:160px; text-align:center; background:#777;">E</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>Place</div><div class="mc-btn" id="bind-place" style="width:160px; text-align:center; background:#777;">F</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>Drop</div><div class="mc-btn" id="bind-drop" style="width:160px; text-align:center; background:#777;">Q</div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>Run / Sprint</div><div class="mc-btn" id="bind-run" style="width:160px; text-align:center; background:#777;">Left Shift</div>
+                </div>
+
+                <!-- Movement bindings -->
+                <div style="margin-top:6px; font-weight:bold; color:#ddd;">Movement Bindings</div>
+                <div style="display:flex; gap:8px; justify-content:space-between;">
+                    <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>Forward</div><div class="mc-btn" id="bind-forward" style="width:120px; text-align:center; background:#777;">W</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>Left</div><div class="mc-btn" id="bind-left" style="width:120px; text-align:center; background:#777;">A</div>
+                        </div>
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>Back</div><div class="mc-btn" id="bind-back" style="width:120px; text-align:center; background:#777;">S</div>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>Right</div><div class="mc-btn" id="bind-right" style="width:120px; text-align:center; background:#777;">D</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:12px; color:#ddd; margin-top:8px;">Click any binding, then press a key to rebind. Press Escape to cancel. Movement keys control walking directions.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="world-screen">
+        <h1 style="color: white; text-shadow: 2px 2px 0 #000; margin-bottom: 20px;">Create World</h1>
+        <div class="menu-buttons" style="width: 340px;">
+            <div style="background: rgba(0,0,0,0.4); padding: 10px; border: 2px solid #3f3f3f; margin-bottom: 10px;">
+                <div style="color: #aaa; font-size: 12px; margin-bottom: 5px;">WORLD SEED:</div>
+                <input type="text" id="input-seed" placeholder="Enter seed..." style="width: 100%; background: #000; border: 1px solid #555; color: #fff; font-family: 'Minecraft', sans-serif; padding: 5px; box-sizing: border-box; outline: none;">
+            </div>
+            <div class="mc-btn" id="btn-gamemode" style="margin-bottom: 10px;">Game Mode: Survival (Demo)</div>
+            <div class="mc-btn" id="btn-create-world">Create World</div>
+            <div class="mc-btn" id="btn-world-back">Cancel</div>
+        </div>
+    </div>
+
+    <div id="game-ui">
+        <div id="underwater-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 40, 200, 0.4); display: none; pointer-events: none; z-index: 150;"></div>
+        <div id="floating-item"></div>
+        <div id="inventory-overlay">
+            <div class="mc-container">
+                <div id="btn-close-inv">X</div>
+                <h3 id="inv-title" style="margin: 0; font-size: 16px;">Crafting</h3>
+                
+                <div class="craft-result-container">
+                    <div id="craft-grid" class="mc-grid grid-2x2">
+                        <!-- Slots generated by JS -->
+                    </div>
+                    <div class="arrow-right"></div>
+                    <div id="craft-result" class="inv-slot"></div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 12px; margin-bottom: 5px;">Inventory</div>
+                    <div id="inv-grid" class="mc-grid grid-3x3" style="grid-template-columns: repeat(9, 50px);">
+                        <!-- Hotbar slots -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="coords" style="position: absolute; top: 12px; left: 12px; padding:6px 8px; background: rgba(0,0,0,0.5); color: #fff; border:2px solid #222; font-size:14px; font-family: 'Minecraft', monospace; display:none; z-index:220; pointer-events:none;">x: 0, y: 0</div>
+        <div id="crosshair"></div>
+        <div id="joystick-container"></div>
+        <div id="action-buttons">
+            <div id="btn-inv" class="btn">Inventory</div>
+            <div id="btn-run" class="btn">Run</div>
+            <div id="btn-jump" class="btn">Jump</div>
+            <div id="btn-break" class="btn">Break</div>
+            <div id="btn-place" class="btn">Place</div>
+        </div>
+        <div id="break-progress-container" style="position: absolute; top: 55%; left: 50%; transform: translateX(-50%); width: 40px; height: 6px; background: rgba(0,0,0,0.5); border: 1px solid #fff; display: none; pointer-events: none;">
+            <div id="break-progress-bar" style="width: 0%; height: 100%; background: #ffff00;"></div>
+        </div>
+        <div id="ui">
+            <div class="slot active" data-index="0"></div>
+            <div class="slot" data-index="1"></div>
+            <div class="slot" data-index="2"></div>
+            <div class="slot" data-index="3"></div>
+            <div class="slot" data-index="4"></div>
+            <div class="slot" data-index="5"></div>
+            <div class="slot" data-index="6"></div>
+            <div class="slot" data-index="7"></div>
+            <div class="slot" data-index="8"></div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://esm.sh/three@0.160.0",
+        "nipplejs": "https://esm.sh/nipplejs@0.10.1",
+        "simplex-noise": "https://esm.sh/simplex-noise@4.0.1"
+      }
+    }
+    </script>
+    <script type="module" src="../scripts/main.js"></script>
+</body>
+</html>

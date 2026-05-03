@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Space Wars - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gSpace(){showCtrl('ATIRAR','BOMBA');document.getElementById('abA').textContent='🔫';document.getElementById('abA').style.fontSize='1.2rem';document.getElementById('abB').textContent='💣';document.getElementById('abB').style.fontSize='1.2rem';const STR=Array.from({length:140},()=>({x:rnd(0,W),y:rnd(0,H),s:rnd(.4,2),sp:rnd(.4,2)}));let ship={x:W/2,y:H*.82,hp:5,inv:0,skin:0},bullets=[],ebullets=[],enemies=[],exps=[],pups=[];let boss=null,wave=1,bossT=0,sCD=0,bCD=0,fr=0;const SKINS=[['#1a3366','#3355aa','rgba(0,200,255,.65)'],['#3a1a6a','#7733cc','rgba(200,100,255,.7)'],['#1a4a1a','#33aa55','rgba(100,255,150,.7)']];function spawnW(){const n=4+wave*3;for(let i=0;i<n;i++)enemies.push({x:rnd(40,W-40),y:rnd(-200,-40),hp:1+Math.floor(wave*.4),mhp:1+Math.floor(wave*.4),vx:rnd(-1.2,1.2),vy:.7+rnd(0,wave*.3),scd:rndI(50,110),t:rndI(0,2)});}spawnW();function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;sCD=Math.max(0,sCD-1);bCD=Math.max(0,bCD-1);if(ship.inv>0)ship.inv--;if(K.lt)ship.x=clamp(ship.x-6,30,W-30);if(K.rt)ship.x=clamp(ship.x+6,30,W-30);if(K.up)ship.y=clamp(ship.y-5,80,H-60);if(K.dn)ship.y=clamp(ship.y+5,80,H-60);if(K.a&&sCD===0){sCD=8;bullets.push({x:ship.x,y:ship.y-22});}if(TAP.b&&bCD===0){bCD=220;enemies.forEach(e=>e.hp=0);mkP(exps,ship.x,ship.y,20,['#ff8800','#ffcc00','#fff'],10);addPts(30);}clrT();ctx.fillStyle='#020510';ctx.fillRect(0,0,W,H);STR.forEach(s=>{s.y=(s.y+s.sp)%H;ctx.fillStyle=`rgba(255,255,255,${s.s/3})`;ctx.fillRect(s.x,s.y,s.s,s.s);});const sk=SKINS[ship.skin];if(!ship.inv||Math.floor(fr/5)%2){ctx.shadowBlur=18;ctx.shadowColor='#00aaff';ctx.fillStyle=`rgba(0,80,200,${.2+Math.sin(fr*.18)*.1})`;ctx.beginPath();ctx.ellipse(ship.x,ship.y+24,12,12+Math.random()*4,0,0,7);ctx.fill();ctx.fillStyle=sk[0];ctx.beginPath();ctx.moveTo(ship.x-22,ship.y+20);ctx.lineTo(ship.x-36,ship.y+10);ctx.lineTo(ship.x-16,ship.y-4);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(ship.x+22,ship.y+20);ctx.lineTo(ship.x+36,ship.y+10);ctx.lineTo(ship.x+16,ship.y-4);ctx.closePath();ctx.fill();ctx.fillStyle=sk[0];ctx.beginPath();ctx.moveTo(ship.x,ship.y-26);ctx.lineTo(ship.x-22,ship.y+22);ctx.lineTo(ship.x+22,ship.y+22);ctx.closePath();ctx.fill();ctx.fillStyle=sk[1];ctx.beginPath();ctx.moveTo(ship.x,ship.y-18);ctx.lineTo(ship.x-16,ship.y+16);ctx.lineTo(ship.x+16,ship.y+16);ctx.closePath();ctx.fill();ctx.fillStyle=sk[2];ctx.beginPath();ctx.ellipse(ship.x,ship.y,8,13,0,0,7);ctx.fill();ctx.shadowBlur=0;}bullets=bullets.filter(b=>{b.y-=15;ctx.shadowBlur=8;ctx.shadowColor='#00f2ff';ctx.fillStyle='#00f2ff';ctx.fillRect(b.x-3,b.y,6,18);ctx.shadowBlur=0;let hit=false;enemies=enemies.map(e=>{if(Math.abs(b.x-e.x)<22&&b.y>e.y-22&&b.y<e.y+22){e.hp--;hit=true;}return e;});if(boss&&Math.abs(b.x-boss.x)<55&&b.y>boss.y-36&&b.y<boss.y+36){boss.hp--;hit=true;}return!hit&&b.y>-20;});ebullets=ebullets.filter(b=>{b.x+=b.vx||0;b.y+=b.vy;ctx.shadowBlur=6;ctx.shadowColor='#ff3366';ctx.fillStyle='#ff3366';ctx.fillRect(b.x-3,b.y,6,14);ctx.shadowBlur=0;if(!ship.inv&&Math.abs(b.x-ship.x)<22&&Math.abs(b.y-ship.y)<22){ship.hp--;ship.inv=80;if(ship.hp<=0){goOver();return false;}return false;}return b.y<H+20;});const EI=['👾','🛸','💀'];enemies=enemies.filter(e=>{e.x+=e.vx;e.y+=e.vy;if(e.x<30||e.x>W-30)e.vx*=-1;e.scd--;if(e.scd<=0){e.scd=rndI(40,80);ebullets.push({x:e.x,y:e.y+20,vy:4+wave*.4});}ctx.font='26px sans-serif';ctx.textAlign='center';ctx.fillText(EI[e.t],e.x,e.y+10);ctx.fillStyle='#400';ctx.fillRect(e.x-16,e.y-22,34,4);ctx.fillStyle='#f33';ctx.fillRect(e.x-16,e.y-22,34*e.hp/e.mhp,4);if(!ship.inv&&Math.hypot(e.x-ship.x,e.y-ship.y)<36){ship.hp--;ship.inv=80;if(ship.hp<=0){goOver();return false;}}if(e.hp<=0){addPts(10*wave);mkP(exps,e.x,e.y,10,['#ff8800','#ffcc00','#fff']);if(Math.random()<.1)pups.push({x:e.x,y:e.y,vy:1.5});return false;}return e.y<H+40;});pups=pups.filter(p2=>{p2.y+=p2.vy;ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('❤️',p2.x,p2.y);if(Math.hypot(p2.x-ship.x,p2.y-ship.y)<28){ship.hp=Math.min(5,ship.hp+1);return false;}return p2.y<H+30;});if(enemies.length===0&&!boss){bossT++;if(bossT>100){bossT=0;boss={x:W/2,y:-60,hp:wave*40,mhp:wave*40,vx:2+wave*.3,scd:0,ang:0};}}if(boss){boss.x+=boss.vx;if(boss.x<60||boss.x>W-60)boss.vx*=-1;boss.y=Math.min(100,boss.y+1);boss.ang+=.025;boss.scd++;if(boss.scd%(boss.hp<boss.mhp*.5?14:24)===0){for(let a=0;a<4+(boss.hp<boss.mhp*.5?2:0);a++){const ag=boss.ang+a/4*Math.PI*2;ebullets.push({x:boss.x,y:boss.y,vx:Math.cos(ag)*4,vy:Math.sin(ag)*4+2});}}if(boss.hp<=0){addPts(wave*500);wave++;mkP(exps,boss.x,boss.y,30,['#ff8800','#ffcc00','#fff'],12);boss=null;ship.skin=(ship.skin+1)%SKINS.length;spawnW();}else{ctx.shadowBlur=22;ctx.shadowColor='#ff00aa';ctx.fillStyle='#220011';ctx.beginPath();ctx.ellipse(boss.x,boss.y,88,48,0,0,7);ctx.fill();ctx.fillStyle='#550033';ctx.beginPath();ctx.ellipse(boss.x,boss.y-12,50,28,0,0,7);ctx.fill();for(let i=-2;i<=2;i++){ctx.fillStyle=`hsl(${300+i*20},100%,${50+Math.sin(boss.ang+i)*20}%)`;ctx.beginPath();ctx.arc(boss.x+i*20,boss.y+5,5+Math.abs(Math.sin(boss.ang+i))*3,0,7);ctx.fill();}ctx.shadowBlur=0;ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(W*.08,26,W*.84,18);const bhg=ctx.createLinearGradient(W*.08,0,W*.92,0);bhg.addColorStop(0,'#ff0044');bhg.addColorStop(1,'#ff44aa');ctx.fillStyle=bhg;ctx.fillRect(W*.08,26,W*.84*boss.hp/boss.mhp,18);ctx.strokeStyle='#ff00aa';ctx.lineWidth=1.5;ctx.strokeRect(W*.08,26,W*.84,18);ctx.fillStyle='#fff';ctx.font='.5rem Orbitron';ctx.textAlign='center';ctx.fillText(`👾 BOSS WAVE ${wave}`,W/2,40);}}exps=tickP(exps);for(let i=0;i<5;i++){ctx.fillStyle=i<ship.hp?'#ff3366':'#333';ctx.beginPath();ctx.arc(22+i*22,20,7,0,7);ctx.fill();}if(bCD>0){ctx.fillStyle='rgba(255,200,0,.75)';ctx.font='.42rem Orbitron';ctx.textAlign='left';ctx.fillText(`💣 ${Math.ceil(bCD/60)}s`,8,42);}setHUD(`⭐ ${score} 🌊 ${wave}${boss?' BOSS':''}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gSpace();
+    </script>
+</body>
+</html>

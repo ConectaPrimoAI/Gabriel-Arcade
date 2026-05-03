@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Pong - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gPong(){showCtrl('','',false);const PW=13,PH=90;let p1={y:H/2-PH/2,sc:0},p2={y:H/2-PH/2,sc:0};let bx=W/2,by=H/2,bvx=4.5*(Math.random()<.5?1:-1),bvy=rnd(-3.5,3.5),trail=[],pts2=[],ai=.55;let touchY=null;canvas.addEventListener('pointermove',e=>{touchY=e.clientY;},{passive:true});canvas.addEventListener('pointerdown',e=>{touchY=e.clientY;});const reset3=dir=>{bx=W/2;by=H/2;bvx=dir*4.5;bvy=rnd(-3.5,3.5);trail=[];};function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;if(touchY!==null)p1.y=clamp(touchY-PH/2,0,H-PH);if(K.up)p1.y=clamp(p1.y-8,0,H-PH);if(K.dn)p1.y=clamp(p1.y+8,0,H-PH);const aiTarget=(bvx>0?by:H/2)+rnd(-20,20);p2.y+=(aiTarget-(p2.y+PH/2))*ai*.09;p2.y=clamp(p2.y,0,H-PH);trail.push({x:bx,y:by});if(trail.length>14)trail.shift();bx+=bvx;by+=bvy;if(by<11){by=11;bvy=Math.abs(bvy);}if(by>H-11){by=H-11;bvy=-Math.abs(bvy);}if(bvx<0&&bx-11<50&&bx>36&&by>p1.y&&by<p1.y+PH){bvx=Math.abs(bvx)*1.05;bvy+=((by-p1.y-PH/2)/(PH/2))*3.5;bvx=clamp(bvx,4,14);bvy=clamp(bvy,-11,11);mkP(pts2,50,by,5,['#00f2ff']);}if(bvx>0&&bx+11>W-50&&bx<W-36&&by>p2.y&&by<p2.y+PH){bvx=-Math.abs(bvx)*1.05;bvy+=((by-p2.y-PH/2)/(PH/2))*3.5;bvx=clamp(bvx,-14,-4);bvy=clamp(bvy,-11,11);mkP(pts2,W-50,by,5,['#ff3366']);}if(bx<-20){p2.sc++;ai=Math.min(.85,ai+.01);reset3(1);}if(bx>W+20){p1.sc++;reset3(-1);}if(p1.sc>=7){addPts(p1.sc*100);goWin();return;}if(p2.sc>=7){goOver();return;}ctx.fillStyle='#020408';ctx.fillRect(0,0,W,H);ctx.setLineDash([12,9]);ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();ctx.setLineDash([]);trail.forEach((t,i)=>{ctx.globalAlpha=(i/trail.length)*.35;ctx.fillStyle='#00f2ff';ctx.beginPath();ctx.arc(t.x,t.y,5.5,0,7);ctx.fill();});ctx.globalAlpha=1;const bg2=ctx.createRadialGradient(bx-3,by-3,1,bx,by,11);bg2.addColorStop(0,'#fff');bg2.addColorStop(1,'#00aaff');ctx.shadowBlur=22;ctx.shadowColor='#00f2ff';ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(bx,by,11,0,7);ctx.fill();ctx.shadowBlur=0;function dPad(x,y,col){const g=ctx.createLinearGradient(x,y,x+PW,y);g.addColorStop(0,col);g.addColorStop(1,col+'55');ctx.shadowBlur=14;ctx.shadowColor=col;ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x,y,PW,PH,6);ctx.fill();ctx.shadowBlur=0;}dPad(36,p1.y,'#00f2ff');dPad(W-36-PW,p2.y,'#ff3366');pts2=tickP(pts2);ctx.shadowBlur=10;ctx.shadowColor='#00f2ff';ctx.fillStyle='rgba(0,242,255,.5)';ctx.font=`bold ${clamp(W*.1,38,68)}px Orbitron`;ctx.textAlign='center';ctx.fillText(p1.sc,W*.25,70);ctx.shadowColor='#ff3366';ctx.fillStyle='rgba(255,51,102,.5)';ctx.fillText(p2.sc,W*.75,70);ctx.shadowBlur=0;ctx.font='.4rem Orbitron';ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillText('VOCÊ',W*.25,88);ctx.fillText('CPU',W*.75,88);setHUD(`🏸 AI ${Math.round(ai*100)}%`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gPong();
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Asteroids - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gAsteroids(){showCtrl('TIRO','BOMBA');document.getElementById('abA').textContent='🔫';document.getElementById('abA').style.fontSize='1.2rem';document.getElementById('abB').textContent='💣';document.getElementById('abB').style.fontSize='1.2rem';let ship={x:W/2,y:H/2,vx:0,vy:0,ang:-Math.PI/2,r:14,inv:0,lives:3},bullets=[],asts=[],pts2=[],wave=1,sCD=0,bCD=0;const genPts=r=>Array.from({length:9},(_,i)=>({a:i/9*Math.PI*2,r:r*.65+rnd(0,r*.45)}));function spawnA(n){for(let i=0;i<n;i++){let ax,ay;do{ax=rnd(0,W);ay=rnd(0,H);}while(Math.hypot(ax-ship.x,ay-ship.y)<130);const a2=rnd(0,7);asts.push({x:ax,y:ay,vx:Math.cos(a2)*(rnd(.4,1.1+wave*.2)),vy:Math.sin(a2)*(rnd(.4,1.1+wave*.2)),r:rnd(24,42),ang:0,rot:rnd(-.03,.03),pts:genPts(rnd(24,42))});}}spawnA(3+wave*2);function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;sCD=Math.max(0,sCD-1);bCD=Math.max(0,bCD-1);if(K.lt)ship.ang-=.055;if(K.rt)ship.ang+=.055;if(K.up){ship.vx+=Math.cos(ship.ang)*.25;ship.vy+=Math.sin(ship.ang)*.25;}ship.vx=clamp(ship.vx*.985,-11,11);ship.vy=clamp(ship.vy*.985,-11,11);ship.x=(ship.x+ship.vx+W)%W;ship.y=(ship.y+ship.vy+H)%H;if(ship.inv>0)ship.inv--;if((K.a||TAP.a)&&sCD===0){sCD=12;bullets.push({x:ship.x+Math.cos(ship.ang)*ship.r,y:ship.y+Math.sin(ship.ang)*ship.r,vx:Math.cos(ship.ang)*12+ship.vx,vy:Math.sin(ship.ang)*12+ship.vy,life:58});}if(TAP.b&&bCD===0){bCD=200;asts=asts.filter(a=>{if(Math.hypot(a.x-ship.x,a.y-ship.y)<W*.45){mkP(pts2,a.x,a.y,8,['#aaaaff','#fff','#ff8800'],6);addPts(50);return false;}return true;});mkP(pts2,ship.x,ship.y,20,['#ffcc00','#ff8800'],10);}clrT();ctx.fillStyle='#020510';ctx.fillRect(0,0,W,H);for(let i=0;i<80;i++){ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect((i*137.5)%W,(i*73.9)%H,1,1);}bullets=bullets.filter(b=>{b.x=(b.x+b.vx+W)%W;b.y=(b.y+b.vy+H)%H;b.life--;ctx.shadowBlur=7;ctx.shadowColor='#00f2ff';ctx.fillStyle='#00f2ff';ctx.beginPath();ctx.arc(b.x,b.y,3,0,7);ctx.fill();ctx.shadowBlur=0;let hit=false;asts=asts.filter(a=>{if(Math.hypot(b.x-a.x,b.y-a.y)<a.r){hit=true;addPts(Math.floor(400/a.r));mkP(pts2,a.x,a.y,8,['#aaaaff','#fff'],5);if(a.r>18){for(let i2=0;i2<2;i2++){const ag=rnd(0,7);asts.push({x:a.x,y:a.y,vx:Math.cos(ag)*rnd(1,2),vy:Math.sin(ag)*rnd(1,2),r:a.r*.52,ang:0,rot:rnd(-.04,.04),pts:genPts(a.r*.52)});}}return false;}return true;});return!hit&&b.life>0;});asts.forEach(a=>{a.x=(a.x+a.vx+W)%W;a.y=(a.y+a.vy+H)%H;a.ang+=a.rot;ctx.strokeStyle='#7788bb';ctx.lineWidth=2;ctx.shadowBlur=4;ctx.shadowColor='#334466';ctx.beginPath();a.pts.forEach((p2,i)=>{const x2=a.x+Math.cos(p2.a+a.ang)*p2.r,y2=a.y+Math.sin(p2.a+a.ang)*p2.r;i===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);});ctx.closePath();ctx.stroke();ctx.shadowBlur=0;if(!ship.inv&&Math.hypot(a.x-ship.x,a.y-ship.y)<a.r+ship.r*.8){ship.lives--;ship.inv=120;mkP(pts2,ship.x,ship.y,14,['#ff8800','#ffcc00'],7);if(ship.lives<=0){goOver();return;}}});if(asts.length===0){wave++;addPts(500*wave);spawnA(3+wave*2);}if(!ship.inv||Math.floor(Date.now()/80)%2){ctx.save();ctx.translate(ship.x,ship.y);ctx.rotate(ship.ang);ctx.shadowBlur=12;ctx.shadowColor='#00aaff';ctx.strokeStyle='#00f2ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ship.r,0);ctx.lineTo(-ship.r,ship.r*.65);ctx.lineTo(-ship.r*.5,0);ctx.lineTo(-ship.r,-ship.r*.65);ctx.closePath();ctx.stroke();ctx.fillStyle='rgba(0,100,200,.3)';ctx.fill();if(K.up){ctx.strokeStyle='#ff8800';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-ship.r*.5,0);ctx.lineTo(-ship.r*(1.5+Math.random()*.5),0);ctx.stroke();}ctx.shadowBlur=0;ctx.restore();}pts2=tickP(pts2);for(let i=0;i<ship.lives;i++){ctx.fillStyle='#00f2ff';ctx.font='14px sans-serif';ctx.textAlign='left';ctx.fillText('△',10+i*18,20);}if(bCD>0){ctx.fillStyle='rgba(255,200,0,.75)';ctx.font='.42rem Orbitron';ctx.textAlign='left';ctx.fillText(`💣 ${Math.ceil(bCD/60)}s`,8,38);}setHUD(`⭐ ${score} 🌊 ${wave} ☄️ ${asts.length}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gAsteroids();
+    </script>
+</body>
+</html>

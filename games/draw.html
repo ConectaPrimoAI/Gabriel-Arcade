@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Pintando Livre - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gDraw(){ctrl.style.display='none';let brushColor='#ff4444',brushSize=18,fr=0;const offC=document.createElement('canvas');offC.width=W;offC.height=H;const oCtx=offC.getContext('2d');oCtx.fillStyle='#ffffff';oCtx.fillRect(0,0,W,H);const COLORS2=['#ff4444','#ff8800','#ffcc00','#44cc44','#4488ff','#8844ff','#ff44aa','#000000','#ffffff'];const SIZES=[8,14,22,32];const TY=H-70,SW=Math.floor(W*.82/COLORS2.length),SX=W*.09;let drawing=false,lastX=0,lastY=0;function isToolbar(x,y){return y>TY;}canvas.addEventListener('pointerdown',e=>{e.preventDefault();const x=e.clientX,y=e.clientY;if(isToolbar(x,y)){COLORS2.forEach((c,i)=>{if(x>SX+i*SW&&x<SX+(i+1)*SW)brushColor=c;});SIZES.forEach((s,i)=>{if(x<W*.07&&y>TY+i*16&&y<TY+(i+1)*16)brushSize=s;});if(x>W*.88){oCtx.fillStyle='#ffffff';oCtx.fillRect(0,0,W,H);}return;}drawing=true;lastX=x;lastY=y;oCtx.beginPath();oCtx.arc(x,y,brushSize/2,0,7);oCtx.fillStyle=brushColor;oCtx.fill();},{passive:false});canvas.addEventListener('pointermove',e=>{if(!drawing)return;const x=e.clientX,y=e.clientY;if(isToolbar(x,y)){drawing=false;return;}oCtx.beginPath();oCtx.moveTo(lastX,lastY);oCtx.lineTo(x,y);oCtx.strokeStyle=brushColor;oCtx.lineWidth=brushSize;oCtx.lineCap='round';oCtx.lineJoin='round';oCtx.stroke();lastX=x;lastY=y;},{passive:true});canvas.addEventListener('pointerup',()=>{drawing=false;});canvas.addEventListener('pointercancel',()=>{drawing=false;});canvas.addEventListener('touchstart',e=>{e.preventDefault();},{passive:false});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;ctx.drawImage(offC,0,0);ctx.fillStyle='rgba(25,15,45,.95)';ctx.fillRect(0,TY,W,70);COLORS2.forEach((c,i)=>{const sx=SX+i*SW;ctx.fillStyle=c;ctx.shadowBlur=c===brushColor?14:0;ctx.shadowColor=c;ctx.beginPath();ctx.roundRect(sx+2,TY+10,SW-4,48,7);ctx.fill();if(c===brushColor){ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.strokeRect(sx+2,TY+10,SW-4,48);}ctx.shadowBlur=0;});SIZES.forEach((s,i)=>{ctx.fillStyle=s===brushSize?brushColor:'rgba(255,255,255,.4)';ctx.beginPath();ctx.arc(W*.035,TY+12+i*14,Math.min(s/2,6)+2,0,7);ctx.fill();});ctx.fillStyle='rgba(255,60,60,.9)';ctx.beginPath();ctx.roundRect(W*.88,TY+8,W*.1,52,8);ctx.fill();ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.035,11,18)}px Fredoka`;ctx.textAlign='center';ctx.fillText('🗑',W*.93,TY+40);setHUD('🖌️ PINTANDO LIVRE');}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gDraw();
+    </script>
+</body>
+</html>

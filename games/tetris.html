@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Tetris - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gTetris(){showCtrl('GIRAR','DROP');const COLS=10,ROWS=20,TS=Math.floor(Math.min(W/12,H/22));const ox=Math.floor((W-COLS*TS)/2),oy=Math.floor((H-ROWS*TS)/2);const SH=[{c:[[0,0],[1,0],[2,0],[3,0]],col:'#00f2ff'},{c:[[0,0],[1,0],[0,1],[1,1]],col:'#ffe600'},{c:[[1,0],[0,1],[1,1],[2,1]],col:'#aa00ff'},{c:[[0,0],[0,1],[1,1],[2,1]],col:'#ff8800'},{c:[[2,0],[0,1],[1,1],[2,1]],col:'#0066ff'},{c:[[0,0],[1,0],[1,1],[2,1]],col:'#00ff88'},{c:[[1,0],[2,0],[0,1],[1,1]],col:'#ff3366'}];const board=Array.from({length:ROWS},()=>new Array(COLS).fill(null));let cur=null,nxt=null,cx2=0,cy=0,dropT=0,dropI=700,lines=0,pts2=[],lastT=0,moveT=0,lastL=false,lastR=false;const mkPc=sh=>({cells:sh.c.map(([x,y])=>({x,y})),col:sh.col});const rndPc=()=>SH[rndI(0,SH.length-1)];const hit=(tx,ty,cells)=>cells.some(c=>{const nx=tx+c.x,ny=ty+c.y;return nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&board[ny][nx]);});function rot(){const r=cur.cells.map(c=>({x:-c.y,y:c.x}));const mX=Math.min(...r.map(c=>c.x)),mY=Math.min(...r.map(c=>c.y));const sh=r.map(c=>({x:c.x-mX,y:c.y-mY}));for(const k of[0,-1,1,-2,2])if(!hit(cx2+k,cy,sh)){cur.cells=sh;cx2+=k;return;}}function hardDrop(){while(!hit(cx2,cy+1,cur.cells))cy++;lock();}function lock(){cur.cells.forEach(c=>{const ny=cy+c.y;if(ny>=0&&ny<ROWS)board[ny][cx2+c.x]=cur.col;});let cl=0;for(let r=ROWS-1;r>=0;r--){if(board[r].every(v=>v)){for(let x=0;x<COLS;x++)mkP(pts2,ox+x*TS+TS/2,oy+r*TS+TS/2,2,[board[r][x],'#fff'],4);board.splice(r,1);board.unshift(new Array(COLS).fill(null));cl++;r++;}}if(cl){lines+=cl;addPts([0,100,300,600,1000][cl]);dropI=Math.max(80,700-lines*22);}spawn();}function spawn(){cur=mkPc(nxt||rndPc());nxt=rndPc();cx2=3;cy=0;if(hit(cx2,cy,cur.cells))goOver();}document.getElementById('abA').addEventListener('pointerdown',e=>{e.preventDefault();if(cur)rot();},{passive:false});document.getElementById('abB').addEventListener('pointerdown',e=>{e.preventDefault();if(cur)hardDrop();},{passive:false});function dTile(px,py,col,a=1){ctx.globalAlpha=a;ctx.fillStyle=col;ctx.fillRect(px,py,TS,TS);ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(px+1,py+1,TS-2,4);ctx.fillRect(px+1,py+1,4,TS-2);ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(px,py+TS-4,TS,4);ctx.fillRect(px+TS-4,py,4,TS);ctx.shadowBlur=4;ctx.shadowColor=col;ctx.strokeStyle=col;ctx.lineWidth=.5;ctx.strokeRect(px+.5,py+.5,TS-1,TS-1);ctx.shadowBlur=0;ctx.globalAlpha=1;}spawn();function loop(ts){rafId=requestAnimationFrame(loop);if(!gameActive){lastT=ts;return;}const dt=ts-lastT;lastT=ts;if(!cur){spawn();return;}const nL=K.lt,nR=K.rt;if(nL&&!lastL){if(!hit(cx2-1,cy,cur.cells))cx2--;moveT=0;}if(nR&&!lastR){if(!hit(cx2+1,cy,cur.cells))cx2++;moveT=0;}if((nL||nR)&&(lastL||lastR)){moveT+=dt;if(moveT>120){moveT=70;if(nL&&!hit(cx2-1,cy,cur.cells))cx2--;if(nR&&!hit(cx2+1,cy,cur.cells))cx2++;}}lastL=nL;lastR=nR;if(TAP.a&&cur)rot();if(TAP.b&&cur)hardDrop();clrT();dropT+=dt*(K.dn?8:1);if(dropT>=dropI){dropT=0;cy++;if(hit(cx2,cy,cur.cells)){cy--;lock();}}ctx.fillStyle='#03030a';ctx.fillRect(0,0,W,H);ctx.fillStyle='#06060f';ctx.fillRect(ox,oy,COLS*TS,ROWS*TS);ctx.strokeStyle='rgba(0,242,255,.05)';ctx.lineWidth=.5;for(let c=0;c<=COLS;c++){ctx.beginPath();ctx.moveTo(ox+c*TS,oy);ctx.lineTo(ox+c*TS,oy+ROWS*TS);ctx.stroke();}for(let r=0;r<=ROWS;r++){ctx.beginPath();ctx.moveTo(ox,oy+r*TS);ctx.lineTo(ox+COLS*TS,oy+r*TS);ctx.stroke();}for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(board[r][c])dTile(ox+c*TS,oy+r*TS,board[r][c]);let gy=cy;while(!hit(cx2,gy+1,cur.cells))gy++;if(gy!==cy)cur.cells.forEach(c=>{if(cy+c.y>=0)dTile(ox+(cx2+c.x)*TS,oy+(gy+c.y)*TS,cur.col,.18);});cur.cells.forEach(c=>{if(cy+c.y>=0)dTile(ox+(cx2+c.x)*TS,oy+(cy+c.y)*TS,cur.col);});ctx.strokeStyle='rgba(0,242,255,.4)';ctx.lineWidth=2;ctx.strokeRect(ox,oy,COLS*TS,ROWS*TS);if(nxt){ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(ox+COLS*TS+8,oy,TS*4+6,TS*4+6);ctx.fillStyle='rgba(255,255,255,.3)';ctx.font='.4rem Orbitron';ctx.textAlign='left';ctx.fillText('NEXT',ox+COLS*TS+12,oy-4);const tmp=mkPc(nxt);tmp.cells.forEach(c=>dTile(ox+COLS*TS+12+c.x*TS,oy+8+c.y*TS,tmp.col));}pts2=tickP(pts2);setHUD(`⭐ ${score} 📋 ${lines} LVL ${Math.floor(lines/10)+1}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gTetris();
+    </script>
+</body>
+</html>

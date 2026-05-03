@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Piano Kids - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gPiano(){ctrl.style.display='none';const NOTES=[{n:'Dó',f:261,c:'#ff4444'},{n:'Ré',f:294,c:'#ff8800'},{n:'Mi',f:330,c:'#ffcc00'},{n:'Fá',f:349,c:'#44cc44'},{n:'Sol',f:392,c:'#4488ff'},{n:'Lá',f:440,c:'#8844ff'},{n:'Si',f:494,c:'#ff44aa'},{n:'Dó²',f:523,c:'#ff4444'}];let pressed={},pts2=[],fr=0;const KW=Math.floor(W*.95/NOTES.length),KH=Math.floor(H*.55),KX=(W-KW*NOTES.length)/2,KY=H*.22;function play(f,c,x,y){try{const ac2=getAC();const o=ac2.createOscillator(),g=ac2.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.6,ac2.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac2.currentTime+.85);o.connect(g);g.connect(ac2.destination);o.start();o.stop(ac2.currentTime+.85);}catch(e){}mkP(pts2,x,y,12,[c,'#fff','#ffff88'],6);}canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;NOTES.forEach((n,i)=>{const kx=KX+i*KW,ky=KY;if(x>kx&&x<kx+KW&&y>ky&&y<ky+KH){pressed[i]=true;play(n.f,n.c,kx+KW/2,ky+KH/2);}});});canvas.addEventListener('pointerup',()=>{for(const k in pressed)pressed[k]=false;});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#1a0a2a');bg.addColorStop(.5,'#0a1a2a');bg.addColorStop(1,'#0a2a1a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<8;i++){ctx.fillStyle=`hsl(${(i*45+fr*2)%360},100%,70%)`;ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('♪',((i*120+fr*.8)%W),(i*50+40+Math.sin(fr*.04+i)*10)%(H*.18));}ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.07,20,38)}px Fredoka`;ctx.textAlign='center';ctx.shadowBlur=10;ctx.shadowColor='#ffaa00';ctx.fillText('🎹 PIANO KIDS',W/2,H*.11);ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${clamp(W*.04,11,18)}px Fredoka`;ctx.fillText('TOQUE NAS TECLAS!',W/2,H*.17);NOTES.forEach((n,i)=>{const kx=KX+i*KW,ky=KY,isP=pressed[i];ctx.shadowBlur=isP?20:6;ctx.shadowColor=n.c;const g=ctx.createLinearGradient(kx,ky,kx,ky+KH);g.addColorStop(0,isP?'#fff':n.c);g.addColorStop(1,isP?n.c+'88':'#000a');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(kx+2,ky+(isP?8:0),KW-4,KH-(isP?8:0),10);ctx.fill();ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.roundRect(kx+4,ky+(isP?10:2),KW-8,16,5);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.font=`bold ${clamp(KW*.32,10,19)}px Fredoka`;ctx.textAlign='center';ctx.fillText(n.n,kx+KW/2,ky+KH*.8+(isP?8:0));});pts2=tickP(pts2);setHUD('🎹 PIANO');}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gPiano();
+    </script>
+</body>
+</html>

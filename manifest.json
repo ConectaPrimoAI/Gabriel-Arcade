@@ -1,0 +1,20 @@
+{
+  "name": "GABRIEL V20 — ARCADE SUPREMO",
+  "short_name": "ARCADE",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#02020a",
+  "icons": [
+    {
+      "src": "/IMG_1155.webp",
+      "sizes": "192x192",
+      "type": "image/webp"
+    },
+    {
+      "src": "/IMG_1163.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Breakout - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gBreakout(){showCtrl('','',false);let padX=W/2-55,padW=110,padTarget=W/2-55;const padY=H-52,padH=13,BR=11;let bx=W/2,by=H-80,bvx=4*(Math.random()<.5?1:-1),bvy=-5,launched=false,pts2=[],pups=[];const COLS=10,ROWS=6,bW=Math.floor(W*.88/COLS),bH=26,bOX=Math.floor(W*.06),bOY=70;const BCOL=['#ff3366','#ff6600','#ffcc00','#00cc66','#00aaff','#aa44ff'];let bricks=[];const mkB=()=>{bricks=[];for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)bricks.push({x:bOX+c*bW+2,y:bOY+r*bH+2,w:bW-4,h:bH-4,hp:ROWS-r,col:BCOL[r],alive:true});};mkB();let pointerX=null;canvas.addEventListener('pointermove',e=>{pointerX=e.clientX;},{passive:true});canvas.addEventListener('pointerdown',e=>{pointerX=e.clientX;if(!launched)launched=true;});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;if(pointerX!==null)padTarget=clamp(pointerX-padW/2,0,W-padW);if(K.lt)padTarget=clamp(padTarget-9,0,W-padW);if(K.rt)padTarget=clamp(padTarget+9,0,W-padW);padX=lerp(padX,padTarget,.35);ctx.fillStyle='#03030a';ctx.fillRect(0,0,W,H);ctx.strokeStyle='rgba(0,242,255,.022)';ctx.lineWidth=1;for(let x2=0;x2<W;x2+=46){ctx.beginPath();ctx.moveTo(x2,0);ctx.lineTo(x2,H);ctx.stroke();}const pg2=ctx.createLinearGradient(padX,0,padX+padW,0);pg2.addColorStop(0,'#0077bb');pg2.addColorStop(.5,'#00f2ff');pg2.addColorStop(1,'#0077bb');ctx.shadowBlur=16;ctx.shadowColor='#00f2ff';ctx.fillStyle=pg2;ctx.beginPath();ctx.roundRect(padX,padY,padW,padH,6);ctx.fill();ctx.shadowBlur=0;if(launched){bx+=bvx;by+=bvy;if(bx-BR<0){bx=BR;bvx=Math.abs(bvx);}if(bx+BR>W){bx=W-BR;bvx=-Math.abs(bvx);}if(by-BR<0){by=BR;bvy=Math.abs(bvy);}if(by>H+50){goOver();return;}if(bvy>0&&by+BR>=padY&&by-BR<=padY+padH&&bx>=padX-4&&bx<=padX+padW+4){bvy=-Math.abs(bvy);bvx=clamp(((bx-padX-padW/2)/(padW/2))*6.5,-9.5,9.5);const sp=Math.hypot(bvx,bvy);if(sp<5){bvx*=5/sp;bvy*=5/sp;}addPts(1);}bricks.forEach(b=>{if(!b.alive)return;if(bx+BR>b.x&&bx-BR<b.x+b.w&&by+BR>b.y&&by-BR<b.y+b.h){const ox2=Math.min(bx+BR-b.x,b.x+b.w-(bx-BR)),oy2=Math.min(by+BR-b.y,b.y+b.h-(by-BR));if(ox2<oy2)bvx*=-1;else bvy*=-1;b.hp--;if(b.hp<=0){b.alive=false;addPts(10);mkP(pts2,b.x+b.w/2,b.y+b.h/2,8,[b.col,'#fff']);if(Math.random()<.12)pups.push({x:b.x+b.w/2,y:b.y,vy:2});}}});if(bricks.every(b=>!b.alive)){addPts(500);mkB();}}else{bx=padX+padW/2;by=padY-BR-2;}bricks.forEach(b=>{if(!b.alive)return;const g=ctx.createLinearGradient(b.x,b.y,b.x,b.y+b.h);g.addColorStop(0,b.col);g.addColorStop(1,b.col+'88');ctx.fillStyle=g;ctx.shadowBlur=4;ctx.shadowColor=b.col;ctx.beginPath();ctx.roundRect(b.x,b.y,b.w,b.h,3);ctx.fill();ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.roundRect(b.x+2,b.y+2,b.w-4,4,1);ctx.fill();if(b.hp>1){ctx.fillStyle='rgba(0,0,0,.4)';ctx.font=`${b.h*.55}px Orbitron`;ctx.textAlign='center';ctx.fillText(b.hp,b.x+b.w/2,b.y+b.h*.72);}ctx.shadowBlur=0;});const bg2=ctx.createRadialGradient(bx-3,by-3,1,bx,by,BR);bg2.addColorStop(0,'#fff');bg2.addColorStop(1,'#00aaff');ctx.shadowBlur=18;ctx.shadowColor='#00f2ff';ctx.fillStyle=bg2;ctx.beginPath();ctx.arc(bx,by,BR,0,7);ctx.fill();ctx.shadowBlur=0;pups=pups.filter(p=>{p.y+=p.vy;ctx.shadowBlur=8;ctx.shadowColor='#ffee00';ctx.fillStyle='#ffee00';ctx.beginPath();ctx.arc(p.x,p.y,9,0,7);ctx.fill();ctx.fillStyle='#000';ctx.font='8px Orbitron';ctx.textAlign='center';ctx.fillText('W+',p.x,p.y+3);ctx.shadowBlur=0;if(p.y>padY&&p.y<padY+padH+12&&p.x>padX&&p.x<padX+padW){padW=Math.min(padW+50,200);return false;}return p.y<H+20;});pts2=tickP(pts2);if(!launched){ctx.fillStyle='rgba(255,255,255,.6)';ctx.font='bold .5rem Orbitron';ctx.textAlign='center';ctx.fillText('TOQUE PARA LANÇAR',W/2,H*.5);}setHUD(`⭐ ${score} 🧱 ${bricks.filter(b=>b.alive).length}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gBreakout();
+    </script>
+</body>
+</html>

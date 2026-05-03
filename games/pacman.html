@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang='pt-br'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
+    <title>Pac-Man - Arcade Supremo</title>
+    <link rel='stylesheet' href='../assets/style.css'>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
+        canvas { display: block; width: 100%; height: 100%; }
+        .back-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: rgba(0, 242, 255, 0.2);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            font-family: 'Orbitron', sans-serif;
+            text-decoration: none;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
+    <div id='game-container'>
+        <canvas id='gameCanvas'></canvas>
+    </div>
+    <script src='../scripts/core.js'></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth;
+        let H = window.innerHeight;
+        canvas.width = W;
+        canvas.height = H;
+
+        // Mock de funções globais necessárias
+        window.gameActive = true;
+        window.score = 0;
+        window.rafId = null;
+        
+        function gPacman(){showCtrl('','',false);const M=[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,1],[1,3,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,3,1],[1,2,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,2,1],[1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],[1,2,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,2,1],[1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],[1,1,1,1,2,1,1,0,0,0,0,0,1,1,2,1,1,1,1],[0,0,0,0,2,1,0,0,0,0,0,0,0,1,2,0,0,0,0],[1,1,1,1,2,1,0,1,1,0,1,1,0,1,2,1,1,1,1],[0,0,0,0,2,0,0,1,0,0,0,1,0,0,2,0,0,0,0],[1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1],[0,0,0,0,2,1,0,0,0,0,0,0,0,1,2,0,0,0,0],[1,2,2,2,2,2,2,2,1,0,1,2,2,2,2,2,2,2,1],[1,3,1,1,2,1,1,2,0,0,0,2,1,1,2,1,1,3,1],[1,2,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,2,1],[1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1],[1,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,1],[1,2,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,2,1],[1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]];const MR=M.length,MC=M[0].length;const TS=Math.floor(Math.min(W/MC,(H-24)/MR));const OX=Math.floor((W-MC*TS)/2),OY=Math.floor((H-MR*TS)/2)+4;const isW=(c,r)=>c<0||c>=MC||r<0||r>=MR||M[r][c]===1;const dots=[];for(let r=0;r<MR;r++)for(let c=0;c<MC;c++){if(M[r][c]===2)dots.push({c,r,big:false,eaten:false});if(M[r][c]===3)dots.push({c,r,big:true,eaten:false});}function tileToPixel(tc,tr){return{px:OX+(tc+.5)*TS,py:OY+(tr+.5)*TS};}const pacStart=tileToPixel(9,15);const pac={px:pacStart.px,py:pacStart.py,dx:TS/12,dy:0,ndx:TS/12,ndy:0,mo:0};const GCOL=['#ff2222','#ffb8ff','#00ddff','#ffaa22'];const ghosts=GCOL.map((col,i)=>{const g=tileToPixel(8+i,9);return{px:g.px,py:g.py,dx:TS/14*(i%2?1:-1),dy:0,col,scared:false,dead:false,waitT:i*50};});let pwT=0,lives=3,frame=0;const PSPD=TS*.065,GSPD_NORM=TS*.055,GSPD_FEAR=TS*.035;function canGo(px,py,dx,dy){const r=TS*.38;const check=dx!==0?[[px+dx+(r+.5)*Math.sign(dx),py-r],[px+dx+(r+.5)*Math.sign(dx),py+r]]:[[px-r,py+dy+(r+.5)*Math.sign(dy)],[px+r,py+dy+(r+.5)*Math.sign(dy)]];for(const[cx,cy]of check){const tc=Math.floor((cx-OX)/TS),tr=Math.floor((cy-OY)/TS);if(isW(tc,tr))return false;}return true;}
+  function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;frame++;if(K.up){pac.ndx=0;pac.ndy=-PSPD;}if(K.dn){pac.ndx=0;pac.ndy=PSPD;}if(K.lt){pac.ndx=-PSPD;pac.ndy=0;}if(K.rt){pac.ndx=PSPD;pac.ndy=0;}clrT();if(canGo(pac.px,pac.py,pac.ndx,pac.ndy)){pac.dx=pac.ndx;pac.dy=pac.ndy;}if(canGo(pac.px,pac.py,pac.dx,pac.dy)){pac.px+=pac.dx;pac.py+=pac.dy;}if(pac.px<OX-TS)pac.px=OX+MC*TS;if(pac.px>OX+MC*TS)pac.px=OX-TS;pac.mo+=.14;dots.forEach(d=>{if(d.eaten)return;const dpx=OX+(d.c+.5)*TS,dpy=OY+(d.r+.5)*TS;if(Math.hypot(pac.px-dpx,pac.py-dpy)<TS*.48){d.eaten=true;if(d.big){addPts(50);pwT=300;ghosts.forEach(g=>g.scared=true);}else addPts(10);}});if(pwT>0)pwT--;else ghosts.forEach(g=>{if(g.scared)g.scared=false;});if(dots.every(d=>d.eaten)){addPts(2000);dots.forEach(d=>d.eaten=false);}ghosts.forEach((g)=>{if(g.waitT>0){g.waitT--;return;}if(g.dead){const hx=OX+9.5*TS,hy=OY+9.5*TS;const ddx=hx-g.px,ddy=hy-g.py,dd=Math.hypot(ddx,ddy);if(dd<3){g.dead=false;g.scared=false;g.px=hx;g.py=hy;}else{g.px+=ddx/dd*GSPD_NORM*2;g.py+=ddy/dd*GSPD_NORM*2;}return;}const gspd=g.scared?GSPD_FEAR:GSPD_NORM;if(canGo(g.px,g.py,g.dx,g.dy)){g.px+=g.dx;g.py+=g.dy;}else{g.dx=0;g.dy=0;}if(g.px<OX-TS)g.px=OX+MC*TS;if(g.px>OX+MC*TS)g.px=OX-TS;const tc=Math.floor((g.px-OX)/TS),tr=Math.floor((g.py-OY)/TS);const{px:ctrx,py:ctry}=tileToPixel(tc,tr);if(Math.hypot(g.px-ctrx,g.py-ctry)<gspd*1.8){g.px=lerp(g.px,ctrx,.25);g.py=lerp(g.py,ctry,.25);const dirs=[[gspd,0],[-gspd,0],[0,gspd],[0,-gspd]];const valid=dirs.filter(([dx,dy])=>{if(dx===-g.dx&&dy===-g.dy)return false;return canGo(ctrx,ctry,dx,dy);});if(valid.length===0)return;if(!g.scared){valid.sort((a,b2)=>Math.hypot(ctrx+a[0]-pac.px,ctry+a[1]-pac.py)-Math.hypot(ctrx+b2[0]-pac.px,ctry+b2[1]-pac.py));[g.dx,g.dy]=valid[0];}else{valid.sort((a,b2)=>Math.hypot(ctrx+b2[0]-pac.px,ctry+b2[1]-pac.py)-Math.hypot(ctrx+a[0]-pac.px,ctry+a[1]-pac.py));[g.dx,g.dy]=valid[0];}}if(Math.hypot(g.px-pac.px,g.py-pac.py)<TS*.55){if(g.scared){g.dead=true;g.scared=false;g.waitT=60;addPts(200);}else if(!g.dead){lives--;if(lives<=0){goOver();return;}pac.px=OX+9.5*TS;pac.py=OY+15.5*TS;pac.dx=PSPD;pac.dy=0;}}});ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);for(let r=0;r<MR;r++)for(let c=0;c<MC;c++){if(M[r][c]!==1)continue;const px=OX+c*TS,py=OY+r*TS;ctx.fillStyle='#1100cc';ctx.fillRect(px,py,TS,TS);ctx.strokeStyle='#3322ee';ctx.lineWidth=1.5;ctx.strokeRect(px+1.5,py+1.5,TS-3,TS-3);}dots.forEach(d=>{if(d.eaten)return;const dpx=OX+(d.c+.5)*TS,dpy=OY+(d.r+.5)*TS;if(d.big){ctx.shadowBlur=10;ctx.shadowColor='#fff';ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(dpx,dpy,TS*.28+Math.sin(frame*.1)*1.2,0,7);ctx.fill();ctx.shadowBlur=0;}else{ctx.fillStyle='#ffddaa';ctx.beginPath();ctx.arc(dpx,dpy,2.5,0,7);ctx.fill();}});ghosts.forEach(g=>{if(g.dead)return;const gr=TS*.44;const gc2=g.scared?(pwT<80&&Math.floor(frame/7)%2?'#fff':'#0000bb'):g.col;ctx.shadowBlur=g.scared?0:10;ctx.shadowColor=g.col;ctx.fillStyle=gc2;ctx.beginPath();ctx.arc(g.px,g.py-gr*.1,gr,Math.PI,0);ctx.lineTo(g.px+gr,g.py+gr*.75);for(let i=4;i>=0;i--){const wx=g.px-gr+i*gr*.5;ctx.quadraticCurveTo(wx+gr*.25,g.py+gr*.75+(i%2?gr*.3:0),wx,g.py+gr*.75);}ctx.closePath();ctx.fill();ctx.shadowBlur=0;if(!g.scared){ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(g.px-gr*.28,g.py-gr*.1,gr*.22,gr*.3,0,0,7);ctx.fill();ctx.beginPath();ctx.ellipse(g.px+gr*.28,g.py-gr*.1,gr*.22,gr*.3,0,0,7);ctx.fill();const edx=g.dx>0?gr*.12:g.dx<0?-gr*.12:0,edy=g.dy>0?gr*.12:g.dy<0?-gr*.12:0;ctx.fillStyle='#00f';ctx.beginPath();ctx.arc(g.px-gr*.28+edx,g.py-gr*.1+edy,gr*.12,0,7);ctx.fill();ctx.beginPath();ctx.arc(g.px+gr*.28+edx,g.py-gr*.1+edy,gr*.12,0,7);ctx.fill();}});const mo=Math.abs(Math.sin(pac.mo))*.32,pang=Math.atan2(pac.dy,pac.dx)||0;ctx.shadowBlur=18;ctx.shadowColor='#ffee00';ctx.fillStyle='#ffe600';ctx.beginPath();ctx.arc(pac.px,pac.py,TS*.43,pang+mo*Math.PI,pang+(2-mo)*Math.PI);ctx.lineTo(pac.px,pac.py);ctx.closePath();ctx.fill();ctx.shadowBlur=0;for(let i=0;i<lives;i++){ctx.fillStyle='#ffe600';ctx.beginPath();ctx.arc(OX+i*20+12,OY+MR*TS+14,7,.3*Math.PI,1.7*Math.PI);ctx.lineTo(OX+i*20+12,OY+MR*TS+14);ctx.fill();}setHUD(`⭐ ${score} 💛 ${lives}${pwT>0?' ⚡':''}`);}requestAnimationFrame(loop);}
+
+        // Iniciar o jogo
+        gPacman();
+    </script>
+</body>
+</html>
