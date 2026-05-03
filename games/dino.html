@@ -1,54 +1,399 @@
+
 <!DOCTYPE html>
-<html lang='pt-br'>
+<html lang="pt-br">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>Dino Run - Arcade Supremo</title>
-    <link rel='stylesheet' href='../assets/style.css'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Moto City </title>
     <style>
-        body { background: #000; margin: 0; overflow: hidden; }
-        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
-        canvas { display: block; width: 100%; height: 100%; }
-        .back-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background: rgba(0, 242, 255, 0.2);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-            font-family: 'Orbitron', sans-serif;
-            text-decoration: none;
-            font-size: 12px;
+        :root {
+            --primary: #ffcc00;
+            --secondary: #222;
         }
+        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Segoe UI', Roboto, sans-serif; }
+        
+        /* UI Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.5s;
+        }
+
+        #menu-screen { background: radial-gradient(circle, #fff 0%, #ddd 100%); }
+        #game-ui { pointer-events: none; justify-content: flex-start; padding-top: 40px; }
+        #game-over-screen { background: rgba(0,0,0,0.85); display: none; color: white; }
+
+        /* Customization Panel */
+        .panel {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        h1 { margin-bottom: 20px; color: #333; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .options { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .color-dot {
+            width: 40px; height: 40px; border-radius: 50%; border: 3px solid #eee;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .color-dot.active { transform: scale(1.2); border-color: #333; }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 18px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 5px 0 #b38f00;
+            text-transform: uppercase;
+        }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #b38f00; }
+
+        #score-container {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid var(--primary);
+        }
+
+        /* Mobile Controls Hints */
+        .controls-hint {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            pointer-events: none;
+        }
+        .side-hint { color: rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
-    <div id='game-container'>
-        <canvas id='gameCanvas'></canvas>
+
+    <!-- Menu Inicial / Customização -->
+    <div id="menu-screen" class="screen">
+        <div class="panel">
+            <h1>MOTO CUSTOM</h1>
+            <p>Escolha a Cor da Moto:</p>
+            <div class="options" id="color-options">
+                <div class="color-dot active" style="background: #ffcc00;" data-color="#ffcc00"></div>
+                <div class="color-dot" style="background: #e74c3c;" data-color="#e74c3c"></div>
+                <div class="color-dot" style="background: #3498db;" data-color="#3498db"></div>
+                <div class="color-dot" style="background: #9b59b6;" data-color="#9b59b6"></div>
+            </div>
+            <button class="btn" onclick="startGame()">DAR PARTIDA</button>
+        </div>
     </div>
-    <script src='../scripts/core.js'></script>
+
+    <!-- Interface Durante o Jogo -->
+    <div id="game-ui" class="screen" style="display: none;">
+        <div id="score-container">0 m</div>
+        <div class="controls-hint">
+            <span class="side-hint">◄ TOQUE PARA ESQUERDA</span>
+            <span class="side-hint">DIREITA TOQUE PARA ►</span>
+        </div>
+    </div>
+
+    <!-- Tela de Game Over -->
+    <div id="game-over-screen" class="screen">
+        <h1 style="color: white;">GAME OVER</h1>
+        <p id="final-stats" style="font-size: 20px; margin-bottom: 20px;"></p>
+        <div style="width: 200px;">
+            <button class="btn" onclick="location.reload()">VOLTAR AO MENU</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let W = window.innerWidth;
-        let H = window.innerHeight;
-        canvas.width = W;
-        canvas.height = H;
+        let scene, camera, renderer, moto, road;
+        let obstacles = [], buildings = [], clouds = [];
+        let score = 0, gameActive = false;
+        let speed = 0.4, targetLane = 0;
+        let motoColor = "#ffcc00";
+        const laneWidth = 3.8;
 
-        // Mock de funções globais necessárias
-        window.gameActive = true;
-        window.score = 0;
-        window.rafId = null;
-        
-        function gDino(){showCtrl('PULAR','',false);document.getElementById('abA').textContent='⬆';document.getElementById('abA').style.fontSize='1.4rem';const GND=H-65,DX=W*.15,DW=50,DH=58;let dy=GND,dvy=0,onG=true,obs=[],spd=5,dist=0,fr=0,night=false,oT=80;const jump=()=>{if(onG){dvy=-17;onG=false;}};canvas.addEventListener('pointerdown',jump);document.getElementById('abA').addEventListener('pointerdown',e=>{e.preventDefault();jump();},{passive:false});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;dist+=spd*.012;spd=Math.min(16,5+dist*.014);setScore(Math.floor(dist));night=Math.floor(dist/80)%2===1;if(TAP.a||TAP.up)jump();const duck=K.dn;clrT();ctx.fillStyle=night?'#090912':'#f2f2f2';ctx.fillRect(0,0,W,H);if(night)for(let i=0;i<60;i++){ctx.fillStyle='rgba(255,255,255,.6)';ctx.fillRect((i*71+fr*.2)%W,(i*43)%(GND*.65),i%3===0?2:1,i%3===0?2:1);}ctx.shadowBlur=night?14:26;ctx.shadowColor=night?'#aaccff':'#ffdd44';ctx.fillStyle=night?'#ddeeff':'#ffe600';ctx.beginPath();ctx.arc(W*.9,H*.1,night?17:23,0,7);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=night?'#1a1a28':'#d4d4d4';ctx.fillRect(0,GND,W,4);ctx.fillStyle=night?'#0c0c18':'#b2b2b2';ctx.fillRect(0,GND+4,W,H-GND);for(let x=(fr*spd*.6)%62;x<W;x+=62){ctx.fillStyle='rgba(0,0,0,.05)';ctx.fillRect(x,GND+5,32,H-GND);}for(let i=0;i<6;i++){const px=((i*157+fr*spd*.5)%W);ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(px,GND+4,3+i%3,2);}dvy+=.9;dy=Math.min(dy+dvy,GND);if(dy>=GND){dy=GND;dvy=0;onG=true;}const dh=duck?DH*.5:DH,dCol=night?'#88ccff':'#555';ctx.fillStyle='rgba(0,0,0,.15)';ctx.beginPath();ctx.ellipse(DX+DW*.4,GND+3,DW*.45,5,0,0,7);ctx.fill();ctx.fillStyle=dCol;ctx.beginPath();ctx.roundRect(DX,dy-dh,DW*.88,dh*.64,6);ctx.fill();ctx.beginPath();ctx.roundRect(DX+DW*.36,dy-dh*1.3,DW*.62,dh*.38,6);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(DX+DW*.78,dy-dh*1.22,6,0,7);ctx.fill();ctx.fillStyle='#111';ctx.beginPath();ctx.arc(DX+DW*.8,dy-dh*1.21,3,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(DX+DW*.81,dy-dh*1.23,1.4,0,7);ctx.fill();ctx.strokeStyle=night?'#66aaff':'#333';ctx.lineWidth=2;ctx.beginPath();ctx.arc(DX+DW*.68,dy-dh*.95,DW*.14,.1,.9);ctx.stroke();if(!duck){const la=onG?Math.sin(fr*.22)*9:0;ctx.fillStyle=dCol;ctx.fillRect(DX+DW*.1,dy-dh*.2+la,11,dh*.22-Math.max(0,la));ctx.fillRect(DX+DW*.4,dy-dh*.2-la,11,dh*.22+Math.min(0,-la));}if(!duck)for(let i=0;i<3;i++){ctx.fillStyle=night?'#66aaee':'#333';ctx.beginPath();ctx.moveTo(DX+DW*(.12+i*.22),dy-dh);ctx.lineTo(DX+DW*(.05+i*.22),dy-dh-8-i*3);ctx.lineTo(DX+DW*(.19+i*.22),dy-dh-5-i*2);ctx.fill();}ctx.beginPath();ctx.moveTo(DX,dy-dh*.72);ctx.quadraticCurveTo(DX-DW*.52,dy-dh*.42,DX-DW*.1,dy-dh*.15);ctx.lineWidth=9;ctx.strokeStyle=dCol;ctx.stroke();oT-=spd*.14;if(oT<=0){oT=rnd(50,88);if(Math.random()<.38&&dist>30)obs.push({x:W+20,t:'bird',y:GND-rnd(80,120),w:38,h:26,fr:0,ft:0});else{const n=rndI(1,3);obs.push({x:W+20,t:'cact',n,w:12+n*11,h:rnd(42,68)});}}obs=obs.filter(o=>{o.x-=spd;if(o.t==='cact'){ctx.fillStyle=night?'#33aa44':'#2a6820';for(let i=0;i<o.n;i++){ctx.fillRect(o.x+i*12,GND-(o.h+(i===1?14:0)),12,o.h+(i===1?14:0));if(i===0)ctx.fillRect(o.x-8,GND-o.h*.55,10,12);if(i===o.n-1)ctx.fillRect(o.x+o.n*12,GND-o.h*.55,10,12);}if(DX+DW*.88>o.x+4&&DX+8<o.x+o.w-4&&dy-dh*1.05<GND-o.h+o.h&&dy>GND-o.h){goOver();return false;}}else{o.ft++;if(o.ft>10){o.fr=1-o.fr;o.ft=0;}ctx.font='30px sans-serif';ctx.textAlign='center';ctx.fillText(o.fr?'🦅':'🕊️',o.x+19,o.y+12);if(DX+DW*.88>o.x+5&&DX+8<o.x+o.w-5&&dy-dh*1.05<o.y+o.h&&dy-dh*.55>o.y){goOver();return false;}}return o.x>-80;});setHUD(`🦕 ${Math.floor(dist)}m ${night?'🌙':'☀️'}`);}requestAnimationFrame(loop);}
+        // Configuração das cores
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                motoColor = dot.getAttribute('data-color');
+                updateMotoColor();
+            });
+        });
 
-        // Iniciar o jogo
-        gDino();
+        // --- Texturas Dinâmicas ---
+        function createRoadTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#444';
+            ctx.fillRect(0, 0, 512, 1024);
+            // Calçadas
+            ctx.fillStyle = '#999';
+            ctx.fillRect(0, 0, 40, 1024);
+            ctx.fillRect(472, 0, 40, 1024);
+            // Faixas
+            ctx.setLineDash([60, 60]);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 10;
+            ctx.beginPath();
+            ctx.moveTo(170, 0); ctx.lineTo(170, 1024);
+            ctx.moveTo(340, 0); ctx.lineTo(340, 1024);
+            ctx.stroke();
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(1, 15);
+            return tex;
+        }
+
+        function createBuildingTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 128; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#eee'; ctx.fillRect(0, 0, 128, 256);
+            ctx.fillStyle = '#add8e6';
+            for(let y=20; y<256; y+=40) {
+                for(let x=15; x<128; x+=40) {
+                    ctx.fillRect(x, y, 20, 20);
+                }
+            }
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // --- Inicialização do Mundo ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 30, 120);
+            
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 6, 14);
+            camera.lookAt(0, 2, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+            scene.add(hemiLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(50, 50, 20);
+            sunLight.castShadow = true;
+            scene.add(sunLight);
+
+            // Estrada
+            const roadGeo = new THREE.PlaneGeometry(16, 2000);
+            const roadMat = new THREE.MeshStandardMaterial({ map: createRoadTexture() });
+            road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Moto
+            createMoto();
+
+            // Gerar Nuvens Iniciais
+            for(let i=0; i<10; i++) createCloud(Math.random() * -100);
+
+            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('touchstart', (e) => {
+                const x = e.touches[0].clientX;
+                if(x < window.innerWidth/2) moveLane(-1); else moveLane(1);
+            });
+            window.addEventListener('keydown', (e) => {
+                if(e.key === 'ArrowLeft') moveLane(-1);
+                if(e.key === 'ArrowRight') moveLane(1);
+            });
+
+            animate();
+        }
+
+        function createMoto() {
+            if(moto) scene.remove(moto);
+            moto = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color: motoColor });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x333333, transparent: true, opacity: 0.6 });
+
+            // Tanque e Assento
+            const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1, 2.2), mat);
+            body.position.y = 1;
+            body.castShadow = true;
+            moto.add(body);
+
+            // Painel/Vídro
+            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.4), glassMat);
+            screen.position.set(0, 1.6, 0.6);
+            moto.add(screen);
+
+            // Rodas
+            const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 20);
+            const wheelF = new THREE.Mesh(wheelGeo, darkMat);
+            wheelF.rotation.z = Math.PI / 2;
+            wheelF.position.set(0, 0.5, 1);
+            moto.add(wheelF);
+
+            const wheelB = new THREE.Mesh(wheelGeo, darkMat);
+            wheelB.rotation.z = Math.PI / 2;
+            wheelB.position.set(0, 0.5, -1);
+            moto.add(wheelB);
+
+            scene.add(moto);
+        }
+
+        function updateMotoColor() {
+            if(moto) {
+                moto.children[0].material.color.set(motoColor);
+            }
+        }
+
+        function createBuilding(zPos) {
+            const h = 15 + Math.random() * 25;
+            const w = 8 + Math.random() * 4;
+            const geo = new THREE.BoxGeometry(w, h, 10);
+            const mat = new THREE.MeshStandardMaterial({ 
+                map: createBuildingTexture(),
+                color: new THREE.Color(`hsl(${Math.random()*360}, 10%, 80%)`) 
+            });
+            const b = new THREE.Mesh(geo, mat);
+            const side = Math.random() > 0.5 ? 1 : -1;
+            b.position.set(side * (14 + w/2), h/2, zPos);
+            scene.add(b);
+            buildings.push(b);
+        }
+
+        function createCloud(zPos) {
+            const geo = new THREE.SphereGeometry(2 + Math.random()*2, 8, 8);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+            const c = new THREE.Mesh(geo, mat);
+            c.position.set((Math.random()-0.5)*60, 15 + Math.random()*10, zPos);
+            scene.add(c);
+            clouds.push(c);
+        }
+
+        function createObstacle() {
+            const lane = Math.floor(Math.random() * 3) - 1;
+            const type = Math.random();
+            let obs;
+
+            if(type > 0.5) {
+                // Barreira
+                obs = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.2, 0.5), new THREE.MeshStandardMaterial({ color: 0xe67e22 }));
+                obs.position.set(lane * laneWidth, 0.6, -100);
+            } else {
+                // Cone
+                obs = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.6, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0xff4400 }));
+                obs.position.set(lane * laneWidth, 0.6, -100);
+            }
+            obs.castShadow = true;
+            scene.add(obs);
+            obstacles.push(obs);
+        }
+
+        function startGame() {
+            document.getElementById('menu-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('menu-screen').style.display = 'none';
+                document.getElementById('game-ui').style.display = 'flex';
+                gameActive = true;
+            }, 500);
+        }
+
+        function moveLane(dir) {
+            targetLane = Math.max(-1, Math.min(1, targetLane + dir));
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameActive) {
+                score += speed;
+                document.getElementById('score-container').innerText = Math.floor(score) + " m";
+
+                // Suavização do Movimento e Inclinação
+                moto.position.x += (targetLane * laneWidth - moto.position.x) * 0.12;
+                moto.rotation.z = (moto.position.x - targetLane * laneWidth) * 0.15;
+                moto.rotation.y = (targetLane * laneWidth - moto.position.x) * 0.1;
+
+                // Scroll da Estrada
+                road.material.map.offset.y -= speed * 0.04;
+
+                // Gerenciamento de Objetos
+                if(Math.random() < 0.04) createBuilding(-120);
+                if(Math.random() < 0.01) createCloud(-150);
+                if(Math.random() < 0.025 && (obstacles.length === 0 || obstacles[obstacles.length-1].position.z > -50)) {
+                    createObstacle();
+                }
+
+                // Atualizar Obstáculos
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    obstacles[i].position.z += speed;
+                    
+                    // Colisão
+                    const motoBox = new THREE.Box3().setFromObject(moto).expandByScalar(-0.35);
+                    const obsBox = new THREE.Box3().setFromObject(obstacles[i]);
+                    
+                    if (motoBox.intersectsBox(obsBox)) {
+                        endGame();
+                    }
+
+                    if (obstacles[i].position.z > 20) {
+                        scene.remove(obstacles[i]);
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                // Atualizar Prédios e Nuvens
+                [buildings, clouds].forEach(list => {
+                    for (let i = list.length - 1; i >= 0; i--) {
+                        list[i].position.z += speed * 0.8; // Efeito de paralaxe leve
+                        if (list[i].position.z > 40) {
+                            scene.remove(list[i]);
+                            list.splice(i, 1);
+                        }
+                    }
+                });
+
+                speed += 0.0001;
+            }
+            renderer.render(scene, camera);
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'flex';
+            document.getElementById('final-stats').innerText = `Você percorreu ${Math.floor(score)} metros!`;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        init();
     </script>
 </body>
 </html>
+
