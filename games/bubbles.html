@@ -1,54 +1,303 @@
+
 <!DOCTYPE html>
-<html lang='pt-br'>
+<html lang="pt-br">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>Estoura Bolha - Arcade Supremo</title>
-    <link rel='stylesheet' href='../assets/style.css'>
-    <style>
-        body { background: #000; margin: 0; overflow: hidden; }
-        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
-        canvas { display: block; width: 100%; height: 100%; }
-        .back-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background: rgba(0, 242, 255, 0.2);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-            font-family: 'Orbitron', sans-serif;
-            text-decoration: none;
-            font-size: 12px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Show de Balões 🎈</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Bangers&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #121212;
+    --console-body: #333333;
+    --screen-border: #1a1a1a;
+    --curtain: #b30000;
+}
+
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; user-select: none;
+}
+
+body {
+    height: 100dvh; width: 100vw; overflow: hidden;
+    background: var(--bg); font-family: 'Fredoka', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* --- CONSOLE CINZA TRADICIONAL --- */
+#console-case {
+    width: 95vw; max-width: 420px; height: 90dvh;
+    background: var(--console-body); border-radius: 40px;
+    border: 4px solid #444; box-shadow: 0 30px 60px rgba(0,0,0,0.9);
+    display: flex; flex-direction: column; padding: 20px;
+}
+
+/* --- TELA --- */
+#screen-wrap {
+    width: 100%; aspect-ratio: 1.1/1;
+    background: #000; border-radius: 10px;
+    border: 12px solid var(--screen-border); overflow: hidden; position: relative;
+    box-shadow: inset 0 0 20px #000;
+}
+
+canvas { width: 100%; height: 100%; display: block; }
+
+/* --- CORTINAS --- */
+.curtain {
+    position: absolute; top: 0; width: 51%; height: 100%;
+    background: var(--curtain); z-index: 15;
+    transition: transform 0.7s ease-in-out;
+    background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1) 15px, transparent 15px, transparent 30px);
+}
+#curtain-l { left: 0; }
+#curtain-r { right: 0; }
+.open #curtain-l { transform: translateX(-100%); }
+.open #curtain-r { transform: translateX(100%); }
+
+/* --- CONTROLES LADO A LADO --- */
+#controls-area {
+    flex: 1; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px;
+}
+
+/* D-PAD na Esquerda */
+.d-pad {
+    display: grid; grid-template-columns: repeat(3, 45px);
+    grid-template-rows: repeat(3, 45px);
+}
+.d-btn {
+    background: #222; border: 1px solid #111; color: #666;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; box-shadow: 0 4px 0 #000;
+}
+.d-up { grid-column: 2; border-radius: 5px 5px 0 0; }
+.d-down { grid-column: 2; grid-row: 3; border-radius: 0 0 5px 5px; }
+.d-left { grid-row: 2; grid-column: 1; border-radius: 5px 0 0 5px; }
+.d-right { grid-row: 2; grid-column: 3; border-radius: 0 5px 5px 0; }
+.d-center { grid-row: 2; grid-column: 2; background: #222; border: none; box-shadow: none; }
+
+/* Botão de Estourar na Direita */
+#action-area {
+    display: flex; align-items: center; justify-content: center;
+}
+.fire-btn {
+    width: 80px; height: 80px; background: #c0392b; border-radius: 50%;
+    border: 5px solid #a93226; color: #fff; font-family: 'Bangers';
+    font-size: 18px; box-shadow: 0 6px 0 #7b241c; cursor: pointer;
+}
+.fire-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #7b241c; }
+.d-btn.active { background: #444; color: #fff; transform: scale(0.95); }
+
+/* UI */
+#overlay {
+    position: absolute; inset: 0; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    z-index: 20; color: #fff; text-align: center;
+}
+.start-btn {
+    padding: 10px 25px; background: #ffd700; border: none;
+    font-family: 'Bangers'; font-size: 1.5rem; border-radius: 5px; cursor: pointer;
+}
+</style>
 </head>
 <body>
-    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
-    <div id='game-container'>
-        <canvas id='gameCanvas'></canvas>
+
+<div id="console-case">
+    <div id="screen-wrap">
+        <div id="curtain-l" class="curtain"></div>
+        <div id="curtain-r" class="curtain"></div>
+        <canvas id="gameCanvas"></canvas>
+        <div id="overlay">
+            <h1 id="title" style="font-family: 'Bangers'; font-size: 2.5rem; color: #ffd700; margin-bottom:10px;">TIRO AO ALVO</h1>
+            <button id="main-btn" class="start-btn" onclick="initGame()">INICIAR</button>
+        </div>
     </div>
-    <script src='../scripts/core.js'></script>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let W = window.innerWidth;
-        let H = window.innerHeight;
-        canvas.width = W;
-        canvas.height = H;
 
-        // Mock de funções globais necessárias
-        window.gameActive = true;
-        window.score = 0;
-        window.rafId = null;
+    <div id="controls-area">
+        <div class="d-pad">
+            <div class="d-btn d-up" id="btn-up">▲</div>
+            <div class="d-btn d-left" id="btn-left">◀</div>
+            <div class="d-btn d-center"></div>
+            <div class="d-btn d-right" id="btn-right">▶</div>
+            <div class="d-btn d-down" id="btn-down">▼</div>
+        </div>
+
+        <div id="action-area">
+            <button class="fire-btn" id="btn-fire">ESTOURAR</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const screen = document.getElementById('screen-wrap');
+const mainBtn = document.getElementById('main-btn');
+const title = document.getElementById('title');
+
+let W, H, running = false, isTransitioning = false;
+let score = 0;
+let balloons = [], particles = [];
+let crosshair = { x: 0, y: 0 };
+const input = { up: false, down: false, left: false, right: false };
+
+function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+    crosshair.x = W/2;
+    crosshair.y = H/2;
+}
+
+const bind = (id, key) => {
+    const el = document.getElementById(id);
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); input[key] = true; el.classList.add('active'); });
+    el.addEventListener('pointerup', () => { input[key] = false; el.classList.remove('active'); });
+    el.addEventListener('pointerleave', () => { input[key] = false; el.classList.remove('active'); });
+};
+
+bind('btn-up', 'up'); bind('btn-down', 'down');
+bind('btn-left', 'left'); bind('btn-right', 'right');
+
+document.getElementById('btn-fire').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    shoot();
+});
+
+function spawnRound() {
+    balloons = [];
+    const colors = ['#ff4757', '#2e97ff', '#ffa502', '#2ed573', '#e056fd', '#feca57'];
+    // 6 Balões em duas fileiras de 3
+    for(let i=0; i<6; i++) {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        balloons.push({
+            x: (W/4) * (col + 1),
+            y: 80 + (row * 100),
+            r: 30,
+            color: colors[i],
+            active: true
+        });
+    }
+}
+
+function shoot() {
+    if(!running || isTransitioning) return;
+    let hitSomething = false;
+    balloons.forEach(b => {
+        if(!b.active) return;
+        const dist = Math.hypot(crosshair.x - b.x, crosshair.y - b.y);
+        if(dist < b.r + 10) {
+            b.active = false;
+            score += 10;
+            hitSomething = true;
+            createExplosion(b.x, b.y, b.color);
+        }
+    });
+
+    if (balloons.every(b => !b.active)) {
+        setTimeout(nextRound, 500);
+    }
+}
+
+function createExplosion(x, y, color) {
+    for(let i=0; i<15; i++) {
+        particles.push({
+            x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10,
+            life: 1, color
+        });
+    }
+}
+
+function nextRound() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    screen.classList.remove('open');
+    setTimeout(() => {
+        spawnRound();
+        screen.classList.add('open');
+        isTransitioning = false;
+    }, 1000);
+}
+
+function initGame() {
+    score = 0;
+    mainBtn.style.display = 'none';
+    title.style.display = 'none';
+    spawnRound();
+    screen.classList.add('open');
+    running = true;
+}
+
+function update() {
+    if(!running || isTransitioning) return;
+    const speed = 6;
+    if(input.up && crosshair.y > 30) crosshair.y -= speed;
+    if(input.down && crosshair.y < H - 30) crosshair.y += speed;
+    if(input.left && crosshair.x > 30) crosshair.x -= speed;
+    if(input.right && crosshair.x < W - 30) crosshair.x += speed;
+
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.04;
+        if(p.life <= 0) particles.splice(i, 1);
+    });
+}
+
+function draw() {
+    ctx.clearRect(0, 0, W, H);
+    
+    // Fundo da Tela (Cenário do Jogo)
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0,0,W,H);
+    
+    // Tábua/Suporte dos Balões (Normal como você pediu)
+    ctx.fillStyle = '#444';
+    ctx.fillRect(20, 60, W-40, 10);
+    ctx.fillRect(20, 160, W-40, 10);
+
+    if(running) {
+        balloons.forEach(b => {
+            if(!b.active) return;
+            // Balão
+            ctx.fillStyle = b.color;
+            ctx.beginPath();
+            ctx.ellipse(b.x, b.y, b.r*0.9, b.r, 0, 0, Math.PI*2);
+            ctx.fill();
+            // Brilho
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(b.x-10, b.y-10, 5, 10, 0.5, 0, Math.PI*2);
+            ctx.fill();
+        });
+
+        particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 7); ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+
+        // Mira
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(crosshair.x, crosshair.y, 20, 0, 7);
+        ctx.moveTo(crosshair.x - 30, crosshair.y); ctx.lineTo(crosshair.x + 30, crosshair.y);
+        ctx.moveTo(crosshair.x, crosshair.y - 30); ctx.lineTo(crosshair.x, crosshair.y + 30);
+        ctx.stroke();
         
-        function gBubbles(){ctrl.style.display='none';let bubbles=[],pts2=[],fr=0,spT=0,timeLeft=45,lastSec=Date.now();const addB=()=>{const r=rnd(26,50);bubbles.push({x:rnd(r+10,W-r-10),y:H+r,vy:rnd(-3.8,-1.8),r,hue:rndI(0,360),w:rnd(0,6),a:1});};for(let i=0;i<7;i++)addB();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;bubbles=bubbles.filter(b=>{if(Math.hypot(x-b.x,y-b.y)<b.r+12){addPts(5);playBeep(600+b.hue*.5,.06,'sine',.3);mkP(pts2,b.x,b.y,16,[`hsl(${b.hue},100%,70%)`,`hsl(${b.hue+30},100%,80%)`,`#fff`],7);return false;}return true;});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;if(Date.now()-lastSec>=1000){timeLeft--;lastSec=Date.now();if(timeLeft<=0){goOver();return;}}spT++;if(spT>16){spT=0;addB();}const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0a1a3a');bg.addColorStop(1,'#1a2a5a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<5;i++){ctx.strokeStyle=`rgba(100,180,255,${.04+i*.01})`;ctx.lineWidth=1;ctx.beginPath();for(let x2=0;x2<W;x2+=20)ctx.lineTo(x2,H*.6+Math.sin(x2*.05+fr*.04+i)*(20+i*5));ctx.stroke();}bubbles=bubbles.filter(b=>{b.y+=b.vy;b.x+=Math.sin(fr*.04+b.w)*.7;b.a=Math.min(1,b.a+.05);if(b.y<-b.r*2)return false;const g=ctx.createRadialGradient(b.x-b.r*.3,b.y-b.r*.3,b.r*.05,b.x,b.y,b.r);g.addColorStop(0,`hsla(${b.hue},90%,90%,.3)`);g.addColorStop(.6,`hsla(${b.hue},80%,60%,.5)`);g.addColorStop(1,`hsla(${b.hue},80%,40%,.7)`);ctx.fillStyle=g;ctx.shadowBlur=10;ctx.shadowColor=`hsl(${b.hue},100%,60%)`;ctx.globalAlpha=b.a;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.strokeStyle=`hsla(${b.hue},100%,90%,.8)`;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.ellipse(b.x-b.r*.3,b.y-b.r*.3,b.r*.3,b.r*.2,-.5,0,7);ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;return true;});pts2=tickP(pts2);ctx.fillStyle='rgba(0,0,0,.4)';ctx.fillRect(0,0,W,28);ctx.fillStyle=`hsl(${(timeLeft/45)*120},100%,55%)`;ctx.fillRect(0,0,W*(timeLeft/45),28);ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.048,14,24)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`⏱ ${timeLeft}s — ESTOURA AS BOLHAS! ⭐${score}`,W/2,20);setHUD('');}requestAnimationFrame(loop);}
+        ctx.fillStyle = '#ffd700';
+        ctx.font = '20px Bangers';
+        ctx.textAlign = 'center';
+        ctx.fillText(`PONTOS: ${score}`, W/2, 30);
+    }
 
-        // Iniciar o jogo
-        gBubbles();
-    </script>
+    update();
+    requestAnimationFrame(draw);
+}
+
+window.onload = () => { resize(); draw(); };
+</script>
 </body>
 </html>
+
