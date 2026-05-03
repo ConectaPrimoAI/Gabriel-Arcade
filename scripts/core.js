@@ -250,15 +250,18 @@ async function launchGame(id, extra){
   curGame=id;
   const game = GAMES.find(g=>g.id===id);
   const loadTxt = document.getElementById('gload-txt');
-  if(loadTxt) loadTxt.textContent='CARREGANDO '+game.nm.toUpperCase()+'…';
+  if(loadTxt) loadTxt.textContent='CARREGANDO '+(game ? game.nm.toUpperCase() : id.toUpperCase())+'…';
   
   const loader = document.getElementById('gload');
   if(loader) loader.style.display='flex';
   
   setTimeout(() => {
-    // If we are already in the games folder, don't prepend it
-    const prefix = window.location.pathname.includes('/games/') ? '' : 'games/';
-    window.location.href = prefix + id + '.html';
+    let target = id + '.html';
+    const isInsideGames = window.location.pathname.includes('/games/');
+    if (!isInsideGames) {
+      target = 'games/' + target;
+    }
+    window.location.href = target;
   }, 1000);
 }
 
