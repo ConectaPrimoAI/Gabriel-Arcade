@@ -1,0 +1,234 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Pong ⚽</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #1a1a1a;
+    --screen: #222;
+    --p1: #00d2ff;
+    --p2: #ff2e63;
+    --ui-case: #2d2d2d;
+}
+
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent; user-select: none;
+}
+
+body {
+    height: 100dvh; width: 100vw; overflow: hidden;
+    background: var(--bg); font-family: 'Fredoka', sans-serif;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+/* --- CONSOLE CASE --- */
+#console-case {
+    width: 90vw; max-width: 360px; height: 80dvh;
+    background: var(--ui-case); border-radius: 40px;
+    border: 6px solid #111; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column; padding: 15px;
+}
+
+/* --- GAME SCREEN --- */
+#screen-wrap {
+    width: 100%; aspect-ratio: 1/1.1;
+    background: var(--screen); border-radius: 15px;
+    border: 4px solid #000; overflow: hidden; position: relative;
+}
+
+canvas { width: 100%; height: 100%; display: block; }
+
+/* --- CENTERED D-PAD --- */
+#controls-area {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+}
+
+.d-pad {
+    display: grid; grid-template-columns: repeat(3, 50px);
+    grid-template-rows: repeat(3, 50px);
+    background: #222; border-radius: 10px; padding: 5px;
+    border: 2px solid #111;
+}
+
+.d-btn {
+    background: #333; border: 1px solid #444; color: #888;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; transition: 0.1s;
+}
+
+.d-up { grid-column: 2; border-radius: 8px 8px 0 0; }
+.d-down { grid-column: 2; grid-row: 3; border-radius: 0 0 8px 8px; }
+.d-left { grid-row: 2; grid-column: 1; border-radius: 8px 0 0 8px; opacity: 0.3; }
+.d-right { grid-row: 2; grid-column: 3; border-radius: 0 8px 8px 0; opacity: 0.3; }
+.d-center { grid-row: 2; grid-column: 2; background: #111; }
+
+.d-btn.active { background: var(--p1); color: #fff; transform: scale(0.95); }
+
+/* --- OVERLAY --- */
+#overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 100; color: #fff; text-align: center;
+}
+.start-btn {
+    margin-top: 15px; padding: 12px 35px; background: var(--p1);
+    border: none; border-radius: 10px; color: #000; font-weight: 700; font-size: 18px;
+}
+
+#brand {
+    margin-top: 10px; color: #444; font-size: 10px; letter-spacing: 3px; font-family: 'Orbitron';
+}
+</style>
+</head>
+<body>
+
+<div id="console-case">
+    <div id="screen-wrap">
+        <canvas id="pongCanvas"></canvas>
+        <div id="overlay">
+            <h2 id="msg">SIMPLE PONG</h2>
+            <button class="start-btn" onclick="startGame()">JOGAR</button>
+        </div>
+    </div>
+
+    <div id="controls-area">
+        <div class="d-pad">
+            <div class="d-btn d-up" id="btn-up">▲</div>
+            <div class="d-btn d-left">◀</div>
+            <div class="d-btn d-center"></div>
+            <div class="d-btn d-right">▶</div>
+            <div class="d-btn d-down" id="btn-down">▼</div>
+        </div>
+        <div id="brand">GABRIEL SYSTEM</div>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('pongCanvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const msg = document.getElementById('msg');
+
+let W, H, running = false;
+let score = { player: 0, bot: 0 };
+
+function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+}
+
+const paddleH = 60, paddleW = 8;
+let p1 = { y: 0, speed: 4.5 };
+let p2 = { y: 0, speed: 1.5 }; // Robô bem lento
+let ball = { x: 0, y: 0, vx: 0, vy: 0, r: 8 };
+
+const input = { up: false, down: false };
+
+const bind = (id, key) => {
+    const el = document.getElementById(id);
+    const start = (e) => { e.preventDefault(); input[key] = true; el.classList.add('active'); };
+    const end = () => { input[key] = false; el.classList.remove('active'); };
+    el.addEventListener('pointerdown', start);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointerleave', end);
+};
+
+bind('btn-up', 'up');
+bind('btn-down', 'down');
+
+function resetBall(dir) {
+    ball.x = W/2; ball.y = H/2;
+    ball.vx = dir * 2.5;
+    ball.vy = (Math.random() - 0.5) * 3;
+}
+
+function startGame() {
+    overlay.style.display = 'none';
+    score = { player: 0, bot: 0 };
+    p1.y = p2.y = H/2 - paddleH/2;
+    resetBall(1);
+    running = true;
+}
+
+function update() {
+    if(!running) return;
+
+    // Movimento Player
+    if(input.up && p1.y > 0) p1.y -= p1.speed;
+    if(input.down && p1.y < H - paddleH) p1.y += p1.speed;
+
+    // Robô Burro
+    let target = ball.y - paddleH/2;
+    p2.y += (target - p2.y) * 0.03; // Movimento bem atrasado
+    p2.y = Math.max(0, Math.min(H - paddleH, p2.y));
+
+    // Bola
+    ball.x += ball.vx; ball.y += ball.vy;
+
+    // Colisão Paredes
+    if(ball.y < ball.r || ball.y > H - ball.r) ball.vy *= -1;
+
+    // Colisão Raquetes
+    if(ball.vx < 0 && ball.x < 30 + paddleW && ball.y > p1.y && ball.y < p1.y + paddleH) {
+        ball.vx = Math.abs(ball.vx) * 1.05;
+        ball.vy += (ball.y - (p1.y + paddleH/2)) * 0.1;
+    }
+    if(ball.vx > 0 && ball.x > W - 30 - paddleW && ball.y > p2.y && ball.y < p2.y + paddleH) {
+        ball.vx = -Math.abs(ball.vx) * 1.05;
+        ball.vy += (ball.y - (p2.y + paddleH/2)) * 0.1;
+    }
+
+    // Gols
+    if(ball.x < 0) { score.bot++; resetBall(1); }
+    if(ball.x > W) { score.player++; resetBall(-1); }
+
+    if(score.player >= 7 || score.bot >= 7) {
+        running = false;
+        msg.innerText = score.player >= 7 ? "GANHOU!" : "PERDEU";
+        overlay.style.display = 'flex';
+    }
+}
+
+function draw() {
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0,0,W,H);
+
+    // Linha Central
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Placar
+    ctx.font = 'bold 50px Orbitron';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
+    ctx.fillText(score.player, W*0.25, H/2 + 20);
+    ctx.fillText(score.bot, W*0.75, H/2 + 20);
+
+    // Jogadores
+    ctx.fillStyle = '#00d2ff';
+    ctx.fillRect(30, p1.y, paddleW, paddleH);
+    ctx.fillStyle = '#ff2e63';
+    ctx.fillRect(W - 30 - paddleW, p2.y, paddleW, paddleH);
+
+    // Bola
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+
+    update();
+    requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+resize();
+draw();
+</script>
+</body>
+</html>
