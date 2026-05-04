@@ -1,54 +1,475 @@
+
 <!DOCTYPE html>
-<html lang='pt-br'>
+<html lang="pt-pt">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>Caça Cores - Arcade Supremo</title>
-    <link rel='stylesheet' href='../assets/style.css'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <title>Oscillators - Pro Edition Full</title>
     <style>
-        body { background: #000; margin: 0; overflow: hidden; }
-        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
-        canvas { display: block; width: 100%; height: 100%; }
-        .back-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background: rgba(0, 242, 255, 0.2);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 1000;
-            font-family: 'Orbitron', sans-serif;
-            text-decoration: none;
-            font-size: 12px;
+        :root {
+            --bg-start: #0a0a1a;
+            --bg-end: #000000;
+            --ui-text: rgba(255, 255, 255, 0.9);
+            --control-bg: rgba(15, 15, 25, 0.95);
+            --accent: #2196F3;
         }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            -webkit-user-select: none;
+            user-select: none;
+            font-family: -apple-system, system-ui, sans-serif;
+        }
+
+        #container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            touch-action: none;
+        }
+
+        #bg-canvas { z-index: 0; opacity: 0.3; }
+
+        #ui-overlay {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            z-index: 10;
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+        }
+
+        #freq-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--ui-text);
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        /* --- CONTROLO MOBILE --- */
+        #controls-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(calc(100% - 50px)); 
+        }
+
+        #controls-wrapper.expanded {
+            transform: translateY(0);
+        }
+
+        #drawer-handle {
+            width: 140px;
+            height: 50px;
+            background: var(--control-bg);
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #drawer-handle::after {
+            content: '';
+            width: 45px;
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        #controls {
+            width: 100%;
+            background: var(--control-bg);
+            padding: 25px 15px calc(30px + env(safe-area-inset-bottom, 10px)) 15px;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px);
+        }
+
+        .osc-button {
+            aspect-ratio: 1/1;
+            border-radius: 18px;
+            border: none;
+            background: rgba(255,255,255,0.06);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 12px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .osc-button svg { width: 100%; height: 100%; pointer-events: none; }
+        .osc-button.active {
+            background: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+            transform: scale(1.1);
+        }
+
+        /* Temas de Cores */
+        .osc-button[data-type="sine"].active { --accent: #4285F4; }
+        .osc-button[data-type="triangle"].active { --accent: #E91E63; }
+        .osc-button[data-type="sawtooth"].active { --accent: #FFC107; }
+        .osc-button[data-type="square"].active { --accent: #4CAF50; }
+        .osc-button[data-type="noise"].active { --accent: #9C27B0; }
+        .osc-button[data-type="kick"].active, .osc-button[data-type="snare"].active, .osc-button[data-type="hihat"].active { --accent: #FF5722; }
+
     </style>
 </head>
 <body>
-    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
-    <div id='game-container'>
-        <canvas id='gameCanvas'></canvas>
-    </div>
-    <script src='../scripts/core.js'></script>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let W = window.innerWidth;
-        let H = window.innerHeight;
-        canvas.width = W;
-        canvas.height = H;
-
-        // Mock de funções globais necessárias
-        window.gameActive = true;
-        window.score = 0;
-        window.rafId = null;
+    <div id="container">
+        <canvas id="bg-canvas"></canvas>
+        <canvas id="canvas"></canvas>
         
-        function gColors(){ctrl.style.display='none';const COLS2=[{n:'VERMELHO',h:'#ff3333',e:'🔴'},{n:'AZUL',h:'#3388ff',e:'🔵'},{n:'VERDE',h:'#33cc44',e:'🟢'},{n:'AMARELO',h:'#ffcc00',e:'🟡'},{n:'ROXO',h:'#aa44ff',e:'🟣'},{n:'LARANJA',h:'#ff8800',e:'🟠'}];let target=null,opts=[],streak=0,pts2=[],fr=0,cel=0;const CS=Math.min(W*.44,170);const POS=[[W*.08,H*.52],[W*.52,H*.52],[W*.08,H*.78],[W*.52,H*.78]];function newR(){target=COLS2[rndI(0,COLS2.length-1)];const pool=[target];while(pool.length<4){const c=COLS2[rndI(0,COLS2.length-1)];if(!pool.find(p=>p.n===c.n))pool.push(c);}opts=pool.sort(()=>Math.random()-.5);}newR();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;opts.forEach((c,i)=>{const[px,py]=POS[i];if(x>px&&x<px+CS&&y>py&&y<py+CS*.7){if(c.n===target.n){addPts(10*(streak+1));streak++;cel=60;playBeep(880,.1,'sine',.4);mkP(pts2,px+CS/2,py+CS*.35,20,['#ff0','#f0f','#0ff','#0f0'],8);setTimeout(newR,480);}else{streak=0;playBeep(200,.15,'sawtooth',.3);mkP(pts2,px+CS/2,py+CS*.35,10,['#f33'],5);}}});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#1a0a3a');bg.addColorStop(1,'#0a1a3a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<20;i++){ctx.fillStyle=`hsl(${(i*30+fr*3)%360},100%,70%)`;ctx.beginPath();ctx.arc(((i*137.5+fr*.5)%W),(i*73.9%H*.45),2+Math.sin(fr*.1+i)*1,0,7);ctx.fill();}ctx.font=`bold ${clamp(W*.075,24,46)}px Fredoka`;ctx.textAlign='center';ctx.fillStyle='#fff';ctx.shadowBlur=8;ctx.shadowColor='#fff';ctx.fillText('TOQUE NA COR:',W/2,H*.1);ctx.shadowBlur=0;if(target){ctx.fillStyle=target.h;ctx.shadowBlur=18;ctx.shadowColor=target.h;ctx.beginPath();ctx.roundRect(W*.22,H*.14,W*.56,H*.2,18);ctx.fill();ctx.shadowBlur=0;ctx.font=`bold ${clamp(W*.065,20,40)}px Fredoka`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(target.e+' '+target.n,W/2,H*.27);}opts.forEach((c,i)=>{const[px,py]=POS[i];ctx.fillStyle=c.h;ctx.shadowBlur=7;ctx.shadowColor=c.h;ctx.beginPath();ctx.roundRect(px,py,CS,CS*.7,14);ctx.fill();ctx.shadowBlur=0;ctx.font=`bold ${clamp(CS*.13,13,22)}px Fredoka`;ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(c.e,px+CS/2,py+CS*.45);});if(cel>0){cel--;ctx.fillStyle=`rgba(255,255,255,${cel/120})`;ctx.fillRect(0,0,W,H);ctx.font=`bold ${clamp(W*.1,34,58)}px Fredoka`;ctx.textAlign='center';ctx.shadowBlur=20;ctx.shadowColor='#ffdd00';ctx.fillStyle='#ffdd00';ctx.fillText('🎉 CERTO!',W/2,H/2);ctx.shadowBlur=0;}if(streak>1){ctx.fillStyle='#ffcc00';ctx.font=`bold ${clamp(W*.044,15,26)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`🔥 ${streak} SEGUIDOS!`,W/2,H*.47);}pts2=tickP(pts2);setHUD(`⭐ ${score} 🎯 ${streak}`);}requestAnimationFrame(loop);}
+        <div id="ui-overlay">
+            <div id="freq-display">Toca para Brincar</div>
+        </div>
 
-        // Iniciar o jogo
-        gColors();
+        <div id="controls-wrapper">
+            <div id="drawer-handle" onclick="toggleDrawer()"></div>
+            <div id="controls">
+                <button class="osc-button active" data-type="sine"><svg viewBox="0 0 100 50"><path d="M0 25 C 20 0, 30 0, 50 25 C 70 50, 80 50, 100 25" stroke="currentColor" stroke-width="8" fill="none"/></svg></button>
+                <button class="osc-button" data-type="triangle"><svg viewBox="0 0 100 50"><path d="M0 40 L 25 10 L 75 40 L 100 10" stroke="currentColor" stroke-width="8" fill="none"/></svg></button>
+                <button class="osc-button" data-type="sawtooth"><svg viewBox="0 0 100 50"><path d="M0 40 L 50 10 L 50 40 L 100 10" stroke="currentColor" stroke-width="8" fill="none"/></svg></button>
+                <button class="osc-button" data-type="square"><svg viewBox="0 0 100 50"><path d="M0 40 L 0 10 L 50 10 L 50 40 L 100 40 L 100 10" stroke="currentColor" stroke-width="8" fill="none"/></svg></button>
+                <button class="osc-button" data-type="noise"><svg viewBox="0 0 100 50"><path d="M0 25 L 10 35 L 20 15 L 30 40 L 40 10 L 50 30 L 60 20 L 70 45 L 80 5 L 90 35 L 100 25" stroke="currentColor" stroke-width="4" fill="none"/></svg></button>
+                <button class="osc-button" data-type="kick"><svg viewBox="0 0 100 50"><circle cx="50" cy="25" r="15" stroke="currentColor" stroke-width="6" fill="none"/><circle cx="50" cy="25" r="5" fill="currentColor"/></svg></button>
+                <button class="osc-button" data-type="snare"><svg viewBox="0 0 100 50"><path d="M30 10 L 70 40 M 70 10 L 30 40" stroke="currentColor" stroke-width="8" fill="none"/></svg></button>
+                <button class="osc-button" data-type="hihat"><svg viewBox="0 0 100 50"><path d="M20 15 H 80 M 20 25 H 80 M 20 35 H 80" stroke="currentColor" stroke-width="4" fill="none"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const COLORS = {
+            sine: '#4285F4', triangle: '#E91E63', sawtooth: '#FFC107', 
+            square: '#4CAF50', noise: '#9C27B0', kick: '#FF5722', snare: '#FF9800', hihat: '#00BCD4'
+        };
+
+        let audioCtx, masterGain, analyzer;
+        let isPlaying = false;
+        let currentType = 'sine';
+        let currentFreq = 440;
+        let voices = [];
+        let noiseBuffer = null;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const freqDisplay = document.getElementById('freq-display');
+        const wrapper = document.getElementById('controls-wrapper');
+
+        // --- Personagem Elástico ---
+        const character = {
+            x: 0, y: 0,
+            baseWidth: 140, baseHeight: 140,
+            scaleX: 1, scaleY: 1,
+            rotation: 0,
+            blink: 0,
+            eyeDistance: 30,
+            update: function(freq, intensity) {
+                this.x = canvas.width / 2;
+                this.y = canvas.height / 2;
+                
+                // Mapeamento da Deformação (Esticar)
+                // Se freq é alta (>1000), scaleY sobe e scaleX desce
+                // Se freq é baixa (<200), scaleY desce e scaleX sobe
+                let freqFactor = Math.log2(freq / 440) * 0.4; // Ajuste suave
+                let targetY = 1.0 + freqFactor;
+                let targetX = 1.0 - (freqFactor * 0.5);
+
+                // Limites para não deformar excessivamente
+                targetY = Math.min(Math.max(targetY, 0.4), 2.2);
+                targetX = Math.min(Math.max(targetX, 0.5), 1.8);
+
+                // Vibração por intensidade (Volume)
+                const bounce = intensity * 0.8;
+                targetY += bounce;
+                targetX += bounce * 0.3;
+
+                // Suavização (Lerp)
+                this.scaleY += (targetY - this.scaleY) * 0.15;
+                this.scaleX += (targetX - this.scaleX) * 0.15;
+
+                this.rotation = Math.sin(Date.now() * 0.004) * 0.06;
+                if (Math.random() > 0.992) this.blink = 8;
+                if (this.blink > 0) this.blink--;
+            },
+            draw: function(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.scaleX, this.scaleY);
+                ctx.rotate(this.rotation);
+
+                // Corpo do Boneco
+                ctx.fillStyle = COLORS[currentType];
+                ctx.beginPath();
+                ctx.roundRect(-70, -70, 140, 140, 40);
+                ctx.fill();
+                
+                // Brilho/Borda
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 4 / Math.max(this.scaleX, this.scaleY);
+                ctx.stroke();
+
+                // Olhos
+                if (this.blink < 1) {
+                    ctx.fillStyle = 'white';
+                    ctx.beginPath();
+                    ctx.arc(-this.eyeDistance, -20, 14, 0, Math.PI * 2);
+                    ctx.arc(this.eyeDistance, -20, 14, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Pupilas que seguem levemente a rotação
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(-this.eyeDistance, -20, 6, 0, Math.PI * 2);
+                    ctx.arc(this.eyeDistance, -20, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.eyeDistance - 10, -20); ctx.lineTo(-this.eyeDistance + 10, -20);
+                    ctx.moveTo(this.eyeDistance - 10, -20); ctx.lineTo(this.eyeDistance + 10, -20);
+                    ctx.stroke();
+                }
+
+                // Boca reativa ao volume
+                const mouthOpen = isPlaying ? 25 : 4;
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(-25, 25);
+                ctx.quadraticCurveTo(0, 25 + mouthOpen, 25, 25);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        };
+
+        function toggleDrawer() {
+            wrapper.classList.toggle('expanded');
+        }
+
+        // --- Motor de Áudio ---
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.3;
+            analyzer = audioCtx.createAnalyser();
+            analyzer.fftSize = 256;
+            masterGain.connect(analyzer);
+            analyzer.connect(audioCtx.destination);
+
+            // Pré-gerar Ruído Branco
+            const bufferSize = audioCtx.sampleRate * 2;
+            noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+        }
+
+        function playVoice(freq) {
+            initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            stopSound();
+
+            const types = {
+                kick: () => playDrum('kick'),
+                snare: () => playDrum('snare'),
+                hihat: () => playDrum('hihat'),
+                noise: () => playNoise(freq)
+            };
+
+            if (types[currentType]) {
+                types[currentType]();
+            } else {
+                const osc = audioCtx.createOscillator();
+                osc.type = currentType;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.connect(masterGain);
+                osc.start();
+                voices.push(osc);
+            }
+            isPlaying = true;
+        }
+
+        function playDrum(drum) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(masterGain);
+
+            if (drum === 'kick') {
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            } else if (drum === 'snare') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                // Adiciona ruído ao snare
+                playNoise(600, 0.2);
+            } else if (drum === 'hihat') {
+                playNoise(8000, 0.1, 0.05);
+                return; // Hi-hat é só ruído filtrado
+            }
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.5);
+            voices.push(osc);
+        }
+
+        function playNoise(freq, duration = 0, customGain = 0.5) {
+            const source = audioCtx.createBufferSource();
+            source.buffer = noiseBuffer;
+            source.loop = (duration === 0);
+            
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = freq;
+            filter.Q.value = 5;
+
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(customGain, audioCtx.currentTime);
+
+            source.connect(filter);
+            filter.connect(g);
+            g.connect(masterGain);
+            
+            source.start();
+            if (duration > 0) {
+                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                source.stop(audioCtx.currentTime + duration);
+            }
+            voices.push(source, filter);
+        }
+
+        function stopSound() {
+            voices.forEach(v => { try { if(v.stop) v.stop(); v.disconnect(); } catch(e){} });
+            voices = [];
+            isPlaying = false;
+        }
+
+        // --- Gestão de Input ---
+        function handleMove(e) {
+            const touch = e.touches ? e.touches[0] : e;
+            const rect = canvas.getBoundingClientRect();
+            const y = touch.clientY - rect.top;
+            
+            currentFreq = Math.pow(2, (1 - y / canvas.height) * 8.5) + 40;
+            freqDisplay.innerText = `${Math.round(currentFreq)} Hz`;
+
+            if (isPlaying) {
+                voices.forEach(v => { 
+                    if(v.frequency && v instanceof OscillatorNode) {
+                        v.frequency.setTargetAtTime(currentFreq, audioCtx.currentTime, 0.06); 
+                    }
+                    if(v instanceof BiquadFilterNode) {
+                        v.frequency.setTargetAtTime(currentFreq, audioCtx.currentTime, 0.06);
+                    }
+                });
+            }
+        }
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (wrapper.classList.contains('expanded')) wrapper.classList.remove('expanded');
+            handleMove(e);
+            playVoice(currentFreq);
+        });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); });
+        canvas.addEventListener('touchend', stopSound);
+
+        document.querySelectorAll('.osc-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.osc-button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentType = btn.dataset.type;
+                setTimeout(() => wrapper.classList.remove('expanded'), 350);
+            });
+        });
+
+        // --- Ciclo de Renderização ---
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bgCtx.fillStyle = 'rgba(0,0,0,0.18)';
+            bgCtx.fillRect(0,0,bgCanvas.width, bgCanvas.height);
+
+            let intensity = 0;
+            if (analyzer && isPlaying) {
+                const data = new Uint8Array(analyzer.frequencyBinCount);
+                analyzer.getByteFrequencyData(data);
+                intensity = (data.reduce((a,b) => a+b) / data.length) / 255;
+            }
+
+            character.update(currentFreq, intensity);
+            character.draw(ctx);
+
+            if (isPlaying && analyzer) {
+                const data = new Uint8Array(analyzer.frequencyBinCount);
+                analyzer.getByteTimeDomainData(data);
+                ctx.strokeStyle = COLORS[currentType];
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                const step = canvas.width / data.length;
+                for(let i=0; i<data.length; i++) {
+                    const x = i * step;
+                    const y = (data[i] / 128) * (canvas.height/10) + (canvas.height*0.88);
+                    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+                }
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(draw);
+        }
+        draw();
     </script>
 </body>
 </html>
+
