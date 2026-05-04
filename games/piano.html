@@ -1,54 +1,312 @@
+
 <!DOCTYPE html>
-<html lang='pt-br'>
+<html lang="pt-br">
 <head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'>
-    <title>Piano Kids - Arcade Supremo</title>
-    <link rel='stylesheet' href='../assets/style.css'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+    <title>Piano Kids 🎹</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #000; margin: 0; overflow: hidden; }
-        #game-container { width: 100vw; height: 100vh; display: flex; flex-direction: column; }
-        canvas { display: block; width: 100%; height: 100%; }
-        .back-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background: rgba(0, 242, 255, 0.2);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            border-radius: 5px;
+        :root {
+            --bg: #0f172a;
+            --key-white: #ffffff;
+            --key-shadow: #e2e8f0;
+            --accent: #f43f5e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: var(--bg);
+            font-family: 'Fredoka', sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #ui-header {
+            height: 15vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            z-index: 10;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: clamp(1.2rem, 5vw, 2.5rem);
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+        }
+
+        .hint {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.8rem;
+        }
+
+        #piano-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 10px;
+        }
+
+        #gc {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: #1e293b;
+        }
+
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .btn-round {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            z-index: 1000;
-            font-family: 'Orbitron', sans-serif;
-            text-decoration: none;
-            font-size: 12px;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
 <body>
-    <a href='../index.html' class='back-btn'>⬅ VOLTAR</a>
-    <div id='game-container'>
-        <canvas id='gameCanvas'></canvas>
-    </div>
-    <script src='../scripts/core.js'></script>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let W = window.innerWidth;
-        let H = window.innerHeight;
-        canvas.width = W;
-        canvas.height = H;
 
-        // Mock de funções globais necessárias
-        window.gameActive = true;
-        window.score = 0;
-        window.rafId = null;
+<div id="controls">
+    <div class="btn-round" onclick="location.reload()">↺</div>
+</div>
+
+<div id="ui-header">
+    <h1>🎹 PIANO KIDS</h1>
+    <p class="hint">Toca para ouvires as notas!</p>
+</div>
+
+<div id="piano-container">
+    <canvas id="gc"></canvas>
+</div>
+
+<script>
+    'use strict';
+
+    // Configurações de Áudio
+    let _ac = null;
+    const getAC = () => {
+        if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+        if (_ac.state === 'suspended') _ac.resume();
+        return _ac;
+    };
+
+    const playNote = (freq) => {
+        const ac = getAC();
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
         
-        function gPiano(){ctrl.style.display='none';const NOTES=[{n:'Dó',f:261,c:'#ff4444'},{n:'Ré',f:294,c:'#ff8800'},{n:'Mi',f:330,c:'#ffcc00'},{n:'Fá',f:349,c:'#44cc44'},{n:'Sol',f:392,c:'#4488ff'},{n:'Lá',f:440,c:'#8844ff'},{n:'Si',f:494,c:'#ff44aa'},{n:'Dó²',f:523,c:'#ff4444'}];let pressed={},pts2=[],fr=0;const KW=Math.floor(W*.95/NOTES.length),KH=Math.floor(H*.55),KX=(W-KW*NOTES.length)/2,KY=H*.22;function play(f,c,x,y){try{const ac2=getAC();const o=ac2.createOscillator(),g=ac2.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.6,ac2.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac2.currentTime+.85);o.connect(g);g.connect(ac2.destination);o.start();o.stop(ac2.currentTime+.85);}catch(e){}mkP(pts2,x,y,12,[c,'#fff','#ffff88'],6);}canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;NOTES.forEach((n,i)=>{const kx=KX+i*KW,ky=KY;if(x>kx&&x<kx+KW&&y>ky&&y<ky+KH){pressed[i]=true;play(n.f,n.c,kx+KW/2,ky+KH/2);}});});canvas.addEventListener('pointerup',()=>{for(const k in pressed)pressed[k]=false;});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#1a0a2a');bg.addColorStop(.5,'#0a1a2a');bg.addColorStop(1,'#0a2a1a');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<8;i++){ctx.fillStyle=`hsl(${(i*45+fr*2)%360},100%,70%)`;ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText('♪',((i*120+fr*.8)%W),(i*50+40+Math.sin(fr*.04+i)*10)%(H*.18));}ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.07,20,38)}px Fredoka`;ctx.textAlign='center';ctx.shadowBlur=10;ctx.shadowColor='#ffaa00';ctx.fillText('🎹 PIANO KIDS',W/2,H*.11);ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.5)';ctx.font=`${clamp(W*.04,11,18)}px Fredoka`;ctx.fillText('TOQUE NAS TECLAS!',W/2,H*.17);NOTES.forEach((n,i)=>{const kx=KX+i*KW,ky=KY,isP=pressed[i];ctx.shadowBlur=isP?20:6;ctx.shadowColor=n.c;const g=ctx.createLinearGradient(kx,ky,kx,ky+KH);g.addColorStop(0,isP?'#fff':n.c);g.addColorStop(1,isP?n.c+'88':'#000a');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(kx+2,ky+(isP?8:0),KW-4,KH-(isP?8:0),10);ctx.fill();ctx.fillStyle='rgba(255,255,255,.2)';ctx.beginPath();ctx.roundRect(kx+4,ky+(isP?10:2),KW-8,16,5);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.font=`bold ${clamp(KW*.32,10,19)}px Fredoka`;ctx.textAlign='center';ctx.fillText(n.n,kx+KW/2,ky+KH*.8+(isP?8:0));});pts2=tickP(pts2);setHUD('🎹 PIANO');}requestAnimationFrame(loop);}
+        osc.type = 'triangle'; 
+        osc.frequency.setValueAtTime(freq, ac.currentTime);
+        
+        gain.gain.setValueAtTime(0, ac.currentTime);
+        gain.gain.linearRampToValueAtTime(0.4, ac.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1);
+        
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        
+        osc.start();
+        osc.stop(ac.currentTime + 1);
+    };
 
-        // Iniciar o jogo
-        gPiano();
-    </script>
+    const NOTES = [
+        { n: 'Dó', f: 261.63, c: '#FF4D4D' },
+        { n: 'Ré', f: 293.66, c: '#FF944D' },
+        { n: 'Mi', f: 329.63, c: '#FFDB4D' },
+        { n: 'Fá', f: 349.23, c: '#4DFF4D' },
+        { n: 'Sol', f: 392.00, c: '#4DFFFF' },
+        { n: 'Lá', f: 440.00, c: '#4D4DFF' },
+        { n: 'Si', f: 493.88, c: '#B34DFF' },
+        { n: 'Dó²', f: 523.25, c: '#FF4DFF' }
+    ];
+
+    const canvas = document.getElementById('gc');
+    const ctx = canvas.getContext('2d');
+    let W, H, keyW, keyH, startX;
+    let activePointers = new Map();
+    let particles = [];
+
+    // Função compatível para desenhar retângulos arredondados
+    function drawRoundedRect(x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+
+    function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        W = canvas.clientWidth;
+        H = canvas.clientHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        
+        keyW = Math.min(W / NOTES.length, 120);
+        keyH = H * 0.85;
+        startX = (W - (keyW * NOTES.length)) / 2;
+    }
+
+    window.addEventListener('resize', resize);
+
+    class Particle {
+        constructor(x, y, col) {
+            this.x = x;
+            this.y = y;
+            this.col = col;
+            this.vx = (Math.random() - 0.5) * 8;
+            this.vy = (Math.random() - 0.5) * 8 - 5;
+            this.life = 1;
+            this.r = Math.random() * 6 + 2;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vy += 0.2;
+            this.life -= 0.02;
+        }
+        draw() {
+            ctx.globalAlpha = this.life;
+            ctx.fillStyle = this.col;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    function getKeyAt(x, y) {
+        if (y < 0 || y > keyH) return -1;
+        const index = Math.floor((x - startX) / keyW);
+        if (index >= 0 && index < NOTES.length) return index;
+        return -1;
+    }
+
+    const handlePointer = (e, isDown) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const keyIdx = getKeyAt(x, y);
+        
+        if (keyIdx !== -1) {
+            if (isDown) {
+                if (activePointers.get(e.pointerId) !== keyIdx) {
+                    activePointers.set(e.pointerId, keyIdx);
+                    playNote(NOTES[keyIdx].f);
+                    for(let i=0; i<12; i++) particles.push(new Particle(x, y, NOTES[keyIdx].c));
+                }
+            } else {
+                activePointers.delete(e.pointerId);
+            }
+        } else {
+            activePointers.delete(e.pointerId);
+        }
+    };
+
+    canvas.addEventListener('pointerdown', e => handlePointer(e, true));
+    canvas.addEventListener('pointermove', e => {
+        if (e.buttons > 0) handlePointer(e, true);
+    });
+    canvas.addEventListener('pointerup', e => activePointers.delete(e.pointerId));
+    canvas.addEventListener('pointercancel', e => activePointers.delete(e.pointerId));
+    canvas.addEventListener('pointerleave', e => activePointers.delete(e.pointerId));
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+        
+        const activeKeys = new Set(activePointers.values());
+
+        // Desenhar teclas
+        NOTES.forEach((note, i) => {
+            const x = startX + i * keyW;
+            const isActive = activeKeys.has(i);
+            const radius = 15;
+            
+            ctx.save();
+            
+            // Sombra e Brilho
+            ctx.shadowBlur = isActive ? 25 : 8;
+            ctx.shadowColor = isActive ? note.c : 'rgba(0,0,0,0.3)';
+            
+            // Tecla
+            const grad = ctx.createLinearGradient(x, 0, x, keyH);
+            grad.addColorStop(0, isActive ? note.c : '#ffffff');
+            grad.addColorStop(1, isActive ? '#ffffff' : '#e2e8f0');
+            
+            ctx.fillStyle = grad;
+            drawRoundedRect(x + 4, isActive ? 20 : 5, keyW - 8, keyH - (isActive ? 20 : 5), radius);
+            ctx.fill();
+
+            // Texto
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = isActive ? '#fff' : '#475569';
+            ctx.font = 'bold 18px Fredoka';
+            ctx.textAlign = 'center';
+            ctx.fillText(note.n, x + keyW/2, keyH - 30);
+            
+            // Ponto colorido
+            ctx.fillStyle = note.c;
+            ctx.beginPath();
+            ctx.arc(x + keyW/2, keyH - 60, 6, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.restore();
+        });
+
+        // Partículas
+        particles = particles.filter(p => p.life > 0);
+        particles.forEach(p => {
+            p.update();
+            p.draw();
+        });
+
+        requestAnimationFrame(animate);
+    }
+
+    // Inicialização segura
+    window.onload = () => {
+        resize();
+        animate();
+    };
+</script>
 </body>
 </html>
+
