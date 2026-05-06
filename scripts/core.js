@@ -41,7 +41,7 @@ function playClickSound(){
 }
 
 let _playedWelcome = false;
-function playWelcomeVoice(){
+function playWelcomeVoice(){ if(_playedWelcome) return; _playedWelcome = true; try { const isInsideGames = window.location.pathname.includes("/games/"); const audioPath = (isInsideGames ? "../" : "") + "assets/sounds/welcome.mp3"; const audio = new Audio(audioPath); audio.volume = 1; audio.play().catch(e => console.warn("Falha ao tocar áudio de boas-vindas:", e)); } catch(e) { console.error("Erro ao processar áudio de boas-vindas:", e); } }
   if(!window.speechSynthesis || _playedWelcome) return;
   _playedWelcome = true;
   window.speechSynthesis.cancel();
