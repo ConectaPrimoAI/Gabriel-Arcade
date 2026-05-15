@@ -41,34 +41,18 @@ function playClickSound(){
 }
 
 let _playedWelcome = false;
-function playWelcomeVoice(){ if(_playedWelcome) return; _playedWelcome = true; try { const isInsideGames = window.location.pathname.includes("/games/"); const audioPath = (isInsideGames ? "../" : "") + "assets/sounds/welcome.mp3"; const audio = new Audio(audioPath); audio.volume = 1; audio.play().catch(e => console.warn("Falha ao tocar áudio de boas-vindas:", e)); } catch(e) { console.error("Erro ao processar áudio de boas-vindas:", e); } }
-  if(!window.speechSynthesis || _playedWelcome) return;
+function playWelcomeVoice(){
+  if(_playedWelcome) return;
   _playedWelcome = true;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance('Bem-vindo de volta, Gabriel! Estava te esperando. Vamos brincar!');
-  utter.lang = 'pt-BR';
-  utter.rate = 1.15;
-  utter.pitch = 1.02;
-  utter.volume = 1;
-
-  const chooseAndSpeak = () => {
-    const voices = window.speechSynthesis.getVoices() || [];
-    const pref =
-      voices.find(v => /google.*pt-?br/i.test(v.name) || /pt-?br/i.test(v.name) && /google/i.test(v.name)) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt-br') && /natural|premium|google/i.test(v.name)) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt-br')) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt')) ||
-      voices[0];
-    if(pref) utter.voice = pref;
-    try { window.speechSynthesis.speak(utter); } catch(e){}
-  };
-
-  if(window.speechSynthesis.getVoices().length > 0){
-    chooseAndSpeak();
-  } else {
-    const onVoices = () => { chooseAndSpeak(); window.speechSynthesis.removeEventListener('voiceschanged', onVoices); };
-    window.speechSynthesis.addEventListener('voiceschanged', onVoices);
-    setTimeout(() => { if(!utter.voice) chooseAndSpeak(); }, 600);
+  
+  try {
+    const isInsideGames = window.location.pathname.includes('/games/');
+    const audioPath = (isInsideGames ? '../' : '') + 'assets/sounds/welcome.mp3';
+    const audio = new Audio(audioPath);
+    audio.volume = 1;
+    audio.play().catch(e => console.warn('Falha ao tocar áudio de boas-vindas:', e));
+  } catch(e) {
+    console.error('Erro ao processar áudio de boas-vindas:', e);
   }
 }
 
