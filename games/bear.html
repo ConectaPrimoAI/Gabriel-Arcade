@@ -2,186 +2,140 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Bear Adventure - Versão Fiel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Bear Adventure - Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; overflow: hidden; }
-        body { background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%); display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif; }
-        #gameCanvas { border: 4px solid #8B4513; border-radius: 12px; background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%); box-shadow: 0 0 25px rgba(0,0,0,0.3); }
-        .ui { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); color: white; font-weight: bold; font-size: 20px; display: flex; gap: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .controles { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 16px; background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 8px; }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #1e3a1e;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 3px 3px 0px #4a2c11, -1px -1px 0px #4a2c11, 1px -1px 0px #4a2c11, -1px 1px 0px #4a2c11;
+        }
+        .wood-board {
+            background: linear-gradient(135deg, #8b5a2b 0%, #5c3818 100%);
+            box-shadow: inset 0 4px 0 #b37d45, inset 0 -4px 0 #3d230d, 0 10px 20px rgba(0,0,0,0.4);
+            border: 4px solid #3d230d;
+        }
+        @keyframes bear-breathing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .anim-bear { animation: bear-breathing 3s ease-in-out infinite; }
+        
+        .play-btn {
+            background: linear-gradient(180deg, #ff9e00 0%, #e85d04 100%);
+            box-shadow: 0 5px 0 #bc3908, 0 10px 20px rgba(232, 93, 4, 0.3);
+            transition: all 0.1s ease-in-out;
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 1px 1px 0px #6a040f;
+        }
+        .play-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 0px 0 #bc3908, 0 2px 5px rgba(232, 93, 4, 0.2);
+        }
     </style>
 </head>
-<body>
-    <div class="ui">
-        <div>🍯 Moedas: <span id="moedas">0</span></div>
-        <div>❤️ Vidas: <span id="vidas">3</span></div>
+<body class="relative min-h-screen flex flex-col justify-between p-4">
+
+    <div class="absolute inset-0 bg-gradient-to-b from-[#4facfe] to-[#86f3b8] -z-20"></div>
+
+    <div class="absolute inset-x-0 bottom-0 h-1/2 pointer-events-none -z-10 opacity-40">
+        <svg class="absolute bottom-0 w-full h-48 text-[#136852] fill-current" preserveAspectRatio="none" viewBox="0 0 1440 320">
+            <path d="M0,160L240,224L480,128L720,256L960,192L1200,288L1440,160L1440,320L1200,320L960,320L720,320L480,320L240,320L0,320Z"></path>
+        </svg>
     </div>
 
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <header class="w-full pt-6 flex flex-col items-center z-10 text-center">
+        <h1 class="title-font text-4xl md:text-6xl text-amber-100 uppercase tracking-wide drop-shadow">
+            Super Bear<br>
+            <span class="text-yellow-400 text-5xl md:text-7xl">Adventure</span>
+        </h1>
+    </header>
 
-    <div class="controles">
-        ← → mover | Espaço pular | ↑ interagir
-    </div>
+    <main class="w-full max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8 z-20 my-auto">
+        
+        <div class="relative w-48 h-48 md:w-64 md:h-64 flex justify-center items-end anim-bear">
+            <div class="absolute w-36 h-6 bg-black/20 rounded-full bottom-0 blur-sm"></div>
+            <div class="relative w-44 h-44 flex flex-col items-center">
+                <div class="absolute top-0 left-4 w-12 h-12 bg-[#633a17] rounded-full border-4 border-[#3d230d]"></div>
+                <div class="absolute top-0 right-4 w-12 h-12 bg-[#633a17] rounded-full border-4 border-[#3d230d]"></div>
+                <div class="absolute top-4 w-36 h-32 bg-[#7a491e] rounded-[35px] border-4 border-[#3d230d] flex flex-col items-center pt-6 shadow-md">
+                    <div class="flex gap-6">
+                        <div class="w-6 h-9 bg-white rounded-full border-2 border-black relative overflow-hidden">
+                            <div class="absolute top-2 right-0.5 w-3 h-4 bg-black rounded-full"></div>
+                        </div>
+                        <div class="w-6 h-9 bg-white rounded-full border-2 border-black relative overflow-hidden">
+                            <div class="absolute top-2 right-0.5 w-3 h-4 bg-black rounded-full"></div>
+                        </div>
+                    </div>
+                    <div class="w-24 h-14 bg-[#cca370] rounded-[20px] border-2 border-[#3d230d] mt-1 flex flex-col items-center pt-1">
+                        <div class="w-8 h-4 bg-black rounded-full"></div>
+                        <div class="w-10 h-2 border-b-2 border-black rounded-b-full mt-1"></div>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-36 h-12 bg-[#633a17] rounded-t-[30px] border-x-4 border-t-4 border-[#3d230d]"></div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-sm flex flex-col items-center">
+            <div class="wood-board w-full rounded-2xl p-6 text-center flex flex-col items-center gap-4">
+                <div class="text-amber-100">
+                    <span class="text-xs uppercase tracking-widest font-bold text-amber-200">Portal de Entrada</span>
+                    <h2 class="title-font text-2xl mt-1 text-yellow-300">PRONTO PARA JOGAR?</h2>
+                </div>
+
+                <button onclick="openSuperBearApp()" class="play-btn w-full py-4 px-6 rounded-xl text-xl text-white font-extrabold uppercase tracking-wide cursor-pointer flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-gamepad"></i>
+                    <span>ABRIR JOGO</span>
+                </button>
+
+                <div class="text-amber-200/80 text-[11px] font-semibold bg-[#3d230d]/40 w-full py-1.5 rounded-lg border border-amber-950">
+                    <i class="fa-solid fa-mobile-screen-button mr-1"></i> Executa o app nativo
+                </div>
+            </div>
+            <div class="w-8 h-10 bg-amber-950 border-x-4 border-[#3d230d] shadow-xl"></div>
+        </div>
+    </main>
+
+    <footer class="w-full text-center text-amber-950 font-bold text-xs z-10 opacity-70">
+        <p>© 2026 Super Bear Adventure Portal.</p>
+    </footer>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+        function openSuperBearApp() {
+            // ID oficial do pacote do Super Bear Adventure no Android
+            const packageId = "com.Baury.SuperBearAdventure";
+            
+            // Monta a Intent específica para o ecossistema Android / Chrome.
+            // Essa sintaxe força o celular a procurar o app instalado. 
+            // Se encontrar, abre. Se não encontrar, o 'browser_fallback_url' joga para a página da Play Store automaticamente.
+            const androidIntent = `intent://launch#Intent;scheme=android-app;package=${packageId};S.browser_fallback_url=https://play.google.com/store/apps/details?id=${packageId};end`;
 
-        // Configurações gerais
-        const gravidade = 0.6;
-        const atrito = 0.8;
+            // Detecta se o usuário está acessando por um dispositivo iOS (iPhone/iPad)
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
-        // 🔹 Personagem - Urso
-        const urso = {
-            x: 80, y: 350, largura: 40, altura: 50,
-            velX: 0, velY: 0, velocidade: 5, forcaPulo: -14,
-            noChao: false, virado: 1, cor: '#D2691E'
-        };
-
-        // 🔹 Teclas
-        const teclas = { esquerda: false, direita: false, pular: false };
-
-        // 🔹 Plataformas (fase fiel ao primeiro mapa)
-        const plataformas = [
-            {x:0,y:450,largura:800,altura:50,cor:'#228B22'},
-            {x:120,y:380,largura:120,altura:20,cor:'#8B4513'},
-            {x:300,y:320,largura:150,altura:20,cor:'#8B4513'},
-            {x:520,y:260,largura:130,altura:20,cor:'#8B4513'},
-            {x:200,y:200,largura:160,altura:20,cor:'#8B4513'},
-            {x:650,y:150,largura:140,altura:20,cor:'#8B4513'},
-            {x:50,y:130,largura:110,altura:20,cor:'#8B4513'}
-        ];
-
-        // 🔹 Moedas
-        let moedasColetadas = 0;
-        const moedas = [
-            {x:160,y:350,raio:12,coletada:false},
-            {x:360,y:290,raio:12,coletada:false},
-            {x:570,y:230,raio:12,coletada:false},
-            {x:260,y:170,raio:12,coletada:false},
-            {x:710,y:120,raio:12,coletada:false},
-            {x:90,y:100,raio:12,coletada:false}
-        ];
-
-        // 🔹 Inimigos
-        let vidas = 3;
-        const inimigos = [
-            {x:350,y:290,largura:35,altura:35,vel:1.2,minX:300,maxX:430,cor:'#FF4500'},
-            {x:680,y:115,largura:35,altura:35,vel:1.5,minX:650,maxX:760,cor:'#FF4500'}
-        ];
-
-        // 🔹 Árvore/Objetos decorativos
-        const arvores = [ {x:40,y:390}, {x:450,y:395}, {x:720,y:390} ];
-
-        // 🎹 Entrada do teclado
-        document.addEventListener('keydown', e => {
-            if(e.key === 'ArrowLeft') teclas.esquerda = true;
-            if(e.key === 'ArrowRight') teclas.direita = true;
-            if(e.key === ' ' && urso.noChao) teclas.pular = true;
-        });
-        document.addEventListener('keyup', e => {
-            if(e.key === 'ArrowLeft') teclas.esquerda = false;
-            if(e.key === 'ArrowRight') teclas.direita = false;
-            if(e.key === ' ') teclas.pular = false;
-        });
-
-        // 🧠 Colisão retângulo
-        function colisaoRet(a,b) { return a.x < b.x+b.largura && a.x+a.largura > b.x && a.y < b.y+b.altura && a.y+a.altura > b.y; }
-
-        // 🔄 Loop principal
-        function atualizar() {
-            // Movimento
-            if(teclas.esquerda) { urso.velX = -urso.velocidade; urso.virado = -1; }
-            else if(teclas.direita) { urso.velX = urso.velocidade; urso.virado = 1; }
-            else urso.velX *= atrito;
-
-            if(teclas.pular) { urso.velY = urso.forcaPulo; urso.noChao = false; teclas.pular = false; }
-
-            urso.velY += gravidade;
-            urso.x += urso.velX;
-            urso.y += urso.velY;
-
-            // Limites da tela
-            if(urso.x < 0) urso.x = 0;
-            if(urso.x+urso.largura > canvas.width) urso.x = canvas.width - urso.largura;
-
-            // Queda = perda de vida
-            if(urso.y > canvas.height) { vidas--; urso.x=80; urso.y=350; urso.velX=0; urso.velY=0; document.getElementById('vidas').textContent = vidas; }
-
-            // Colisão com plataformas
-            urso.noChao = false;
-            for(let plat of plataformas) {
-                if(colisaoRet(urso, plat) && urso.velY >= 0 && urso.y+urso.altura - urso.velY <= plat.y) {
-                    urso.y = plat.y - urso.altura;
-                    urso.velY = 0;
-                    urso.noChao = true;
-                }
-            }
-
-            // Coletar moedas
-            for(let moeda of moedas) {
-                if(!moeda.coletada) {
-                    let dist = Math.hypot(urso.x+urso.largura/2 - moeda.x, urso.y+urso.altura/2 - moeda.y);
-                    if(dist < moeda.raio+20) { moeda.coletada=true; moedasColetadas++; document.getElementById('moedas').textContent=moedasColetadas; }
-                }
-            }
-
-            // Movimento e colisão com inimigos
-            for(let inim of inimigos) {
-                inim.x += inim.vel;
-                if(inim.x <= inim.minX || inim.x+inim.largura >= inim.maxX) inim.vel *= -1;
-
-                if(colisaoRet(urso, inim)) { vidas--; urso.x=80; urso.y=350; urso.velX=0; urso.velY=0; document.getElementById('vidas').textContent = vidas; }
+            if (isIOS) {
+                // Esquema de URL registrado pelo app no ecossistema da Apple
+                window.location.href = "superbearadventure://";
+                
+                // Fallback para iOS caso não abra em 1.5 segundos
+                setTimeout(() => {
+                    window.location.href = "https://apps.apple.com/br/app/super-bear-adventure/id1439521876";
+                }, 1500);
+            } else {
+                // Executa a Intent padrão do Android de abertura direta
+                window.location.href = androidIntent;
             }
         }
-
-        // 🎨 Desenhar tudo
-        function desenhar() {
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-
-            // Fundo nuvens
-            ctx.fillStyle = '#fff';
-            ctx.beginPath(); ctx.arc(150,80,25,0,Math.PI*2); ctx.arc(180,70,30,0,Math.PI*2); ctx.arc(210,80,22,0,Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(550,100,22,0,Math.PI*2); ctx.arc(580,90,28,0,Math.PI*2); ctx.arc(610,100,20,0,Math.PI*2); ctx.fill();
-
-            // Árvores
-            for(let arv of arvores) {
-                ctx.fillStyle='#8B4513'; ctx.fillRect(arv.x+15,arv.y,20,60);
-                ctx.fillStyle='#2E8B57'; ctx.beginPath(); ctx.arc(arv.x+25,arv.y-10,35,0,Math.PI*2); ctx.fill();
-            }
-
-            // Plataformas
-            for(let plat of plataformas) { ctx.fillStyle=plat.cor; ctx.fillRect(plat.x,plat.y,plat.largura,plat.altura); }
-
-            // Moedas
-            for(let moeda of moedas) {
-                if(!moeda.coletada) {
-                    ctx.fillStyle='#FFD700'; ctx.beginPath(); ctx.arc(moeda.x,moeda.y,moeda.raio,0,Math.PI*2); ctx.fill();
-                    ctx.strokeStyle='#DAA520'; ctx.lineWidth=2; ctx.stroke();
-                }
-            }
-
-            // Inimigos
-            for(let inim of inimigos) {
-                ctx.fillStyle = inim.cor; ctx.fillRect(inim.x,inim.y,inim.largura,inim.altura);
-                ctx.fillStyle='#000'; ctx.fillRect(inim.x+8,inim.y+8,5,5); ctx.fillRect(inim.x+22,inim.y+8,5,5);
-            }
-
-            // Urso com detalhes fiéis
-            ctx.save(); ctx.translate(urso.x+urso.largura/2, urso.y+urso.altura/2); ctx.scale(urso.virado,1); ctx.translate(-urso.largura/2,-urso.altura/2);
-            ctx.fillStyle=urso.cor; ctx.fillRect(0,0,urso.largura,urso.altura);
-            // Orelhas
-            ctx.beginPath(); ctx.arc(8,8,10,0,Math.PI*2); ctx.arc(32,8,10,0,Math.PI*2); ctx.fill();
-            // Olhos e nariz
-            ctx.fillStyle='#000'; ctx.fillRect(12,15,4,6); ctx.fillRect(24,15,4,6);
-            ctx.fillStyle='#8B0000'; ctx.beginPath(); ctx.arc(20,28,6,0,Math.PI*2); ctx.fill();
-            ctx.restore();
-        }
-
-        function loop() { atualizar(); desenhar(); requestAnimationFrame(loop); }
-        loop();
     </script>
 </body>
 </html>
