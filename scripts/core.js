@@ -1,8 +1,7 @@
-
 'use strict';
 
 // ══════════════════════════════════════════════════════
-//  SONS & VOZ
+// SONS & VOZ
 // ══════════════════════════════════════════════════════
 let _ac = null;
 function getAC(){
@@ -44,7 +43,7 @@ let _playedWelcome = false;
 function playWelcomeVoice(){
   if(_playedWelcome) return;
   _playedWelcome = true;
-  
+
   try {
     const isInsideGames = window.location.pathname.includes('/games/');
     const audioPath = (isInsideGames ? '../' : '') + 'assets/sounds/welcome.mp3';
@@ -57,11 +56,11 @@ function playWelcomeVoice(){
 }
 
 // ══════════════════════════════════════════════════════
-//  SCANNER (ETAPA 1)
+// SCANNER (ETAPA 1)
 // ══════════════════════════════════════════════════════
 const touchZone = document.getElementById('touch-zone');
-const scanBox   = document.getElementById('scanner-box');
-const scanTxt   = document.getElementById('scan-txt');
+const scanBox = document.getElementById('scanner-box');
+const scanTxt = document.getElementById('scan-txt');
 let scanTimer;
 
 if(touchZone && scanBox && scanTxt){
@@ -81,9 +80,9 @@ if(touchZone && scanBox && scanTxt){
   }
 
   touchZone.addEventListener('touchstart', startScan, {passive:false});
-  touchZone.addEventListener('mousedown',  startScan);
-  touchZone.addEventListener('touchend',   cancelScan);
-  touchZone.addEventListener('mouseup',    cancelScan);
+  touchZone.addEventListener('mousedown', startScan);
+  touchZone.addEventListener('touchend', cancelScan);
+  touchZone.addEventListener('mouseup', cancelScan);
   touchZone.addEventListener('touchcancel',cancelScan);
 }
 
@@ -140,22 +139,22 @@ function showMenu(){
 
 // Stars
 if(document.getElementById('stage-scanner')){
-  for(let i=0;i<55;i++){
+  for(let i=0;i<60;i++){
     const s=document.createElement('div');s.className='star';
-    const sz=Math.random()*1.8+.3;
+    const sz=Math.random()*2+.3;
     s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${(1.5+Math.random()*4).toFixed(1)}s;animation-delay:${(Math.random()*4).toFixed(1)}s`;
     document.body.appendChild(s);
   }
 }
 
 // ══════════════════════════════════════════════════════
-//  ENGINE ARCADE
+// ENGINE ARCADE
 // ══════════════════════════════════════════════════════
 const canvas = document.getElementById('gc');
-const ctx    = canvas ? canvas.getContext('2d') : null;
-const hud    = document.getElementById('hud');
-const ctrl   = document.getElementById('ctrl');
-const hbar   = document.getElementById('hbar');
+const ctx = canvas ? canvas.getContext('2d') : null;
+const hud = document.getElementById('hud');
+const ctrl = document.getElementById('ctrl');
+const hbar = document.getElementById('hbar');
 let W=0, H=0;
 
 function rsz(){
@@ -180,47 +179,69 @@ for(const[id,k] of Object.entries(BMAP)){
   const el=document.getElementById(id);
   if(el){
     el.addEventListener('pointerdown',e=>{e.preventDefault();K[k]=1;TAP[k]=1;el.classList.add('on');},{passive:false});
-    el.addEventListener('pointerup',  e=>{e.preventDefault();K[k]=0;el.classList.remove('on');},{passive:false});
+    el.addEventListener('pointerup', e=>{e.preventDefault();K[k]=0;el.classList.remove('on');},{passive:false});
     el.addEventListener('pointercancel',()=>{K[k]=0;el.classList.remove('on');});
     el.addEventListener('pointerleave', ()=>{K[k]=0;el.classList.remove('on');});
   }
 }
 const KMAP={ArrowUp:'up',ArrowDown:'dn',ArrowLeft:'lt',ArrowRight:'rt',w:'up',s:'dn',a:'lt',d:'rt',' ':'a',z:'a',x:'b',Shift:'b'};
 document.addEventListener('keydown',e=>{const k=KMAP[e.key];if(!k)return;if(!_H2[k]){K[k]=1;TAP[k]=1;_H2[k]=1;}});
-document.addEventListener('keyup',  e=>{const k=KMAP[e.key];if(!k)return;K[k]=0;_H2[k]=0;});
+document.addEventListener('keyup', e=>{const k=KMAP[e.key];if(!k)return;K[k]=0;_H2[k]=0;});
 function clrT(){TAP.a=0;TAP.b=0;TAP.up=0;}
 
-// Catalog
-const GAMES=[
-  {id:'bear',      nm:'Bear Game',      ic:'🐻', bd:'Jogo do Urso'},
-  {id:'pacman',    nm:'Pac-Man',        ic:'👻', bd:'Fuja dos Fantasmas'},
-  {id:'snake',     nm:'Snake Neon',     ic:'🐍', bd:'Cobrinha Neon'},
-  {id:'tetris',    nm:'Tetris',         ic:'🧱', bd:'Encaixe Blocos'},
-  {id:'space',     nm:'Space Wars',     ic:'🚀', bd:'Guerra Espacial'},
-  {id:'flappy',    nm:'Flappy Bird',    ic:'🐦', bd:'Voo Infinito'},
-  {id:'dino',      nm:'Dino Run',       ic:'🦕', bd:'Fuja dos Obstáculos'},
-  {id:'breakout',  nm:'Breakout',       ic:'🏓', bd:'Quebre os Tijolos'},
-  {id:'soccer',    nm:'Futebol',        ic:'⚽', bd:'Chute ao Gol'},
-  {id:'pong',      nm:'Pong',           ic:'🏸', bd:'Ping-Pong'},
-  {id:'asteroids', nm:'Asteroids',      ic:'☄️', bd:'Destrua Astros'},
-  {id:'platform',  nm:'Jump Hero',      ic:'🦸', bd:'Aventura 2D'},
-  {id:'colors',    nm:'Caça Cores',     ic:'🎨', bd:'Kids • Cores', kids:1},
-  {id:'bubbles',   nm:'Estoura Bolha',  ic:'🫧', bd:'Kids • Estourar', kids:1},
-  {id:'fruits',    nm:'Caça Frutas',    ic:'🍎', bd:'Kids • Pegar', kids:1},
-  {id:'piano',     nm:'Piano Kids',     ic:'🎹', bd:'Kids • Música', kids:1},
-  {id:'draw',      nm:'Pintar',         ic:'🖌️',bd:'Kids • Desenho', kids:1},
-];
+// ══════════════════════════════════════════════════════
+// CATÁLOGO DE JOGOS - Carregado de games.json
+// ══════════════════════════════════════════════════════
+let GAMES = [];
 
-const grid = document.getElementById('ggrid');
-if(grid){
+async function loadGames() {
+  try {
+    const response = await fetch('games.json?v=' + Date.now(), { cache: 'no-store' });
+    if (!response.ok) throw new Error('Failed to load games.json');
+    const data = await response.json();
+    GAMES = data.games || [];
+    renderGameGrid();
+  } catch (err) {
+    console.error('Erro ao carregar jogos:', err);
+    // Fallback: jogos padrão
+    GAMES = [
+      {id:'bear', nm:'Bear Game', ic:'🐻', bd:'Jogo do Urso'},
+      {id:'pacman', nm:'Pac-Man', ic:'👻', bd:'Fuja dos Fantasmas'},
+      {id:'snake', nm:'Snake Neon', ic:'🐍', bd:'Cobrinha Neon'},
+      {id:'tetris', nm:'Tetris', ic:'🧱', bd:'Encaixe Blocos'},
+      {id:'space', nm:'Space Wars', ic:'🚀', bd:'Guerra Espacial'},
+      {id:'flappy', nm:'Flappy Bird', ic:'🐦', bd:'Voo Infinito'},
+      {id:'dino', nm:'Dino Run', ic:'🦕', bd:'Fuja dos Obstáculos'},
+      {id:'breakout', nm:'Breakout', ic:'🏓', bd:'Quebre os Tijolos'},
+      {id:'soccer', nm:'Futebol', ic:'⚽', bd:'Chute ao Gol'},
+      {id:'pong', nm:'Pong', ic:'🏸', bd:'Ping-Pong'},
+      {id:'asteroids', nm:'Asteroids', ic:'☄️', bd:'Destrua Astros'},
+      {id:'platform', nm:'Jump Hero', ic:'🦸', bd:'Aventura 2D'},
+      {id:'colors', nm:'Caça Cores', ic:'🎨', bd:'Kids • Cores', kids:1},
+      {id:'bubbles', nm:'Estoura Bolha', ic:'🫧', bd:'Kids • Estourar', kids:1},
+      {id:'fruits', nm:'Caça Frutas', ic:'🍎', bd:'Kids • Pegar', kids:1},
+      {id:'piano', nm:'Piano Kids', ic:'🎹', bd:'Kids • Música', kids:1},
+      {id:'draw', nm:'Pintar', ic:'🖌️', bd:'Kids • Desenho', kids:1},
+    ];
+    renderGameGrid();
+  }
+}
+
+function renderGameGrid() {
+  const grid = document.getElementById('ggrid');
+  if(!grid) return;
+  grid.innerHTML = '';
   GAMES.forEach(g=>{
     const d=document.createElement('div');
-    d.className='card'+(g.kids?' kid':'');
-    d.innerHTML=`<div class="ci">${g.ic}</div>`;
+    d.className='card'+(g.kids?' kid':'')+' arcade';
+    d.innerHTML=`<div class="ci">${g.ic}</div><div class="cn">${g.nm}</div><div class="cb2">${g.bd}</div>`;
     d.onclick=()=>{ playClickSound(); launchGame(g.id); };
     grid.appendChild(d);
   });
 }
+
+// Carregar jogos ao iniciar
+loadGames();
 
 let rafId=null, gameActive=false, score=0, curGame='';
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -235,10 +256,10 @@ async function launchGame(id, extra){
   const game = GAMES.find(g=>g.id===id);
   const loadTxt = document.getElementById('gload-txt');
   if(loadTxt) loadTxt.textContent='CARREGANDO '+(game ? game.nm.toUpperCase() : id.toUpperCase())+'…';
-  
+
   const loader = document.getElementById('gload');
   if(loader) loader.style.display='flex';
-  
+
   setTimeout(() => {
     let target = id + '.html';
     const isInsideGames = window.location.pathname.includes('/games/');
@@ -253,8 +274,6 @@ function toMenu(){
   gameActive=false; if(rafId) cancelAnimationFrame(rafId);
   const gs = document.getElementById('gs');
   if(gs) gs.style.display='none';
-  const mcsel = document.getElementById('mcsel');
-  if(mcsel) mcsel.style.display='none';
   const ui = document.getElementById('main-ui');
   if(ui) ui.style.display='flex';
 }
@@ -308,11 +327,12 @@ function showCtrl(aL='A',bL='B',bShow=true){
 }
 
 function mkP(arr,x,y,n,cols,spd=5){
-  for(let i=0;i<n;i++) arr.push({x,y,vx:rnd(-spd,spd),vy:rnd(-spd*.8,0),life:1,col:Array.isArray(cols)?cols[rndI(0,cols.length-1)]:cols,r:rnd(2,5)});
+  for(let i=0;i<n;i++){
+    arr.push({x,y,vx:(Math.random()-.5)*spd,vy:(Math.random()-.5)*spd-2,life:1,r:Math.random()*3+1,col:cols[rndI(0,cols.length-1)]});
+  }
 }
-function tickP(arr){
-  if(!ctx) return [];
-  return arr.filter(p=>{
+function upP(arr){
+  arr.forEach((p,i)=>{
     p.x+=p.vx; p.y+=p.vy; p.vy+=.15; p.life-=.033;
     if(p.life>0){ ctx.globalAlpha=p.life; ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); ctx.globalAlpha=1; }
     return p.life>0;
