@@ -1,7 +1,8 @@
 /*
-  app.js
-  - Registers a basic service worker for offline/PWA behaviour
-  - Preloads key pixel-art assets
+ app.js
+ - Registers a basic service worker for offline/PWA behaviour
+ - Preloads key pixel-art assets
+ - Clears old caches on update
 */
 
 (async function(){
@@ -10,9 +11,17 @@
   // --- Service Worker registration ---
   if('serviceWorker' in navigator){
     try{
-      // Use relative path for better compatibility
+      // Unregister any old SW first to force update
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        if (reg.scope.includes(window.location.origin)) {
+          await reg.unregister();
+          console.log('Old SW unregistered');
+        }
+      }
+      // Register new SW
       await navigator.serviceWorker.register('sw.js');
-      console.log('SW registered');
+      console.log('SW registered v3');
     } catch(err){
       console.warn('SW register failed', err);
     }
@@ -33,10 +42,6 @@
     });
   }
 
-  // Don't block the main thread too much
   assets.forEach(preload);
   console.log('Assets preloading started');
-
-  // Note: We removed the launchGame override because it was pointing to a non-existent index (4).html
-  // and core.js already handles game launching correctly.
 })();
