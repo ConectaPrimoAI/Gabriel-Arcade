@@ -17,7 +17,7 @@
     {"id": "colors", "nm": "Caça Cores", "ic": "🎨", "bd": "Kids • Cores", "kids": 1},
     {"id": "bubbles", "nm": "Estoura Bolha", "ic": "🫧", "bd": "Kids • Estourar", "kids": 1},
     {"id": "fruits", "nm": "Caça Frutas", "ic":
-   {"id": "Particles", "nm": "partículas mágicas", "ic": "🔮 ", "bd": "partículas"},
+   {"id": "partículas", "nm": "partículas mágicas", "ic": "🔮 ", "bd": "partículas"},
  "🍎", "bd": "Kids • Pegar", "kids": 1},
     {"id": "piano", "nm": "Piano Kids", "ic": "🎹", "bd": "Kids • Música", "kids": 1},
     {"id": "draw", "nm": "Pintar", "ic": "🖌️", "bd": "Kids • Desenho", "kids": 1}
