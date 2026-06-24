@@ -21,21 +21,33 @@
   user-select:none;
 }
 
-img{
-  -webkit-user-drag:none;
-  user-select:none;
-}
-
 html,body{
   width:100%;
   height:100%;
   overflow:hidden;
   font-family:'Fredoka',system-ui;
-  background:#f6f7fb;
+  background:#f4f6f8;
+  color:#1e1e1e;
 }
 
 /* =========================
-   SCANNER
+   PALETA (SEM NEON, SEM GRADIENTE)
+========================= */
+
+:root{
+  --blue:#4a90e2;
+  --red:#e25c5c;
+  --yellow:#e2c44a;
+  --green:#4ecb8f;
+
+  --card:#ffffff;
+  --glass:rgba(255,255,255,.55);
+  --stroke:rgba(0,0,0,.08);
+  --shadow:0 18px 40px rgba(0,0,0,.12);
+}
+
+/* =========================
+   SCANNER (PORTA SIMPLES)
 ========================= */
 
 #stage-scanner{
@@ -45,144 +57,160 @@ html,body{
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  background:linear-gradient(180deg,#f6f7fb,#eef2ff);
+  background:#f4f6f8;
 }
 
 .scan-wrap{
   width:300px;
   height:300px;
-  border-radius:40px;
-  background:#fff;
-  box-shadow:0 20px 60px rgba(0,0,0,.12);
+  border-radius:28px;
+  background:var(--glass);
+  border:1px solid var(--stroke);
+  box-shadow:var(--shadow);
+
   display:flex;
   justify-content:center;
   align-items:center;
   position:relative;
-  overflow:hidden;
 }
 
-/* 🔥 ÁREA DE SEGURAR (FIX PRINCIPAL) */
 #hold-zone{
   position:absolute;
   inset:0;
-  z-index:9999;
-  background:transparent;
-  touch-action:none;
 }
 
 /* fingerprint */
 .fp-img{
-  width:130px;
-  pointer-events:none;
-  filter:drop-shadow(0 10px 15px rgba(0,0,0,.15));
+  width:120px;
+  filter:drop-shadow(0 10px 10px rgba(0,0,0,.08));
 }
 
-/* scan ring */
-.scan-ring{
+/* scan indicator simples */
+.scan-bar{
   position:absolute;
-  inset:18px;
-  border-radius:40px;
-  border:2px dashed rgba(0,0,0,.08);
-  opacity:0;
-}
-
-.active-scan .scan-ring{
-  opacity:1;
-  animation:spin 1.2s linear infinite;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg);}
-}
-
-/* scan line */
-.laser{
-  position:absolute;
-  width:80%;
+  width:70%;
   height:3px;
-  background:rgba(0,0,0,.05);
+  background:#4a90e2;
   opacity:0;
 }
 
-.active-scan .laser{
+.active .scan-bar{
   opacity:1;
-  animation:scan 1.2s ease-in-out infinite;
+  animation:scan 1.1s infinite;
 }
 
 @keyframes scan{
-  0%{transform:translateY(-90px);}
-  50%{transform:translateY(90px);}
-  100%{transform:translateY(-90px);}
+  0%{transform:translateY(-85px);}
+  50%{transform:translateY(85px);}
+  100%{transform:translateY(-85px);}
 }
 
-/* textos */
-#scan-txt{
-  margin-top:20px;
-  font-size:1rem;
-  color:#333;
-}
-
-.scan-hint{
-  margin-top:6px;
-  font-size:.7rem;
-  color:#888;
+#txt{
+  margin-top:18px;
+  font-size:.95rem;
+  color:#444;
 }
 
 /* =========================
    APP
 ========================= */
 
-#main-ui{
+#app{
   position:fixed;
   inset:0;
   display:none;
   flex-direction:column;
-  padding:16px;
+  padding:18px;
   overflow:auto;
-  background:#f6f7fb;
+  background:#f4f6f8;
 }
 
-#bot-wrap{
-  text-align:center;
-  margin-bottom:14px;
+/* HEADER */
+.header{
+  margin-bottom:16px;
 }
 
-#biel-bot{
-  font-size:58px;
+.title{
+  font-size:1.2rem;
+  font-weight:700;
 }
 
-#bot-speech{
-  margin-top:10px;
-  padding:10px 14px;
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 10px 25px rgba(0,0,0,.08);
-  display:none;
+.sub{
+  font-size:.7rem;
+  opacity:.6;
 }
 
-/* grid */
+/* =========================
+   GRID CARDS (VIDRO + 3D)
+========================= */
+
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
+  gap:14px;
 }
 
-/* card */
+/* CARD PRINCIPAL */
 .card{
-  background:#fff;
+  background:var(--card);
   border-radius:18px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--stroke);
+
   padding:14px;
-  box-shadow:0 12px 25px rgba(0,0,0,.08);
-  transition:.15s;
+  transform:translateY(0);
+  transition:.18s ease;
 }
 
+/* efeito 3D leve */
 .card:active{
-  transform:scale(.97);
+  transform:translateY(6px);
+  box-shadow:0 10px 20px rgba(0,0,0,.12);
 }
 
-.icon{font-size:2rem;}
-.name{font-size:.8rem;font-weight:600;margin-top:6px;}
-.desc{font-size:.6rem;color:#777;margin-top:2px;}
+/* topo cor simples (sem neon, só identidade) */
+.tag{
+  width:100%;
+  height:4px;
+  border-radius:4px;
+  margin-bottom:10px;
+}
+
+.blue{background:var(--blue);}
+.red{background:var(--red);}
+.yellow{background:var(--yellow);}
+.green{background:var(--green);}
+
+/* conteúdo */
+.icon{
+  font-size:2rem;
+}
+
+.name{
+  margin-top:6px;
+  font-weight:700;
+}
+
+.desc{
+  font-size:.65rem;
+  opacity:.6;
+  margin-top:2px;
+}
+
+/* botão jogar */
+.btn{
+  margin-top:10px;
+  padding:8px 10px;
+  font-size:.7rem;
+  border-radius:10px;
+  border:none;
+  background:#1e1e1e;
+  color:#fff;
+}
+
+/* =========================
+   DETALHE (CATÁLOGO EXPANDIDO FUTURO)
+========================= */
 
 </style>
 
@@ -193,95 +221,97 @@ html,body{
 <!-- SCANNER -->
 <div id="stage-scanner">
 
-  <div class="scan-wrap" id="scanner-box">
+  <div class="scan-wrap" id="box">
 
-    <!-- 🔥 HOLD FIX -->
     <div id="hold-zone"></div>
 
-    <div class="scan-ring"></div>
-    <div class="laser"></div>
+    <div class="scan-bar"></div>
 
     <img class="fp-img" src="https://files.catbox.moe/jar7fm.png">
 
   </div>
 
-  <div id="scan-txt">Segure para entrar</div>
-  <div class="scan-hint">PlayWorld</div>
+  <div id="txt">Segure para entrar</div>
 
 </div>
 
 <!-- APP -->
-<div id="main-ui">
+<div id="app">
 
-  <div id="bot-wrap">
-    <div id="biel-bot">🧸</div>
-    <div id="bot-speech"></div>
+  <div class="header">
+    <div class="title">PlayWorld</div>
+    <div class="sub">Escolha seu jogo</div>
   </div>
 
-  <div class="grid" id="ggrid"></div>
+  <div class="grid" id="grid"></div>
 
 </div>
 
 <script>
 
 /* =========================
-   SCANNER FIXED
+   SCANNER
 ========================= */
 
 const hold = document.getElementById("hold-zone");
-const box = document.getElementById("scanner-box");
-const scanner = document.getElementById("stage-scanner");
-const app = document.getElementById("main-ui");
+const box = document.getElementById("box");
+const scan = document.getElementById("stage-scanner");
+const app = document.getElementById("app");
 
 let t;
 
-hold.addEventListener("touchstart", (e)=>{
+hold.addEventListener("touchstart",(e)=>{
   e.preventDefault();
 
-  box.classList.add("active-scan");
+  box.classList.add("active");
 
   t = setTimeout(()=>{
-    scanner.style.display="none";
+    scan.style.display="none";
     app.style.display="flex";
-    loadGames();
-  },1500);
+    load();
+  },1400);
 
-}, {passive:false});
+},{passive:false});
 
-hold.addEventListener("touchend", ()=>{
-  box.classList.remove("active-scan");
+hold.addEventListener("touchend",()=>{
+  box.classList.remove("active");
   clearTimeout(t);
 });
 
 /* =========================
-   GAMES (JSON EXTERNO)
+   GAMES
 ========================= */
 
-function loadGames(){
-  fetch("games.json")
-    .then(r=>r.json())
-    .then(data=>{
+function load(){
 
-      const grid = document.getElementById("ggrid");
+  const games=[
+    {id:"pacman",icon:"👾",name:"Pac Core",desc:"Clássico arcade",color:"blue"},
+    {id:"snake",icon:"🐍",name:"Snake",desc:"Cresça e sobreviva",color:"green"},
+    {id:"tetris",icon:"🧱",name:"Blocos",desc:"Quebra-cabeça",color:"yellow"},
+    {id:"space",icon:"🚀",name:"Space",desc:"Aventura espacial",color:"red"}
+  ];
 
-      data.games.forEach(g=>{
-        const c=document.createElement("div");
-        c.className="card";
+  const grid=document.getElementById("grid");
 
-        c.innerHTML=`
-          <div class="icon">${g.ic}</div>
-          <div class="name">${g.nm}</div>
-          <div class="desc">${g.bd}</div>
-        `;
+  games.forEach(g=>{
+    const c=document.createElement("div");
+    c.className="card";
 
-        c.onclick=()=>{
-          window.location.href="games/"+g.id+".html";
-        };
+    c.innerHTML=`
+      <div class="tag ${g.color}"></div>
+      <div class="icon">${g.icon}</div>
+      <div class="name">${g.name}</div>
+      <div class="desc">${g.desc}</div>
+      <button class="btn">Jogar</button>
+    `;
 
-        grid.appendChild(c);
-      });
+    c.querySelector(".btn").onclick=()=>{
+      window.location.href=g.id+".html";
+    };
 
-    });
+    grid.appendChild(c);
+  });
+
 }
 
 </script>
