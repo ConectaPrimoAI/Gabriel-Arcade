@@ -4,8 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>GABRIEL V20 — ARCADE SUPREMO</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+
 <meta name="theme-color" content="#02020a">
 <link rel="manifest" href="manifest.json">
 </head>
@@ -19,8 +21,14 @@
     <div id="touch-zone"></div>
     <div class="scan-ring"></div>
     <div class="laser"></div>
-    <img src="https://files.catbox.moe/jar7fm.png" class="fp-img" alt="Digital" onerror="this.style.fontSize='80px';this.style.display='block';this.outerHTML='<span style=\'font-size:80px\'>👆</span>'">
+
+    <img
+      src="https://files.catbox.moe/jar7fm.png"
+      class="fp-img"
+      alt="Digital"
+      onerror="this.outerHTML='<span style=&quot;font-size:80px&quot;>👆</span>'">
   </div>
+
   <p id="scan-txt">SEGURE PARA IDENTIFICAR</p>
   <p class="scan-hint">GABRIEL V20 • ARCADE SUPREMO</p>
 </div>
@@ -41,6 +49,7 @@
     <div id="biel-bot">🤖</div>
     <div id="bot-speech"></div>
   </div>
+
   <div class="game-frame" id="frame">
     <p class="frame-title">⚡ ESCOLHA SEU JOGO</p>
     <div class="grid" id="ggrid"></div>
@@ -49,15 +58,17 @@
 
 <!-- ════════════════════════════════════════
      ETAPA 4: ARCADE ENGINE
-════════════════════════════════════════ 
+════════════════════════════════════════ -->
 
-  <div id="gload">
-    <span id="gload-txt">CARREGANDO...</span>
-    <div class="lbar"><div class="lfill" id="lfill" style="width:0%"></div></div>
+<div id="gload">
+  <span id="gload-txt">CARREGANDO...</span>
+  <div class="lbar">
+    <div class="lfill" id="lfill" style="width:0%"></div>
   </div>
 </div>
 
 <script src="scripts/app.js"></script>
 <script src="scripts/core.js"></script>
+
 </body>
 </html>
