@@ -2,39 +2,47 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>ARC HUB</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>PlayWorld</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 
 /* =========================
-   BASE (SEM NEON, TOM REALISTA)
+   BASE KIDS 3D
 ========================= */
 
 :root{
-  --bg:#0b0f14;
-  --panel:#121923;
-  --panel2:#0f151e;
-  --stroke:rgba(255,255,255,.08);
-  --text:#e8eef7;
-  --muted:rgba(255,255,255,.55);
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --shadow:0 10px 30px rgba(0,0,0,.12);
+
+  --text:#2b2b2b;
+
+  --blue:#7cc7ff;
+  --yellow:#ffd36e;
+  --pink:#ff9ecb;
+  --green:#8de8c5;
 }
 
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:system-ui;
+  -webkit-tap-highlight-color:transparent;
 }
 
-body{
-  background:var(--bg);
-  color:var(--text);
+body,html{
+  width:100%;
+  height:100%;
+  font-family:'Fredoka',sans-serif;
+  background:linear-gradient(180deg,#f6f7fb,#eef2ff);
   overflow:hidden;
 }
 
 /* =========================
-   BIOMETRIA (BOOT CONSOLE)
+   BIOMETRIA (PORTA MÁGICA)
 ========================= */
 
 #stage-scanner{
@@ -44,44 +52,74 @@ body{
   flex-direction:column;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at center, #141b25, #0b0f14);
+  background:
+    radial-gradient(circle at 50% 40%, #ffffff, #eef2ff);
 }
 
 .scan-wrap{
   width:300px;
   height:300px;
-  border-radius:22px;
-  background:linear-gradient(145deg,var(--panel),var(--panel2));
-  border:1px solid var(--stroke);
-  position:relative;
+  background:var(--card);
+  border-radius:40px;
+  box-shadow:var(--shadow);
+
   display:flex;
-  align-items:center;
   justify-content:center;
-  box-shadow:0 30px 80px rgba(0,0,0,.5);
+  align-items:center;
+  position:relative;
+
+  transform:rotateX(12deg);
+  perspective:800px;
 }
 
+/* touch */
 #touch-zone{
   position:absolute;
   inset:0;
 }
 
+/* fingerprint */
 .fp-img{
-  width:120px;
-  opacity:.85;
-  filter:contrast(1.1);
+  width:130px;
+  opacity:.9;
+  filter:drop-shadow(0 10px 10px rgba(0,0,0,.15));
+  transition:.3s;
 }
 
-.scan-bar{
+.active-scan .fp-img{
+  transform:scale(.92) rotate(-2deg);
+}
+
+/* scan wave (suave, não neon) */
+.scan-ring{
   position:absolute;
-  width:80%;
-  height:2px;
-  background:rgba(255,255,255,.15);
+  inset:20px;
+  border-radius:40px;
+  border:2px dashed rgba(0,0,0,.08);
   opacity:0;
 }
 
-.active .scan-bar{
+.active-scan .scan-ring{
   opacity:1;
-  animation:scan 1.3s infinite ease-in-out;
+  animation:spin 1.2s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+
+.laser{
+  position:absolute;
+  width:80%;
+  height:3px;
+  background:rgba(0,0,0,.05);
+  opacity:0;
+  border-radius:999px;
+}
+
+.active-scan .laser{
+  opacity:1;
+  animation:scan 1.2s infinite ease-in-out;
 }
 
 @keyframes scan{
@@ -91,13 +129,19 @@ body{
 }
 
 #scan-txt{
-  margin-top:18px;
-  font-size:.75rem;
-  opacity:.6;
+  margin-top:20px;
+  font-size:1rem;
+  color:#333;
+}
+
+.scan-hint{
+  margin-top:8px;
+  font-size:.7rem;
+  color:#888;
 }
 
 /* =========================
-   HUB PRINCIPAL (ROBLOX STYLE)
+   APP WORLD (MENU 3D)
 ========================= */
 
 #main-ui{
@@ -105,269 +149,197 @@ body{
   inset:0;
   display:none;
   flex-direction:column;
-  padding:14px;
+  padding:18px;
   overflow:auto;
+
+  background:linear-gradient(180deg,#f6f7fb,#eef2ff);
 }
 
 /* HEADER */
-.header{
-  padding:10px 6px;
-  margin-bottom:10px;
-}
-
-.header h1{
-  font-size:1rem;
-  font-weight:600;
-}
-
-.header p{
-  font-size:.65rem;
-  opacity:.5;
-}
-
-/* CATEGORIES */
-.categories{
+#bot-wrap{
   display:flex;
-  gap:8px;
-  overflow-x:auto;
-  padding:6px 0 12px;
+  flex-direction:column;
+  align-items:center;
+  margin-bottom:16px;
 }
 
-.cat{
-  padding:6px 10px;
-  background:var(--panel);
-  border:1px solid var(--stroke);
-  border-radius:12px;
-  font-size:.65rem;
-  white-space:nowrap;
+#biel-bot{
+  font-size:60px;
+  filter:drop-shadow(0 10px 10px rgba(0,0,0,.1));
 }
 
-/* GRID 3D */
+#bot-speech{
+  margin-top:10px;
+  background:#fff;
+  padding:10px 14px;
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  display:none;
+  color:#333;
+}
+
+/* FRAME */
+.game-frame{
+  max-width:640px;
+  margin:auto;
+}
+
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  perspective:800px;
-}
-
-/* CARD 3D */
-.card{
-  background:linear-gradient(145deg,var(--panel),var(--panel2));
-  border:1px solid var(--stroke);
-  border-radius:16px;
-  padding:12px;
-  transform:translateZ(0);
-  transition:.25s;
-  position:relative;
-}
-
-.card:active{
-  transform:scale(.97);
-}
-
-.icon{
-  font-size:1.6rem;
-  margin-bottom:6px;
-}
-
-.name{
-  font-size:.75rem;
-  font-weight:600;
-}
-
-.desc{
-  font-size:.6rem;
-  opacity:.5;
-  margin-top:2px;
+  gap:14px;
 }
 
 /* =========================
-   PAINEL DO JOGO (CATÁLOGO)
+   3D TOY CARD
 ========================= */
 
-#panel{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(10px);
-  display:none;
-  justify-content:center;
-  align-items:flex-end;
+.card{
+  background:#fff;
+  border-radius:22px;
+  padding:14px;
+
+  box-shadow:
+    0 14px 30px rgba(0,0,0,.12),
+    0 4px 0 rgba(0,0,0,.05);
+
+  transform:translateY(0);
+  transition:.2s ease;
+  position:relative;
 }
 
-.panel-box{
-  width:100%;
-  max-width:500px;
-  background:var(--panel);
-  border-radius:18px 18px 0 0;
-  padding:16px;
-  animation:up .25s ease;
+/* 3D press */
+.card:active{
+  transform:translateY(6px);
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.15);
 }
 
-@keyframes up{
-  from{transform:translateY(40px);opacity:0;}
-  to{transform:translateY(0);opacity:1;}
-}
+/* color accent per card feel (soft, not neon) */
+.card:nth-child(4n+1){background:#fff;}
+.card:nth-child(4n+2){background:#fff7e8;}
+.card:nth-child(4n+3){background:#f0f9ff;}
+.card:nth-child(4n+4){background:#f3fff7;}
 
-.panel-icon{
+.icon{
   font-size:2rem;
+  transform:translateY(2px);
 }
 
-.panel-title{
-  font-size:.9rem;
-  margin-top:6px;
+.name{
+  margin-top:8px;
+  font-weight:700;
+  color:#2b2b2b;
+  font-size:.85rem;
 }
 
-.panel-desc{
+.desc{
+  margin-top:2px;
   font-size:.65rem;
-  opacity:.6;
-  margin-top:4px;
+  color:#777;
 }
 
-.play-btn{
-  margin-top:12px;
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#1f2a3a;
-  color:white;
+/* =========================
+   FLOAT FEEL (micro 3D)
+========================= */
+
+.card:hover{
+  transform:translateY(-2px) scale(1.01);
 }
 
 </style>
+
 </head>
 
 <body>
 
-<!-- BIOMETRIA -->
+<!-- SCANNER -->
 <div id="stage-scanner">
-  <div class="scan-wrap" id="scanner">
+  <div class="scan-wrap" id="scanner-box">
 
     <div id="touch-zone"></div>
-    <div class="scan-bar"></div>
+
+    <div class="scan-ring"></div>
+    <div class="laser"></div>
 
     <img class="fp-img" src="https://files.catbox.moe/jar7fm.png">
 
   </div>
 
-  <div id="scan-txt">SEGURE PARA INICIAR SISTEMA</div>
+  <div id="scan-txt">Segure para entrar</div>
+  <div class="scan-hint">PlayWorld Access</div>
 </div>
 
-<!-- HUB -->
+<!-- MENU -->
 <div id="main-ui">
 
-  <div class="header">
-    <h1>ARC HUB</h1>
-    <p>Game Console Interface</p>
+  <div id="bot-wrap">
+    <div id="biel-bot">🧸</div>
+    <div id="bot-speech"></div>
   </div>
 
-  <div class="categories">
-    <div class="cat">Todos</div>
-    <div class="cat">Aventura</div>
-    <div class="cat">Arcade</div>
-    <div class="cat">Kids</div>
+  <div class="game-frame">
+    <div class="grid" id="ggrid"></div>
   </div>
 
-  <div class="grid" id="grid"></div>
-
-</div>
-
-<!-- PANEL -->
-<div id="panel">
-  <div class="panel-box">
-    <div class="panel-icon" id="picon"></div>
-    <div class="panel-title" id="ptitle"></div>
-    <div class="panel-desc" id="pdesc"></div>
-    <button class="play-btn" id="play">JOGAR</button>
-  </div>
 </div>
 
 <script>
 
 /* =========================
-   BIOMETRIA
+   SCANNER
 ========================= */
 
 const touch = document.getElementById("touch-zone");
+const box = document.getElementById("scanner-box");
 const scanner = document.getElementById("stage-scanner");
 const app = document.getElementById("main-ui");
 
 let t;
 
 touch.addEventListener("touchstart", ()=>{
-  document.getElementById("scanner").classList.add("active");
+  box.classList.add("active-scan");
 
   t = setTimeout(()=>{
     scanner.style.display="none";
     app.style.display="flex";
     loadGames();
-  },1400);
+  },1500);
 });
 
 touch.addEventListener("touchend", ()=>{
-  document.getElementById("scanner").classList.remove("active");
+  box.classList.remove("active-scan");
   clearTimeout(t);
 });
 
 /* =========================
-   GAMES (mantém JSON depois)
+   GAMES (DINÂMICO)
 ========================= */
 
-let games = [];
+function loadGames(){
+  fetch("games.json")
+    .then(r=>r.json())
+    .then(data=>{
+      const grid = document.getElementById("ggrid");
 
-async function loadGames(){
-  const res = await fetch("games.json");
-  const data = await res.json();
-  games = data.games || [];
+      data.games.forEach(g=>{
+        const c=document.createElement("div");
+        c.className="card";
 
-  const grid = document.getElementById("grid");
+        c.innerHTML=`
+          <div class="icon">${g.ic}</div>
+          <div class="name">${g.nm}</div>
+          <div class="desc">${g.bd}</div>
+        `;
 
-  games.forEach(g=>{
-    const el = document.createElement("div");
-    el.className="card";
+        c.onclick=()=>{
+          window.location.href = "games/"+g.id+".html";
+        };
 
-    el.innerHTML=`
-      <div class="icon">${g.ic}</div>
-      <div class="name">${g.nm}</div>
-      <div class="desc">${g.bd}</div>
-    `;
-
-    el.onclick=()=>openPanel(g);
-
-    grid.appendChild(el);
-  });
-}
-
-/* =========================
-   PANEL (CATÁLOGO DO JOGO)
-========================= */
-
-let selected=null;
-
-function openPanel(g){
-  selected=g;
-
-  document.getElementById("panel").style.display="flex";
-  document.getElementById("picon").innerText=g.ic;
-  document.getElementById("ptitle").innerText=g.nm;
-  document.getElementById("pdesc").innerText=g.bd;
-}
-
-document.getElementById("play").onclick=()=>{
-  if(selected) launchGame(selected.id);
-};
-
-document.getElementById("panel").onclick=(e)=>{
-  if(e.target.id==="panel")
-    document.getElementById("panel").style.display="none";
-};
-
-/* =========================
-   GAME LAUNCH (SEU SISTEMA)
-========================= */
-
-function launchGame(id){
-  window.location.href = "games/"+id+".html";
+        grid.appendChild(c);
+      });
+    });
 }
 
 </script>
