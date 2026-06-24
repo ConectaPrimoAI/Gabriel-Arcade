@@ -221,6 +221,7 @@ async function loadGames() {
       {id:'bubbles', nm:'Estoura Bolha', ic:'🫧', bd:'Kids • Estourar', kids:1},
 {id:'Particles', nm:'Partículas mágicas', ic:'🔮 ', bd:'Kids • partículas', kids:1},
       {id:'fruits', nm:'Caça Frutas', ic:'🍎', bd:'Kids • Pegar', kids:1},
+{id:'basket', nm:'Basquete', ic:'🏀 ', bd:'Kids • ⛹️ ', kids:1},
       {id:'piano', nm:'Piano Kids', ic:'🎹', bd:'Kids • Música', kids:1},
       {id:'draw', nm:'Pintar', ic:'🖌️', bd:'Kids • Desenho', kids:1},
     ];
