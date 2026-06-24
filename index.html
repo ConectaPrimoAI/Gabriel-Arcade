@@ -2,38 +2,26 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>PlayWorld</title>
 
 <style>
-
-/* =========================
-   BASE FIX MOBILE
-========================= */
 
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-
-  -webkit-user-select:none;
   user-select:none;
-
-  -webkit-touch-callout:none;
+  -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
-}
-
-img{
-  pointer-events:none;
-  -webkit-user-drag:none;
 }
 
 html,body{
   width:100%;
   height:100%;
   overflow:hidden;
-  font-family:system-ui, sans-serif;
-  background:#f5f6f8;
+  font-family:system-ui;
+  background:#f1f4f8;
 }
 
 /* =========================
@@ -50,50 +38,46 @@ html,body{
 }
 
 .box{
-  width:280px;
-  height:280px;
-  border-radius:26px;
-  background:#fff;
-  box-shadow:0 20px 50px rgba(0,0,0,.12);
+  width:300px;
+  height:300px;
+  border-radius:28px;
+  background:rgba(255,255,255,.85);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 25px 60px rgba(0,0,0,.12);
   position:relative;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+  overflow:hidden;
 }
 
-/* 🔥 FIX REAL TOUCH */
+/* canvas partículas */
+canvas{
+  position:absolute;
+  inset:0;
+  z-index:1;
+}
+
+/* fingerprint CENTRALIZADA REAL */
+.fp{
+  width:110px;
+
+  position:absolute;
+  top:50%;
+  left:50%;
+
+  transform:translate(-50%,-50%);
+
+  z-index:3;
+  opacity:.95;
+}
+
+/* área de toque */
 #hold{
   position:absolute;
   inset:0;
-  z-index:99999;
+  z-index:9999;
   touch-action:none;
 }
 
-/* fingerprint */
-.fp{
-  width:120px;
-}
-
-/* scan animation */
-.line{
-  position:absolute;
-  width:70%;
-  height:3px;
-  background:#4a90e2;
-  opacity:0;
-}
-
-.active .line{
-  opacity:1;
-  animation:scan 1.2s infinite;
-}
-
-@keyframes scan{
-  0%{transform:translateY(-90px);}
-  50%{transform:translateY(90px);}
-  100%{transform:translateY(-90px);}
-}
-
+/* texto */
 #txt{
   margin-top:18px;
   font-size:14px;
@@ -110,167 +94,242 @@ html,body{
   display:none;
   overflow:auto;
   padding:16px;
-  background:#f5f6f8;
 }
 
-/* header */
 .title{
   font-size:18px;
-  font-weight:700;
+  font-weight:800;
   margin-bottom:14px;
 }
 
-/* grid */
+/* GRID */
 .grid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
+  gap:14px;
 }
 
-/* card */
+/* CARD */
 .card{
-  background:#fff;
-  border-radius:16px;
-  padding:12px;
-  box-shadow:0 12px 30px rgba(0,0,0,.10);
-  transition:.15s;
+  background:rgba(255,255,255,.78);
+  border-radius:22px;
+  padding:14px;
+  box-shadow:0 10px 20px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
-.card:active{
-  transform:scale(.97);
-}
-
-.tag{
-  width:100%;
-  height:4px;
-  border-radius:6px;
-  margin-bottom:8px;
-}
-
-.blue{background:#4a90e2;}
-.red{background:#e25c5c;}
-.yellow{background:#e2c44a;}
-.green{background:#4ecb8f;}
-
-.icon{font-size:24px;}
-.name{font-weight:700;margin-top:6px;}
-.desc{font-size:11px;opacity:.6;margin-top:2px;}
+.icon{font-size:52px;}
+.name{font-weight:800;margin-top:6px;text-align:center;}
+.desc{font-size:11px;opacity:.6;text-align:center;margin-top:3px;}
 
 .btn{
-  margin-top:10px;
+  margin-top:12px;
   width:100%;
-  padding:8px;
+  padding:10px;
   border:none;
-  border-radius:10px;
-  background:#222;
+  border-radius:14px;
+  background:#1f2937;
   color:#fff;
+  font-weight:700;
 }
 
 </style>
-
 </head>
+
 <body>
 
-<!-- SCANNER -->
 <div id="scanner">
 
   <div class="box" id="box">
 
-    <!-- HOLD FIX REAL -->
-    <div id="hold"></div>
-
-    <div class="line"></div>
+    <canvas id="particles"></canvas>
 
     <img class="fp" src="https://files.catbox.moe/jar7fm.png">
 
+    <div id="hold"></div>
+
   </div>
 
-  <div id="txt">Segure para entrar</div>
+  <div id="txt">Segure por 3 segundos</div>
 
 </div>
 
-<!-- APP -->
 <div id="app">
-
   <div class="title">PlayWorld</div>
-
   <div class="grid" id="grid"></div>
-
 </div>
 
 <script>
 
 /* =========================
-   SCANNER FIX
+   ELEMENTOS
 ========================= */
 
 const hold = document.getElementById("hold");
-const box = document.getElementById("box");
 const scanner = document.getElementById("scanner");
 const app = document.getElementById("app");
 
-let timer;
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
 
-hold.addEventListener("touchstart",(e)=>{
-  e.preventDefault();
-
-  box.classList.add("active");
-
-  timer = setTimeout(()=>{
-    scanner.style.display="none";
-    app.style.display="block";
-    loadGames();
-  },1400);
-
-},{passive:false});
-
-hold.addEventListener("touchend",()=>{
-  box.classList.remove("active");
-  clearTimeout(timer);
-});
+canvas.width = 300;
+canvas.height = 300;
 
 /* =========================
-   LOAD GAMES (FIXED JSON)
+   STATE
+========================= */
+
+let particles = [];
+let holding = false;
+let holdStart = 0;
+
+/* =========================
+   PARTICLES (ESTÁVEIS)
+========================= */
+
+for(let i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*300,
+    y:Math.random()*300,
+    vx:(Math.random()-0.5)*1.2,
+    vy:(Math.random()-0.5)*1.2,
+    tx:150,
+    ty:150
+  });
+}
+
+/* =========================
+   LOOP
+========================= */
+
+function loop(){
+
+  ctx.clearRect(0,0,300,300);
+
+  for(let p of particles){
+
+    let dx = p.tx - p.x;
+    let dy = p.ty - p.y;
+
+    let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
+    let force = holding ? 0.12 : -0.01;
+
+    // movimento base constante (evita sumir)
+    p.vx += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
+    p.vy += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
+
+    // atração
+    p.vx += dx / dist * force;
+    p.vy += dy / dist * force;
+
+    p.vx *= 0.90;
+    p.vy *= 0.90;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // wrap
+    if(p.x<0) p.x=300;
+    if(p.x>300) p.x=0;
+    if(p.y<0) p.y=300;
+    if(p.y>300) p.y=0;
+
+    ctx.fillStyle = holding
+      ? "rgba(74,144,226,.9)"
+      : "rgba(0,0,0,.35)";
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,2.2,0,Math.PI*2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+/* =========================
+   HOLD FIX (3 SEGUNDOS REAL)
+========================= */
+
+function start(e){
+  e.preventDefault();
+
+  holding = true;
+  holdStart = Date.now();
+
+  document.getElementById("txt").innerText = "Analisando...";
+
+  const interval = setInterval(()=>{
+
+    if(!holding){
+      clearInterval(interval);
+      return;
+    }
+
+    const elapsed = Date.now() - holdStart;
+
+    if(elapsed >= 3000){
+
+      clearInterval(interval);
+
+      holding = false;
+
+      scanner.style.opacity = "0";
+
+      setTimeout(()=>{
+        scanner.style.display="none";
+        app.style.display="block";
+        loadGames();
+      },300);
+    }
+
+  },50);
+}
+
+function end(){
+  holding = false;
+  document.getElementById("txt").innerText = "Segure por 3 segundos";
+}
+
+hold.addEventListener("touchstart",start,{passive:false});
+hold.addEventListener("touchend",end);
+hold.addEventListener("touchcancel",end);
+
+/* =========================
+   LOAD GAMES
 ========================= */
 
 async function loadGames(){
 
-  try{
-    const res = await fetch("./games.json",{cache:"no-store"});
+  const res = await fetch("./games.json",{cache:"no-store"});
+  const data = await res.json();
 
-    if(!res.ok) throw new Error("JSON não carregou");
+  const grid = document.getElementById("grid");
+  grid.innerHTML="";
 
-    const data = await res.json();
+  data.games.forEach(g=>{
 
-    const grid = document.getElementById("grid");
-    grid.innerHTML = "";
+    const card=document.createElement("div");
+    card.className="card";
 
-    const colors = ["blue","red","yellow","green"];
+    card.innerHTML=`
+      <div class="icon">${g.ic}</div>
+      <div class="name">${g.nm}</div>
+      <div class="desc">${g.bd}</div>
+      <button class="btn">Jogar</button>
+    `;
 
-    data.games.forEach((g,i)=>{
+    card.querySelector("button").onclick=()=>{
+      location.href="games/"+g.id+".html";
+    };
 
-      const card = document.createElement("div");
-      card.className="card";
+    grid.appendChild(card);
 
-      card.innerHTML=`
-        <div class="tag ${colors[i % 4]}"></div>
-        <div class="icon">${g.ic}</div>
-        <div class="name">${g.nm}</div>
-        <div class="desc">${g.bd}</div>
-        <button class="btn">Jogar</button>
-      `;
-
-      card.querySelector("button").onclick=()=>{
-        location.href="games/"+g.id+".html";
-      };
-
-      grid.appendChild(card);
-
-    });
-
-  }catch(e){
-    console.error("ERRO JSON:",e);
-  }
+  });
 
 }
 
