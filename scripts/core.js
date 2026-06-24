@@ -219,6 +219,7 @@ async function loadGames() {
       {id:'platform', nm:'Jump Hero', ic:'🦸', bd:'Aventura 2D'},
       {id:'colors', nm:'Caça Cores', ic:'🎨', bd:'Kids • Cores', kids:1},
       {id:'bubbles', nm:'Estoura Bolha', ic:'🫧', bd:'Kids • Estourar', kids:1},
+{id:'Particles', nm:'Partículas mágicas', ic:'🔮 ', bd:'Kids • partículas', kids:1},
       {id:'fruits', nm:'Caça Frutas', ic:'🍎', bd:'Kids • Pegar', kids:1},
       {id:'piano', nm:'Piano Kids', ic:'🎹', bd:'Kids • Música', kids:1},
       {id:'draw', nm:'Pintar', ic:'🖌️', bd:'Kids • Desenho', kids:1},
