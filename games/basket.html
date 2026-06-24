@@ -1,0 +1,836 @@
+
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Street Hoop 3D</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <!-- Three.js para renderização 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            background-color: #0d0f14;
+        }
+        .font-heavy {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+        /* Loader discreto */
+        .loader {
+            border-top-color: #ea580c;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="relative w-screen h-screen">
+
+    <!-- CANVAS DO JOGO 3D -->
+    <div id="game-container" class="absolute inset-0 w-full h-full z-0"></div>
+
+    <!-- ECRÃ DE CARREGAMENTO -->
+    <div id="loading-screen" class="absolute inset-0 bg-[#0d0f14] z-50 flex flex-col items-center justify-center text-white transition-opacity duration-500">
+        <div class="text-center px-4">
+            <h1 class="text-4xl md:text-5xl font-heavy text-amber-500 mb-2">STREET HOOP 3D</h1>
+            <p class="text-neutral-400 font-semibold tracking-widest text-xs md:text-sm mb-8 uppercase">A carregar a quadra</p>
+            <div class="relative w-16 h-16 mx-auto mb-6">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-neutral-800 h-16 w-16"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-xl">🏀</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HUD DO JOGO -->
+    <div id="game-hud" class="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between p-4 md:p-6 opacity-0 transition-opacity duration-500">
+        
+        <!-- Barra Superior -->
+        <div class="flex justify-between items-start w-full">
+            <div class="bg-neutral-900/90 rounded-xl p-3 border border-neutral-800 flex items-center gap-4 pointer-events-auto shadow-2xl">
+                <div class="text-center">
+                    <p class="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Pontos</p>
+                    <p id="score-display" class="text-2xl md:text-3xl font-heavy text-white">000</p>
+                </div>
+                <div class="h-6 w-[1px] bg-neutral-800"></div>
+                <div class="text-center">
+                    <p class="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Recorde</p>
+                    <p id="high-score-display" class="text-xl md:text-2xl font-heavy text-amber-500">000</p>
+                </div>
+            </div>
+
+            <!-- Controlos Auxiliares -->
+            <div class="flex gap-2 pointer-events-auto">
+                <button id="btn-sound" class="w-10 h-10 rounded-xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-xl" title="Sons">
+                    <svg id="icon-sound-on" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <svg id="icon-sound-off" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-neutral-600 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm11.54 1.112a4 4 0 000-5.656m-1.414 7.07a6 6 0 000-8.484" />
+                    </svg>
+                </button>
+                <button id="btn-pause" class="w-10 h-10 rounded-xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-xl" title="Pausar">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Guia Subtil de Jogo -->
+        <div class="w-full max-w-xs mx-auto text-center bg-neutral-900/90 p-3 rounded-xl border border-neutral-800 pointer-events-none shadow-xl">
+            <p id="guide-text" class="text-neutral-400 text-xs font-semibold">Arrasta para cima para lançar</p>
+        </div>
+
+    </div>
+
+    <!-- ECRÃ DE MENU -->
+    <div id="menu-screen" class="absolute inset-0 z-20 bg-[#0d0f14]/95 flex flex-col items-center justify-center text-white p-6 transition-opacity duration-500">
+        <div class="max-w-xs w-full text-center space-y-8">
+            <div class="space-y-1">
+                <h1 class="text-4xl md:text-5xl font-heavy text-amber-500">STREET HOOP</h1>
+                <p class="text-neutral-500 font-semibold tracking-wider text-[11px] uppercase">Simulador de Lançamento 3D</p>
+            </div>
+
+            <div class="bg-neutral-900/95 rounded-xl p-4 border border-neutral-800 flex justify-around shadow-xl">
+                <div>
+                    <span class="block text-neutral-500 text-[10px] uppercase tracking-wider font-semibold">Recorde</span>
+                    <span id="menu-high-score" class="text-2xl font-heavy text-white">000</span>
+                </div>
+            </div>
+
+            <button id="btn-start" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-heavy text-lg py-4 px-6 rounded-xl shadow-lg active:scale-95 transition duration-150">
+                Iniciar Jogo
+            </button>
+        </div>
+    </div>
+
+    <!-- DIÁLOGO DE PAUSA -->
+    <div id="pause-modal" class="absolute inset-0 z-30 bg-[#0d0f14]/90 flex flex-col items-center justify-center text-white p-6 hidden">
+        <div class="max-w-xs w-full bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center space-y-4">
+            <h2 class="text-3xl font-heavy text-amber-500">PAUSA</h2>
+            <div class="flex flex-col gap-2">
+                <button id="btn-resume" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-heavy py-3 rounded-lg transition">
+                    Retomar
+                </button>
+                <button id="btn-quit" class="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold py-2 rounded-lg transition">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT DO JOGO -->
+    <script>
+        // ==========================================
+        // CONFIGURAÇÕES GERAIS E ESTADO DO JOGO
+        // ==========================================
+        const GAME = {
+            state: 'LOADING', 
+            score: 0,
+            highScore: parseInt(localStorage.getItem('streetHoopHighScore_V3') || '0'),
+            ballInAir: false,
+            soundEnabled: true,
+        };
+
+        const dom = {
+            loadingScreen: document.getElementById('loading-screen'),
+            gameHud: document.getElementById('game-hud'),
+            menuScreen: document.getElementById('menu-screen'),
+            pauseModal: document.getElementById('pause-modal'),
+            
+            scoreDisplay: document.getElementById('score-display'),
+            highScoreDisplay: document.getElementById('high-score-display'),
+            menuHighScore: document.getElementById('menu-high-score'),
+            guideText: document.getElementById('guide-text'),
+            
+            btnStart: document.getElementById('btn-start'),
+            btnPause: document.getElementById('btn-pause'),
+            btnResume: document.getElementById('btn-resume'),
+            btnQuit: document.getElementById('btn-quit'),
+            btnSound: document.getElementById('btn-sound'),
+            
+            iconSoundOn: document.getElementById('icon-sound-on'),
+            iconSoundOff: document.getElementById('icon-sound-off'),
+        };
+
+        dom.highScoreDisplay.textContent = String(GAME.highScore).padStart(3, '0');
+        dom.menuHighScore.textContent = String(GAME.highScore).padStart(3, '0');
+
+        // ==========================================
+        // GERADOR DE EFEITOS SONOROS (WEB AUDIO API)
+        // ==========================================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSynthSound(type) {
+            if (!GAME.soundEnabled) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const time = audioCtx.currentTime;
+
+            if (type === 'bounce') {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(160, time);
+                osc.frequency.exponentialRampToValueAtTime(65, time + 0.15);
+                gainNode.gain.setValueAtTime(0.35, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start(time);
+                osc.stop(time + 0.16);
+            } 
+            else if (type === 'rim') {
+                const osc = audioCtx.createOscillator();
+                const noise = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(240, time);
+                noise.type = 'sawtooth';
+                noise.frequency.setValueAtTime(900, time);
+                
+                gainNode.gain.setValueAtTime(0.2, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+                
+                osc.connect(gainNode);
+                noise.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start(time);
+                noise.start(time);
+                osc.stop(time + 0.12);
+                noise.stop(time + 0.12);
+            } 
+            else if (type === 'board') {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(95, time);
+                osc.frequency.exponentialRampToValueAtTime(45, time + 0.2);
+                gainNode.gain.setValueAtTime(0.4, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start(time);
+                osc.stop(time + 0.23);
+            }
+            else if (type === 'swish') {
+                const duration = 0.3;
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(1150, time);
+                filter.Q.setValueAtTime(2.2, time);
+                
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.setValueAtTime(0.25, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                
+                noiseNode.connect(filter);
+                filter.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                noiseNode.start(time);
+                noiseNode.stop(time + duration);
+            }
+            else if (type === 'score') {
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, time); 
+                osc.frequency.setValueAtTime(554, time + 0.08); 
+                gainNode.gain.setValueAtTime(0.15, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                osc.start(time);
+                osc.stop(time + 0.22);
+            }
+        }
+
+
+        // ==========================================
+        // AMBIENTE 3D - THREE.JS COM SOMBRAS E LUZES
+        // ==========================================
+        let scene, camera, renderer;
+        let ball, rim, net, backboard, court;
+        
+        // Configurações Físicas Realistas
+        const ballRadius = 0.24; 
+        const rimRadius = 0.45; 
+        const rimPosition = new THREE.Vector3(0, 3.8, -3.5); 
+        
+        let ballVelocity = new THREE.Vector3();
+        const gravity = -16; 
+        
+        // Posição de origem da bola (Varia dinamicamente no jogo real)
+        const ballDefaultPos = new THREE.Vector3(0, 1.25, 5.5);
+
+        // Arraste por ponteiro
+        let pointerStartPos = { x: 0, y: 0 };
+        let pointerStartTime = 0;
+        let isPointerDown = false;
+
+        function init3D() {
+            const container = document.getElementById('game-container');
+            
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0d0f14, 0.025);
+
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 2.3, 8.3); 
+            camera.lookAt(new THREE.Vector3(0, 2.7, -3.5)); 
+
+            // Renderizador com sombras ativadas
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+            container.appendChild(renderer.domElement);
+
+            // Luzes
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.22);
+            scene.add(ambientLight);
+
+            // Refletor principal projetor de sombra
+            const courtLight = new THREE.DirectionalLight(0xfff6ed, 1.3);
+            courtLight.position.set(5, 14, 6);
+            courtLight.castShadow = true;
+            courtLight.shadow.mapSize.width = 1024;
+            courtLight.shadow.mapSize.height = 1024;
+            courtLight.shadow.bias = -0.0006;
+            scene.add(courtLight);
+
+            // Luz de preenchimento azul subtil (fria) para atmosfera urbana realista
+            const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
+            fillLight.position.set(-6, 8, -1);
+            scene.add(fillLight);
+
+            createCourt();
+            createHoopSystem();
+            createBasketball();
+
+            window.addEventListener('resize', onWindowResize);
+            setupControls();
+
+            setTimeout(() => {
+                dom.loadingScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    dom.loadingScreen.style.display = 'none';
+                    GAME.state = 'MENU';
+                }, 500);
+            }, 800);
+        }
+
+        // Quadra Urbana Realista de Concreto
+        function createCourt() {
+            // Chão de asfalto cinza escuro
+            const floorGeo = new THREE.PlaneGeometry(32, 42);
+            const floorMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1f232b,
+                roughness: 0.9,
+                metalness: 0.06
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true; 
+            scene.add(floor);
+
+            // Linhas brancas de quadra clássica
+            const linesGroup = new THREE.Group();
+            const courtBoxGeo = new THREE.BoxGeometry(5.6, 0.01, 7.6);
+            const lineMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff, 
+                roughness: 1.0,
+                transparent: true, 
+                opacity: 0.22 
+            });
+            const courtBox = new THREE.Mesh(courtBoxGeo, lineMat);
+            courtBox.position.set(0, 0.01, -4);
+            linesGroup.add(courtBox);
+
+            // Linha de três pontos arqueada
+            const arcGeometry = new THREE.RingGeometry(5.8, 5.92, 40, 1, Math.PI, Math.PI);
+            const arcMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, 
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.22
+            });
+            const arc = new THREE.Mesh(arcGeometry, arcMat);
+            arc.rotation.x = Math.PI / 2;
+            arc.position.set(0, 0.015, -3.5);
+            linesGroup.add(arc);
+
+            scene.add(linesGroup);
+
+            // Prédios ao fundo
+            const buildGeo = new THREE.BoxGeometry(10, 22, 10);
+            const buildMat = new THREE.MeshStandardMaterial({ color: 0x11131a, roughness: 0.9 });
+            
+            const buildingL = new THREE.Mesh(buildGeo, buildMat);
+            buildingL.position.set(-16, 11, -11);
+            scene.add(buildingL);
+
+            const buildingR = buildingL.clone();
+            buildingR.position.set(16, 11, -11);
+            scene.add(buildingR);
+        }
+
+        // Tabela de Basquete Completa
+        function createHoopSystem() {
+            const hoopGroup = new THREE.Group();
+
+            // Poste de aço pesado
+            const postGeo = new THREE.CylinderGeometry(0.12, 0.14, 5.8, 12);
+            const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.7 });
+            const post = new THREE.Mesh(postGeo, postMat);
+            post.position.set(0, 2.9, -4.5);
+            post.castShadow = true;
+            post.receiveShadow = true;
+            hoopGroup.add(post);
+
+            // Tabela com Acrílico Transparente Realista
+            const boardGeo = new THREE.BoxGeometry(3.6, 2.4, 0.14);
+            const boardMat = new THREE.MeshPhysicalMaterial({ 
+                color: 0xffffff, 
+                transparent: true, 
+                opacity: 0.35,
+                roughness: 0.1,
+                transmission: 0.85,
+                thickness: 1.0
+            });
+            backboard = new THREE.Mesh(boardGeo, boardMat);
+            backboard.position.set(0, 4.7, -4);
+            backboard.castShadow = true;
+            hoopGroup.add(backboard);
+
+            // Borda interna de marcação da tabela
+            const boardBoxGeo = new THREE.BoxGeometry(1.2, 0.9, 0.02);
+            const boardBoxMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1.0 });
+            const boardBox = new THREE.Mesh(boardBoxGeo, boardBoxMat);
+            boardBox.position.set(0, 4.4, -3.91);
+            hoopGroup.add(boardBox);
+
+            // O Aro (Laranja de metal fosco)
+            const rimGeo = new THREE.TorusGeometry(rimRadius, 0.035, 12, 32);
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xea580c, metalness: 0.6, roughness: 0.35 });
+            rim = new THREE.Mesh(rimGeo, rimMat);
+            rim.rotation.x = Math.PI / 2;
+            rim.position.copy(rimPosition);
+            rim.castShadow = true;
+            hoopGroup.add(rim);
+
+            // Rede aramada
+            const netGeo = new THREE.CylinderGeometry(rimRadius, rimRadius * 0.68, 0.9, 16, 4, true);
+            const netMat = new THREE.MeshBasicMaterial({ 
+                color: 0xffffff, 
+                wireframe: true,
+                transparent: true,
+                opacity: 0.5
+            });
+            net = new THREE.Mesh(netGeo, netMat);
+            net.position.set(rimPosition.x, rimPosition.y - 0.45, rimPosition.z);
+            hoopGroup.add(net);
+
+            scene.add(hoopGroup);
+        }
+
+        // Bola de Basquete Detalhada
+        function createBasketball() {
+            const ballGeo = new THREE.SphereGeometry(ballRadius, 32, 32);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(0, 0, 512, 256);
+            
+            ctx.strokeStyle = '#111827';
+            ctx.lineWidth = 8;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, 128);
+            ctx.lineTo(512, 128);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(256, 0);
+            ctx.lineTo(256, 256);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(128, 128, 92, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(384, 128, 92, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const ballMat = new THREE.MeshStandardMaterial({ 
+                map: texture,
+                roughness: 0.75,
+                metalness: 0.12
+            });
+
+            ball = new THREE.Mesh(ballGeo, ballMat);
+            ball.castShadow = true;
+            ball.position.copy(ballDefaultPos);
+            scene.add(ball);
+        }
+
+
+        // ==========================================
+        // CONTROLOS DE FÍSICA REALISTA (MIRA MANUAL)
+        // ==========================================
+        function setupControls() {
+            window.addEventListener('mousedown', onPointerStart, { passive: false });
+            window.addEventListener('mousemove', onPointerMove, { passive: false });
+            window.addEventListener('mouseup', onPointerEnd, { passive: false });
+
+            window.addEventListener('touchstart', onPointerStart, { passive: false });
+            window.addEventListener('touchmove', onPointerMove, { passive: false });
+            window.addEventListener('touchend', onPointerEnd, { passive: false });
+        }
+
+        function onPointerStart(e) {
+            if (GAME.state !== 'PLAYING' || GAME.ballInAir) return;
+            if (e.target.closest('button')) return;
+
+            isPointerDown = true;
+            pointerStartTime = performance.now();
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            pointerStartPos.x = clientX;
+            pointerStartPos.y = clientY;
+        }
+
+        function onPointerMove(e) {
+            if (!isPointerDown || GAME.ballInAir) return;
+            e.preventDefault();
+        }
+
+        function onPointerEnd(e) {
+            if (!isPointerDown || GAME.ballInAir) return;
+            isPointerDown = false;
+
+            const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+            const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+            const deltaX = clientX - pointerStartPos.x;
+            const deltaY = clientY - pointerStartPos.y;
+            const deltaTime = performance.now() - pointerStartTime;
+
+            if (deltaY < -35 && deltaTime > 40) {
+                fireBall(deltaX, deltaY, deltaTime);
+            }
+        }
+
+        function fireBall(dx, dy, dt) {
+            GAME.ballInAir = true;
+
+            const speedMultiplier = Math.min(Math.max(52 / dt, 0.85), 2.2);
+            
+            const forceY = Math.min(Math.max(-dy * 0.043 * speedMultiplier, 9.8), 16.0);
+            const forceZ = Math.min(Math.max(-dy * 0.042 * speedMultiplier, 13.8), 21.5);
+            const forceX = dx * 0.033;
+
+            ballVelocity.set(forceX, forceY, -forceZ);
+            ball.rotation.x = Math.random();
+
+            dom.guideText.textContent = "Bola em voo...";
+        }
+
+
+        // ==========================================
+        // FÍSICA E COLISÃO EXATA + ÍMAN DE APROXIMAÇÃO
+        // ==========================================
+        let hasTriggeredNet = false;
+        let hitBoardOnce = false;
+        let hitRimOnce = false;
+
+        function updatePhysics(dt) {
+            if (!GAME.ballInAir) {
+                ball.rotation.y += 0.005;
+                return;
+            }
+
+            // Aplicar gravidade
+            ballVelocity.y += gravity * dt;
+
+            // Integrar posição
+            ball.position.addScaledVector(ballVelocity, dt);
+            ball.rotation.x += 0.06;
+
+            // 1. COLISÃO COM O SOLO DA QUADRA
+            if (ball.position.y - ballRadius <= 0.01) {
+                ball.position.y = ballRadius + 0.01;
+                ballVelocity.y = -ballVelocity.y * 0.55; 
+                ballVelocity.x *= 0.75;
+                ballVelocity.z *= 0.75;
+
+                if (Math.abs(ballVelocity.y) > 1.2) {
+                    playSynthSound('bounce');
+                }
+
+                if (!hasTriggeredNet && ball.position.z < 1.0) {
+                    setTimeout(resetBallPosition, 1000);
+                } else {
+                    setTimeout(resetBallPosition, 1400);
+                }
+            }
+
+            // 2. COLISÃO COM A TABELA
+            if (ball.position.z + ballRadius >= -4.05 && ball.position.z - ballRadius <= -3.85) {
+                if (ball.position.x >= -1.8 && ball.position.x <= 1.8 &&
+                    ball.position.y >= 3.5 && ball.position.y <= 5.9) {
+                    
+                    ball.position.z = -3.85 + ballRadius; 
+                    ballVelocity.z = -ballVelocity.z * 0.55; 
+                    ballVelocity.x += (Math.random() - 0.5) * 0.8; 
+                    
+                    hitBoardOnce = true;
+                    playSynthSound('board');
+                }
+            }
+
+            // 3. COLISÃO TOROIDAL E CÁLCULO DE PROXIMIDADE DO CESTO
+            const ballCenterHoriz = new THREE.Vector2(ball.position.x, ball.position.z);
+            const rimCenterHoriz = new THREE.Vector2(rimPosition.x, rimPosition.z);
+            const distToRimCenter = ballCenterHoriz.distanceTo(rimCenterHoriz);
+            const heightDiff = ball.position.y - rimPosition.y;
+
+            // --- ÍMAN DE APROXIMAÇÃO SUAVE (ATUA EXCLUSIVAMENTE AO REDOR DO CESTO) ---
+            if (ballVelocity.y < 0 && heightDiff >= -0.3 && heightDiff <= 0.6 && distToRimCenter < rimRadius * 1.3) {
+                const pullIntensity = 0.09; 
+                ball.position.x += (rimPosition.x - ball.position.x) * pullIntensity;
+                ball.position.z += (rimPosition.z - ball.position.z) * pullIntensity;
+
+                ballVelocity.x *= 0.94;
+                ballVelocity.z *= 0.94;
+            }
+
+            // Colisão física real com o metal do aro
+            if (Math.abs(heightDiff) <= ballRadius) {
+                const dirToBall = new THREE.Vector2().subVectors(ballCenterHoriz, rimCenterHoriz).normalize();
+                const closestPointOnRimRing = new THREE.Vector3(
+                    rimPosition.x + dirToBall.x * rimRadius,
+                    rimPosition.y,
+                    rimPosition.z + dirToBall.y * rimRadius
+                );
+
+                const distanceToRingMetal = ball.position.distanceTo(closestPointOnRimRing);
+
+                if (distanceToRingMetal < ballRadius) {
+                    const normalVec = new THREE.Vector3().subVectors(ball.position, closestPointOnRimRing).normalize();
+                    ball.position.copy(closestPointOnRimRing).addScaledVector(normalVec, ballRadius + 0.005);
+                    
+                    const dotProduct = ballVelocity.dot(normalVec);
+                    ballVelocity.subScaledVector(normalVec, (1.0 + 0.45) * dotProduct);
+                    
+                    ballVelocity.x += (Math.random() - 0.5) * 0.6;
+
+                    hitRimOnce = true;
+                    playSynthSound('rim');
+                }
+            }
+
+            // 4. SISTEMA DE REDE E MARCAÇÃO DE CESTO
+            if (ball.position.y < rimPosition.y && ball.position.y > rimPosition.y - 0.9) {
+                if (distToRimCenter < rimRadius) {
+                    // Atrito subtil com o nylon da rede
+                    ballVelocity.x *= 0.9;
+                    ballVelocity.z *= 0.9;
+                    ballVelocity.y = Math.max(ballVelocity.y, -3.5);
+
+                    ball.position.x += (rimPosition.x - ball.position.x) * 0.08;
+                    ball.position.z += (rimPosition.z - ball.position.z) * 0.08;
+
+                    if (!hasTriggeredNet && ballVelocity.y < 0 && ball.position.y <= rimPosition.y - 0.15) {
+                        hasTriggeredNet = true;
+                        triggerScore();
+                    }
+                }
+            }
+
+            // Limite de segurança contra queda infinita fora da área de jogo
+            if (Math.abs(ball.position.x) > 12 || ball.position.z < -14 || ball.position.z > 12) {
+                resetBallPosition();
+            }
+        }
+
+        function resetBallPosition() {
+            if (!GAME.ballInAir) return;
+
+            GAME.ballInAir = false;
+            hasTriggeredNet = false;
+            hitBoardOnce = false;
+            hitRimOnce = false;
+
+            // Reposiciona o lançamento com variação dinâmica de distância e ângulo
+            const randomX = (Math.random() - 0.5) * 3.8; 
+            const randomZ = 4.6 + Math.random() * 2.2; 
+            
+            ballDefaultPos.set(randomX, 1.25, randomZ);
+            ball.position.copy(ballDefaultPos);
+            ballVelocity.set(0, 0, 0);
+
+            // Ajusta a posição de câmara
+            camera.position.set(randomX, 2.3, randomZ + 2.7);
+            camera.lookAt(new THREE.Vector3(0, 2.7, -3.5));
+
+            dom.guideText.textContent = "Arrasta para cima para lançar";
+        }
+
+
+        // ==========================================
+        // SISTEMA DE REGRAS E PONTUAÇÃO
+        // ==========================================
+        function triggerScore() {
+            playSynthSound('swish');
+            playSynthSound('score');
+
+            let pointsGained = ballDefaultPos.z > 6.1 ? 3 : 2;
+            GAME.score += pointsGained;
+            dom.scoreDisplay.textContent = String(GAME.score).padStart(3, '0');
+
+            // Mensagem de texto removida a pedido do utilizador para manter o ecrã limpo.
+
+            if (GAME.score > GAME.highScore) {
+                GAME.highScore = GAME.score;
+                localStorage.setItem('streetHoopHighScore_V3', GAME.highScore);
+                dom.highScoreDisplay.textContent = String(GAME.highScore).padStart(3, '0');
+            }
+
+            setTimeout(resetBallPosition, 800);
+        }
+
+
+        // ==========================================
+        // FLUXO DO JOGO E INTERFACES (UI)
+        // ==========================================
+        function startGame() {
+            GAME.state = 'PLAYING';
+            GAME.score = 0;
+            GAME.ballInAir = false;
+            
+            dom.scoreDisplay.textContent = "000";
+            dom.menuScreen.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                dom.menuScreen.style.display = 'none';
+                dom.gameHud.classList.remove('opacity-0');
+                dom.gameHud.classList.add('opacity-100');
+            }, 400);
+
+            resetBallPosition();
+        }
+
+        function toggleSound() {
+            GAME.soundEnabled = !GAME.soundEnabled;
+            if (GAME.soundEnabled) {
+                dom.iconSoundOn.classList.remove('hidden');
+                dom.iconSoundOff.classList.add('hidden');
+            } else {
+                dom.iconSoundOn.classList.add('hidden');
+                dom.iconSoundOff.classList.remove('hidden');
+            }
+        }
+
+        function togglePause() {
+            if (GAME.state === 'PLAYING') {
+                GAME.state = 'PAUSED';
+                dom.pauseModal.classList.remove('hidden');
+            } else if (GAME.state === 'PAUSED') {
+                GAME.state = 'PLAYING';
+                dom.pauseModal.classList.add('hidden');
+            }
+        }
+
+        function quitGame() {
+            GAME.state = 'MENU';
+            dom.pauseModal.classList.add('hidden');
+            dom.gameHud.classList.add('opacity-0');
+            dom.menuScreen.style.display = 'flex';
+            setTimeout(() => {
+                dom.menuScreen.classList.remove('opacity-0');
+            }, 50);
+            dom.menuHighScore.textContent = String(GAME.highScore).padStart(3, '0');
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+
+        // ==========================================
+        // EVENTOS DE ESCUTA DOS BOTÕES
+        // ==========================================
+        dom.btnStart.addEventListener('click', startGame);
+        dom.btnPause.addEventListener('click', togglePause);
+        dom.btnResume.addEventListener('click', togglePause);
+        dom.btnQuit.addEventListener('click', quitGame);
+        dom.btnSound.addEventListener('click', toggleSound);
+
+
+        // ==========================================
+        // LOOP PRINCIPAL DE RENDERIZAÇÃO
+        // ==========================================
+        let lastTime = performance.now();
+
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+
+            const currentTime = performance.now();
+            let dt = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            if (dt > 0.1) dt = 0.1;
+
+            if (GAME.state === 'PLAYING') {
+                updatePhysics(dt);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function() {
+            init3D();
+            gameLoop();
+        };
+
+    </script>
+</body>
+</html>
