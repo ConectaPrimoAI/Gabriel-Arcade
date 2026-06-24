@@ -2,24 +2,119 @@
   "version": "2.0",
   "updated": "2026-06-21",
   "games": [
-    {"id": "bear", "nm": "Bear Game", "ic": "🐻", "bd": "Jogo do Urso"},
-    {"id": "pacman", "nm": "Pac-Man", "ic": "👻", "bd": "Fuja dos Fantasmas"},
-    {"id": "snake", "nm": "Snake Neon", "ic": "🐍", "bd": "Cobrinha Neon"},
-    {"id": "tetris", "nm": "Tetris", "ic": "🧱", "bd": "Encaixe Blocos"},
-    {"id": "space", "nm": "Space Wars", "ic": "🚀", "bd": "Guerra Espacial"},
-    {"id": "flappy", "nm": "Flappy Bird", "ic": "🐦", "bd": "Voo Infinito"},
-    {"id": "dino", "nm": "Dino Run", "ic": "🦕", "bd": "Fuja dos Obstáculos"},
-    {"id": "breakout", "nm": "Breakout", "ic": "🏓", "bd": "Quebre os Tijolos"},
-    {"id": "soccer", "nm": "Futebol", "ic": "⚽", "bd": "Chute ao Gol"},
-    {"id": "pong", "nm": "Pong", "ic": "🏸", "bd": "Ping-Pong"},
-    {"id": "asteroids", "nm": "Asteroids", "ic": "☄️", "bd": "Destrua Astros"},
-    {"id": "platform", "nm": "Jump Hero", "ic": "🦸", "bd": "Aventura 2D"},
-    {"id": "colors", "nm": "Caça Cores", "ic": "🎨", "bd": "Kids • Cores", "kids": 1},
-    {"id": "bubbles", "nm": "Estoura Bolha", "ic": "🫧", "bd": "Kids • Estourar", "kids": 1},
-    {"id": "fruits", "nm": "Caça Frutas", "ic":
-   {"id": "partículas", "nm": "partículas mágicas", "ic": "🔮 ", "bd": "partículas"},
- "🍎", "bd": "Kids • Pegar", "kids": 1},
-    {"id": "piano", "nm": "Piano Kids", "ic": "🎹", "bd": "Kids • Música", "kids": 1},
-    {"id": "draw", "nm": "Pintar", "ic": "🖌️", "bd": "Kids • Desenho", "kids": 1}
+    {
+      "id": "bear",
+      "nm": "Bear Game",
+      "ic": "🐻",
+      "bd": "Jogo do Urso"
+    },
+    {
+      "id": "pacman",
+      "nm": "Pac-Man",
+      "ic": "👻",
+      "bd": "Fuja dos Fantasmas"
+    },
+    {
+      "id": "snake",
+      "nm": "Snake Neon",
+      "ic": "🐍",
+      "bd": "Cobrinha Neon"
+    },
+    {
+      "id": "tetris",
+      "nm": "Tetris",
+      "ic": "🧱",
+      "bd": "Encaixe Blocos"
+    },
+    {
+      "id": "space",
+      "nm": "Space Wars",
+      "ic": "🚀",
+      "bd": "Guerra Espacial"
+    },
+    {
+      "id": "flappy",
+      "nm": "Flappy Bird",
+      "ic": "🐦",
+      "bd": "Voo Infinito"
+    },
+    {
+      "id": "dino",
+      "nm": "Dino Run",
+      "ic": "🦕",
+      "bd": "Fuja dos Obstáculos"
+    },
+    {
+      "id": "breakout",
+      "nm": "Breakout",
+      "ic": "🏓",
+      "bd": "Quebre os Tijolos"
+    },
+    {
+      "id": "soccer",
+      "nm": "Futebol",
+      "ic": "⚽",
+      "bd": "Chute ao Gol"
+    },
+    {
+      "id": "pong",
+      "nm": "Pong",
+      "ic": "🏸",
+      "bd": "Ping-Pong"
+    },
+    {
+      "id": "asteroids",
+      "nm": "Asteroids",
+      "ic": "☄️",
+      "bd": "Destrua Astros"
+    },
+    {
+      "id": "platform",
+      "nm": "Jump Hero",
+      "ic": "🦸",
+      "bd": "Aventura 2D"
+    },
+    {
+      "id": "colors",
+      "nm": "Caça Cores",
+      "ic": "🎨",
+      "bd": "Kids • Cores",
+      "kids": 1
+    },
+    {
+      "id": "bubbles",
+      "nm": "Estoura Bolha",
+      "ic": "🫧",
+      "bd": "Kids • Estourar",
+      "kids": 1
+    },
+    {
+      "id": "fruits",
+      "nm": "Caça Frutas",
+      "ic": "🍎",
+      "bd": "Kids • Pegar",
+      "kids": 1
+    },
+    {
+      "id": "particulas",
+      "nm": "Partículas Mágicas",
+      "ic": "🔮",
+      "bd": "Partículas",
+      "file": "particulas.html"
+    },
+    {
+      "id": "piano",
+      "nm": "Piano Kids",
+      "ic": "🎹",
+      "bd": "Kids • Música",
+      "kids": 1
+    },
+    {
+      "id": "draw",
+      "nm": "Pintar",
+      "ic": "🖌️",
+      "bd": "Kids • Desenho",
+      "kids": 1
+    }
   ]
 }
