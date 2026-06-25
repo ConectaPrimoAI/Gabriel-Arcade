@@ -7,6 +7,10 @@
 
 <style>
 
+/* =========================
+   BASE
+========================= */
+
 *{
   margin:0;
   padding:0;
@@ -48,28 +52,22 @@ html,body{
   overflow:hidden;
 }
 
-/* canvas partículas */
 canvas{
   position:absolute;
   inset:0;
   z-index:1;
 }
 
-/* fingerprint CENTRALIZADA REAL */
+/* fingerprint centralizada */
 .fp{
   width:110px;
-
   position:absolute;
   top:50%;
   left:50%;
-
   transform:translate(-50%,-50%);
-
   z-index:3;
-  opacity:.95;
 }
 
-/* área de toque */
 #hold{
   position:absolute;
   inset:0;
@@ -77,7 +75,6 @@ canvas{
   touch-action:none;
 }
 
-/* texto */
 #txt{
   margin-top:18px;
   font-size:14px;
@@ -109,20 +106,101 @@ canvas{
   gap:14px;
 }
 
-/* CARD */
+/* =========================
+   GLASS CARDS 3D (NOVO)
+========================= */
+
 .card{
-  background:rgba(255,255,255,.78);
+  position:relative;
+
+  background:rgba(255,255,255,.55);
   border-radius:22px;
+
   padding:14px;
-  box-shadow:0 10px 20px rgba(0,0,0,.08);
+
+  border:1px solid rgba(255,255,255,.35);
+
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.10),
+    0 20px 60px rgba(0,0,0,.08);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
   display:flex;
   flex-direction:column;
   align-items:center;
+
+  transition:transform .25s ease, box-shadow .25s ease;
+  transform-style:preserve-3d;
 }
 
-.icon{font-size:52px;}
-.name{font-weight:800;margin-top:6px;text-align:center;}
-.desc{font-size:11px;opacity:.6;text-align:center;margin-top:3px;}
+/* brilho interno */
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:22px;
+
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255,255,255,.9), transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(255,255,255,.25), transparent 55%);
+
+  pointer-events:none;
+  opacity:.7;
+}
+
+/* reflexo animado */
+.card::after{
+  content:"";
+  position:absolute;
+  inset:-50%;
+
+  background:linear-gradient(
+    120deg,
+    transparent 40%,
+    rgba(255,255,255,.22),
+    transparent 60%
+  );
+
+  transform:rotate(25deg);
+  animation:shine 6s infinite linear;
+
+  pointer-events:none;
+}
+
+@keyframes shine{
+  0%{transform:translateX(-50%) rotate(25deg);}
+  100%{transform:translateX(50%) rotate(25deg);}
+}
+
+/* interação 3D */
+.card:active{
+  transform:translateY(-6px) scale(.97) rotateX(6deg);
+  box-shadow:
+    0 15px 35px rgba(0,0,0,.12),
+    0 35px 90px rgba(0,0,0,.12);
+}
+
+/* conteúdo */
+.icon{
+  font-size:52px;
+  filter:drop-shadow(0 10px 15px rgba(0,0,0,.15));
+}
+
+.name{
+  font-weight:900;
+  margin-top:6px;
+  text-align:center;
+  color:#111;
+}
+
+.desc{
+  font-size:11px;
+  opacity:.6;
+  text-align:center;
+  margin-top:3px;
+}
 
 .btn{
   margin-top:12px;
@@ -135,11 +213,17 @@ canvas{
   font-weight:700;
 }
 
+/* melhora mobile */
+@media (min-width:600px){
+  .grid{grid-template-columns:repeat(3,1fr);}
+}
+
 </style>
 </head>
 
 <body>
 
+<!-- SCANNER -->
 <div id="scanner">
 
   <div class="box" id="box">
@@ -156,6 +240,7 @@ canvas{
 
 </div>
 
+<!-- APP -->
 <div id="app">
   <div class="title">PlayWorld</div>
   <div class="grid" id="grid"></div>
@@ -178,16 +263,12 @@ canvas.width = 300;
 canvas.height = 300;
 
 /* =========================
-   STATE
+   PARTICLES
 ========================= */
 
 let particles = [];
 let holding = false;
-let holdStart = 0;
-
-/* =========================
-   PARTICLES (ESTÁVEIS)
-========================= */
+let startTime = 0;
 
 for(let i=0;i<80;i++){
   particles.push({
@@ -217,11 +298,9 @@ function loop(){
 
     let force = holding ? 0.12 : -0.01;
 
-    // movimento base constante (evita sumir)
     p.vx += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
     p.vy += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
 
-    // atração
     p.vx += dx / dist * force;
     p.vy += dy / dist * force;
 
@@ -231,7 +310,6 @@ function loop(){
     p.x += p.vx;
     p.y += p.vy;
 
-    // wrap
     if(p.x<0) p.x=300;
     if(p.x>300) p.x=0;
     if(p.y<0) p.y=300;
@@ -252,14 +330,14 @@ function loop(){
 loop();
 
 /* =========================
-   HOLD FIX (3 SEGUNDOS REAL)
+   HOLD 3s
 ========================= */
 
 function start(e){
   e.preventDefault();
 
   holding = true;
-  holdStart = Date.now();
+  startTime = Date.now();
 
   document.getElementById("txt").innerText = "Analisando...";
 
@@ -270,9 +348,7 @@ function start(e){
       return;
     }
 
-    const elapsed = Date.now() - holdStart;
-
-    if(elapsed >= 3000){
+    if(Date.now() - startTime >= 3000){
 
       clearInterval(interval);
 
