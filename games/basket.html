@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Street Hoop 3D</title>
+    <title>Street Hoop 3D - Elite Arena</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -19,14 +19,13 @@
             user-select: none;
             -webkit-user-select: none;
             overflow: hidden;
-            background-color: #0d0f14;
+            background-color: #020305;
         }
         .font-heavy {
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: -0.02em;
         }
-        /* Loader discreto */
         .loader {
             border-top-color: #ea580c;
             animation: spinner 1.5s linear infinite;
@@ -43,10 +42,10 @@
     <div id="game-container" class="absolute inset-0 w-full h-full z-0"></div>
 
     <!-- ECRÃ DE CARREGAMENTO -->
-    <div id="loading-screen" class="absolute inset-0 bg-[#0d0f14] z-50 flex flex-col items-center justify-center text-white transition-opacity duration-500">
+    <div id="loading-screen" class="absolute inset-0 bg-[#020305] z-50 flex flex-col items-center justify-center text-white transition-opacity duration-500">
         <div class="text-center px-4">
             <h1 class="text-4xl md:text-5xl font-heavy text-amber-500 mb-2">STREET HOOP 3D</h1>
-            <p class="text-neutral-400 font-semibold tracking-widest text-xs md:text-sm mb-8 uppercase">A carregar a quadra</p>
+            <p class="text-neutral-500 font-semibold tracking-widest text-xs md:text-sm mb-8 uppercase">A renderizar materiais realistas de alta definição...</p>
             <div class="relative w-16 h-16 mx-auto mb-6">
                 <div class="loader ease-linear rounded-full border-4 border-t-4 border-neutral-800 h-16 w-16"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
@@ -61,21 +60,21 @@
         
         <!-- Barra Superior -->
         <div class="flex justify-between items-start w-full">
-            <div class="bg-neutral-900/90 rounded-xl p-3 border border-neutral-800 flex items-center gap-4 pointer-events-auto shadow-2xl">
+            <div class="bg-neutral-950/90 backdrop-blur-md rounded-xl p-3 border border-neutral-800 flex items-center gap-4 pointer-events-auto shadow-2xl">
                 <div class="text-center">
-                    <p class="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Pontos</p>
+                    <p class="text-[9px] uppercase font-bold text-amber-500 tracking-wider">Pontos</p>
                     <p id="score-display" class="text-2xl md:text-3xl font-heavy text-white">000</p>
                 </div>
                 <div class="h-6 w-[1px] bg-neutral-800"></div>
                 <div class="text-center">
-                    <p class="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Recorde</p>
-                    <p id="high-score-display" class="text-xl md:text-2xl font-heavy text-amber-500">000</p>
+                    <p class="text-[9px] uppercase font-bold text-neutral-400 tracking-wider">Recorde</p>
+                    <p id="high-score-display" class="text-xl md:text-2xl font-heavy text-neutral-300">000</p>
                 </div>
             </div>
 
             <!-- Controlos Auxiliares -->
             <div class="flex gap-2 pointer-events-auto">
-                <button id="btn-sound" class="w-10 h-10 rounded-xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-xl" title="Sons">
+                <button id="btn-sound" class="w-10 h-10 rounded-xl bg-neutral-950/90 backdrop-blur-md border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-lg" title="Sons">
                     <svg id="icon-sound-on" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                     </svg>
@@ -83,7 +82,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zm11.54 1.112a4 4 0 000-5.656m-1.414 7.07a6 6 0 000-8.484" />
                     </svg>
                 </button>
-                <button id="btn-pause" class="w-10 h-10 rounded-xl bg-neutral-900/90 border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-xl" title="Pausar">
+                <button id="btn-pause" class="w-10 h-10 rounded-xl bg-neutral-950/90 backdrop-blur-md border border-neutral-800 flex items-center justify-center text-white hover:bg-neutral-800 transition active:scale-95 shadow-lg" title="Pausar">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6" />
                     </svg>
@@ -92,43 +91,43 @@
         </div>
 
         <!-- Guia Subtil de Jogo -->
-        <div class="w-full max-w-xs mx-auto text-center bg-neutral-900/90 p-3 rounded-xl border border-neutral-800 pointer-events-none shadow-xl">
-            <p id="guide-text" class="text-neutral-400 text-xs font-semibold">Arrasta para cima para lançar</p>
+        <div class="w-full max-w-xs mx-auto text-center bg-neutral-950/90 backdrop-blur-md p-3 rounded-xl border border-neutral-800 pointer-events-none shadow-lg">
+            <p id="guide-text" class="text-neutral-300 text-xs font-semibold">Arrasta para cima para lançar com efeito</p>
         </div>
 
     </div>
 
     <!-- ECRÃ DE MENU -->
-    <div id="menu-screen" class="absolute inset-0 z-20 bg-[#0d0f14]/95 flex flex-col items-center justify-center text-white p-6 transition-opacity duration-500">
+    <div id="menu-screen" class="absolute inset-0 z-20 bg-neutral-950/95 flex flex-col items-center justify-center text-white p-6 transition-opacity duration-500">
         <div class="max-w-xs w-full text-center space-y-8">
             <div class="space-y-1">
                 <h1 class="text-4xl md:text-5xl font-heavy text-amber-500">STREET HOOP</h1>
-                <p class="text-neutral-500 font-semibold tracking-wider text-[11px] uppercase">Simulador de Lançamento 3D</p>
+                <p class="text-neutral-500 font-semibold tracking-wider text-[11px] uppercase">Elite Arena - Simulador Profissional 3D</p>
             </div>
 
-            <div class="bg-neutral-900/95 rounded-xl p-4 border border-neutral-800 flex justify-around shadow-xl">
+            <div class="bg-neutral-900 rounded-xl p-4 border border-neutral-800 flex justify-around shadow-xl">
                 <div>
-                    <span class="block text-neutral-500 text-[10px] uppercase tracking-wider font-semibold">Recorde</span>
-                    <span id="menu-high-score" class="text-2xl font-heavy text-white">000</span>
+                    <span class="block text-neutral-500 text-[10px] uppercase tracking-wider font-semibold">Recorde Mundial</span>
+                    <span id="menu-high-score" class="text-2xl font-heavy text-amber-500">000</span>
                 </div>
             </div>
 
             <button id="btn-start" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-heavy text-lg py-4 px-6 rounded-xl shadow-lg active:scale-95 transition duration-150">
-                Iniciar Jogo
+                Entrar na Arena
             </button>
         </div>
     </div>
 
     <!-- DIÁLOGO DE PAUSA -->
-    <div id="pause-modal" class="absolute inset-0 z-30 bg-[#0d0f14]/90 flex flex-col items-center justify-center text-white p-6 hidden">
-        <div class="max-w-xs w-full bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center space-y-4">
+    <div id="pause-modal" class="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center text-white p-6 hidden">
+        <div class="max-w-xs w-full bg-neutral-900 rounded-xl p-6 border border-neutral-800 text-center space-y-4 shadow-2xl">
             <h2 class="text-3xl font-heavy text-amber-500">PAUSA</h2>
             <div class="flex flex-col gap-2">
                 <button id="btn-resume" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-heavy py-3 rounded-lg transition">
-                    Retomar
+                    Retomar Jogo
                 </button>
                 <button id="btn-quit" class="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold py-2 rounded-lg transition">
-                    Sair
+                    Ir para o Menu
                 </button>
             </div>
         </div>
@@ -144,6 +143,7 @@
             score: 0,
             highScore: parseInt(localStorage.getItem('streetHoopHighScore_V3') || '0'),
             ballInAir: false,
+            ballIsResetting: false, 
             soundEnabled: true,
         };
 
@@ -171,10 +171,43 @@
         dom.highScoreDisplay.textContent = String(GAME.highScore).padStart(3, '0');
         dom.menuHighScore.textContent = String(GAME.highScore).padStart(3, '0');
 
+        let resetTimerId = null;
+
         // ==========================================
-        // GERADOR DE EFEITOS SONOROS (WEB AUDIO API)
+        // GERADOR DE EFEITOS SONOROS DA ARENA DE ELITE
         // ==========================================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let ambientGainNode = null;
+
+        function startAmbientArenaSound() {
+            if (!GAME.soundEnabled) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const bufferSize = audioCtx.sampleRate * 2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                noise.loop = true;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(280, audioCtx.currentTime);
+                filter.Q.setValueAtTime(0.85, audioCtx.currentTime);
+
+                ambientGainNode = audioCtx.createGain();
+                ambientGainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+                noise.connect(filter);
+                filter.connect(ambientGainNode);
+                ambientGainNode.connect(audioCtx.destination);
+                noise.start(0);
+            } catch(e) { console.log("Erro ao inicializar som ambiente", e); }
+        }
 
         function playSynthSound(type) {
             if (!GAME.soundEnabled) return;
@@ -183,55 +216,71 @@
             const time = audioCtx.currentTime;
 
             if (type === 'bounce') {
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(160, time);
-                osc.frequency.exponentialRampToValueAtTime(65, time + 0.15);
-                gainNode.gain.setValueAtTime(0.35, time);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                osc.start(time);
-                osc.stop(time + 0.16);
+                const oscGrave = audioCtx.createOscillator();
+                const gainGrave = audioCtx.createGain();
+                oscGrave.type = 'sine';
+                oscGrave.frequency.setValueAtTime(115, time);
+                oscGrave.frequency.exponentialRampToValueAtTime(40, time + 0.16);
+                gainGrave.gain.setValueAtTime(0.6, time);
+                gainGrave.gain.exponentialRampToValueAtTime(0.005, time + 0.16);
+                oscGrave.connect(gainGrave);
+                gainGrave.connect(audioCtx.destination);
+                oscGrave.start(time);
+                oscGrave.stop(time + 0.17);
+
+                const oscAgudo = audioCtx.createOscillator();
+                const gainAgudo = audioCtx.createGain();
+                oscAgudo.type = 'triangle';
+                oscAgudo.frequency.setValueAtTime(550, time);
+                oscAgudo.frequency.exponentialRampToValueAtTime(180, time + 0.05);
+                gainAgudo.gain.setValueAtTime(0.12, time);
+                gainAgudo.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+                oscAgudo.connect(gainAgudo);
+                gainAgudo.connect(audioCtx.destination);
+                oscAgudo.start(time);
+                oscAgudo.stop(time + 0.06);
             } 
             else if (type === 'rim') {
-                const osc = audioCtx.createOscillator();
-                const noise = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(240, time);
-                noise.type = 'sawtooth';
-                noise.frequency.setValueAtTime(900, time);
-                
-                gainNode.gain.setValueAtTime(0.2, time);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
-                
-                osc.connect(gainNode);
-                noise.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                osc.start(time);
-                noise.start(time);
-                osc.stop(time + 0.12);
-                noise.stop(time + 0.12);
+                const frequencies = [256, 512, 768, 1320];
+                frequencies.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    osc.type = idx === 0 ? 'sine' : 'triangle';
+                    osc.frequency.setValueAtTime(freq, time);
+                    osc.frequency.exponentialRampToValueAtTime(freq * 0.85, time + 0.25);
+                    
+                    const volume = idx === 0 ? 0.35 : 0.08;
+                    gainNode.gain.setValueAtTime(volume, time);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    osc.start(time);
+                    osc.stop(time + 0.28);
+                });
             } 
             else if (type === 'board') {
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(95, time);
-                osc.frequency.exponentialRampToValueAtTime(45, time + 0.2);
-                gainNode.gain.setValueAtTime(0.4, time);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
-                osc.connect(gainNode);
+                osc.frequency.setValueAtTime(90, time);
+                osc.frequency.exponentialRampToValueAtTime(32, time + 0.28);
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(130, time);
+
+                gainNode.gain.setValueAtTime(0.8, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.28);
+                
+                osc.connect(filter);
+                filter.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 osc.start(time);
-                osc.stop(time + 0.23);
+                osc.stop(time + 0.29);
             }
             else if (type === 'swish') {
-                const duration = 0.3;
+                const duration = 0.26;
                 const bufferSize = audioCtx.sampleRate * duration;
                 const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -243,12 +292,13 @@
                 
                 const filter = audioCtx.createBiquadFilter();
                 filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(1150, time);
-                filter.Q.setValueAtTime(2.2, time);
+                filter.frequency.setValueAtTime(1700, time);
+                filter.frequency.exponentialRampToValueAtTime(950, time + duration);
+                filter.Q.setValueAtTime(4.0, time);
                 
                 const gainNode = audioCtx.createGain();
-                gainNode.gain.setValueAtTime(0.25, time);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + duration);
+                gainNode.gain.setValueAtTime(0.4, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.005, time + duration);
                 
                 noiseNode.connect(filter);
                 filter.connect(gainNode);
@@ -258,82 +308,291 @@
                 noiseNode.stop(time + duration);
             }
             else if (type === 'score') {
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, time); 
-                osc.frequency.setValueAtTime(554, time + 0.08); 
-                gainNode.gain.setValueAtTime(0.15, time);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                osc.start(time);
-                osc.stop(time + 0.22);
+                const hornOsc = audioCtx.createOscillator();
+                const hornGain = audioCtx.createGain();
+                hornOsc.type = 'sawtooth';
+                hornOsc.frequency.setValueAtTime(185, time);
+                hornOsc.frequency.setValueAtTime(225, time + 0.05);
+                hornGain.gain.setValueAtTime(0.14, time);
+                hornGain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+                hornOsc.connect(hornGain);
+                hornGain.connect(audioCtx.destination);
+                hornOsc.start(time);
+                hornOsc.stop(time + 0.55);
+
+                setTimeout(() => {
+                    const cheeringDuration = 1.4;
+                    const bufferSize = audioCtx.sampleRate * cheeringDuration;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(580, time);
+                    filter.Q.setValueAtTime(1.1, time);
+                    const gain = audioCtx.createGain();
+                    gain.gain.setValueAtTime(0.3, time);
+                    gain.gain.exponentialRampToValueAtTime(0.001, time + cheeringDuration);
+
+                    noise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    noise.start(time);
+                    noise.stop(time + cheeringDuration);
+                }, 40);
             }
         }
 
 
         // ==========================================
-        // AMBIENTE 3D - THREE.JS COM SOMBRAS E LUZES
+        // AMBIENTE 3D - MATERIAIS FISICAMENTE CORRETOS
         // ==========================================
         let scene, camera, renderer;
-        let ball, rim, net, backboard, court;
+        let ball, rim, net, backboard, arenaGroup;
         
-        // Configurações Físicas Realistas
         const ballRadius = 0.24; 
         const rimRadius = 0.45; 
         const rimPosition = new THREE.Vector3(0, 3.8, -3.5); 
         
         let ballVelocity = new THREE.Vector3();
-        const gravity = -16; 
+        let ballSpinSpeed = 0; 
+        const gravity = -16.8; 
         
-        // Posição de origem da bola (Varia dinamicamente no jogo real)
         const ballDefaultPos = new THREE.Vector3(0, 1.25, 5.5);
 
-        // Arraste por ponteiro
         let pointerStartPos = { x: 0, y: 0 };
         let pointerStartTime = 0;
         let isPointerDown = false;
+
+        let cameraShakeIntensity = 0;
+        let netDeformation = 1.0; 
+        let targetNetDeformation = 1.0;
+
+        // Geradores de Texturas de Alta Resolução Procedimentais
+        const Textures = {
+            createParquet: function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 1024;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#fcca8c'; 
+                ctx.fillRect(0, 0, 1024, 1024);
+                
+                const rows = 64;
+                const rowHeight = 1024 / rows;
+                ctx.strokeStyle = '#cb8c4a';
+                ctx.lineWidth = 1;
+                
+                for (let i = 0; i < rows; i++) {
+                    ctx.fillStyle = i % 2 === 0 ? '#fbc079' : '#f8b467';
+                    ctx.fillRect(0, i * rowHeight, 1024, rowHeight);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * rowHeight);
+                    ctx.lineTo(1024, i * rowHeight);
+                    ctx.stroke();
+
+                    const offset = (i % 4) * 128;
+                    for (let j = 0; j < 9; j++) {
+                        ctx.beginPath();
+                        ctx.moveTo((j * 128) + offset, i * rowHeight);
+                        ctx.lineTo((j * 128) + offset, (i + 1) * rowHeight);
+                        ctx.stroke();
+                    }
+                }
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 14;
+
+                ctx.fillStyle = 'rgba(29, 78, 216, 0.45)'; 
+                ctx.fillRect(362, 50, 300, 320);
+                ctx.strokeRect(362, 50, 300, 320);
+
+                ctx.beginPath();
+                ctx.arc(512, 370, 150, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(29, 78, 216, 0.2)';
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(512, 100, 440, 0, Math.PI);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(512, 1024, 180, Math.PI, 0);
+                ctx.stroke();
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            },
+            
+            createBasketballLeather: function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 1024;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#ea580c';
+                ctx.fillRect(0, 0, 1024, 512);
+
+                for (let i = 0; i < 95000; i++) {
+                    const x = Math.random() * 1024;
+                    const y = Math.random() * 512;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+                    ctx.fillRect(x, y, 1.5, 1.5);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.fillRect(x + 1, y + 1, 1, 1);
+                }
+                
+                ctx.strokeStyle = '#1e1b4b';
+                ctx.lineWidth = 14;
+                
+                ctx.beginPath();
+                ctx.moveTo(0, 256);
+                ctx.lineTo(1024, 256);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(512, 0);
+                ctx.lineTo(512, 512);
+                ctx.stroke();
+
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.arc(256, 256, 180, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(768, 256, 180, 0, Math.PI * 2);
+                ctx.stroke();
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            },
+
+            createBasketballBump: function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#808080'; 
+                ctx.fillRect(0, 0, 512, 256);
+
+                for (let i = 0; i < 40000; i++) {
+                    const x = Math.random() * 512;
+                    const y = Math.random() * 256;
+                    ctx.fillStyle = '#ffffff'; 
+                    ctx.fillRect(x, y, 1.2, 1.2);
+                    ctx.fillStyle = '#000000'; 
+                    ctx.fillRect(x + 1, y + 1, 1, 1);
+                }
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            },
+
+            createStanchionPadding: function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#1e3a8a'; 
+                ctx.fillRect(0, 0, 128, 256);
+                
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(0, 0, 128, 12);
+                ctx.fillRect(0, 244, 128, 12);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 30px "Outfit", sans-serif';
+                ctx.textAlign = 'center';
+                const text = "ARENA";
+                for (let i = 0; i < text.length; i++) {
+                    ctx.fillText(text[i], 64, 48 + i * 40);
+                }
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            },
+
+            createLEDAd: function() {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 64;
+                const ctx = canvas.getContext('2d');
+                
+                ctx.fillStyle = '#111827';
+                ctx.fillRect(0, 0, 512, 64);
+                
+                ctx.strokeStyle = '#ea580c';
+                ctx.lineWidth = 4;
+                ctx.strokeRect(2, 2, 508, 60);
+                
+                ctx.fillStyle = '#f59e0b';
+                ctx.font = 'bold 24px "Outfit", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('★ STREET HOOP ARENA ★', 256, 32);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+        };
 
         function init3D() {
             const container = document.getElementById('game-container');
             
             scene = new THREE.Scene();
-            scene.fog = new THREE.FogExp2(0x0d0f14, 0.025);
+            scene.background = new THREE.Color(0x020305); 
+            scene.fog = new THREE.FogExp2(0x020305, 0.022); 
 
             camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.set(0, 2.3, 8.3); 
             camera.lookAt(new THREE.Vector3(0, 2.7, -3.5)); 
 
-            // Renderizador com sombras ativadas
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+            renderer.outputEncoding = THREE.sRGBEncoding;
             container.appendChild(renderer.domElement);
 
-            // Luzes
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.22);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.28); 
             scene.add(ambientLight);
 
-            // Refletor principal projetor de sombra
-            const courtLight = new THREE.DirectionalLight(0xfff6ed, 1.3);
-            courtLight.position.set(5, 14, 6);
-            courtLight.castShadow = true;
-            courtLight.shadow.mapSize.width = 1024;
-            courtLight.shadow.mapSize.height = 1024;
-            courtLight.shadow.bias = -0.0006;
-            scene.add(courtLight);
+            const spotLight = new THREE.SpotLight(0xfffbeb, 2.0);
+            spotLight.position.set(0, 15, 1.5);
+            spotLight.target.position.set(0, 1.2, -3.5);
+            spotLight.angle = Math.PI / 4.2;
+            spotLight.penumbra = 0.55;
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize.width = 2048;
+            spotLight.shadow.mapSize.height = 2048;
+            spotLight.shadow.bias = -0.00015;
+            scene.add(spotLight);
+            scene.add(spotLight.target);
 
-            // Luz de preenchimento azul subtil (fria) para atmosfera urbana realista
-            const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.35);
-            fillLight.position.set(-6, 8, -1);
+            const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.7);
+            rimLight.position.set(-6, 8, -1);
+            scene.add(rimLight);
+
+            const fillLight = new THREE.DirectionalLight(0xf43f5e, 0.45);
+            fillLight.position.set(6, 6, 4);
             scene.add(fillLight);
 
             createCourt();
             createHoopSystem();
             createBasketball();
+            createEliteStadium();
+            createVolumetricLights();
 
             window.addEventListener('resize', onWindowResize);
             setupControls();
@@ -344,115 +603,101 @@
                     dom.loadingScreen.style.display = 'none';
                     GAME.state = 'MENU';
                 }, 500);
-            }, 800);
+            }, 1000);
         }
 
-        // Quadra Urbana Realista de Concreto
         function createCourt() {
-            // Chão de asfalto cinza escuro
-            const floorGeo = new THREE.PlaneGeometry(32, 42);
-            const floorMat = new THREE.MeshStandardMaterial({ 
-                color: 0x1f232b,
-                roughness: 0.9,
-                metalness: 0.06
+            const floorGeo = new THREE.PlaneGeometry(16, 16);
+            const floorMat = new THREE.MeshPhysicalMaterial({ 
+                map: Textures.createParquet(),
+                roughness: 0.18, 
+                metalness: 0.1,
+                clearcoat: 1.0,           
+                clearcoatRoughness: 0.08  
             });
             const floor = new THREE.Mesh(floorGeo, floorMat);
             floor.rotation.x = -Math.PI / 2;
             floor.receiveShadow = true; 
             scene.add(floor);
-
-            // Linhas brancas de quadra clássica
-            const linesGroup = new THREE.Group();
-            const courtBoxGeo = new THREE.BoxGeometry(5.6, 0.01, 7.6);
-            const lineMat = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff, 
-                roughness: 1.0,
-                transparent: true, 
-                opacity: 0.22 
-            });
-            const courtBox = new THREE.Mesh(courtBoxGeo, lineMat);
-            courtBox.position.set(0, 0.01, -4);
-            linesGroup.add(courtBox);
-
-            // Linha de três pontos arqueada
-            const arcGeometry = new THREE.RingGeometry(5.8, 5.92, 40, 1, Math.PI, Math.PI);
-            const arcMat = new THREE.MeshBasicMaterial({ 
-                color: 0xffffff, 
-                side: THREE.DoubleSide,
-                transparent: true,
-                opacity: 0.22
-            });
-            const arc = new THREE.Mesh(arcGeometry, arcMat);
-            arc.rotation.x = Math.PI / 2;
-            arc.position.set(0, 0.015, -3.5);
-            linesGroup.add(arc);
-
-            scene.add(linesGroup);
-
-            // Prédios ao fundo
-            const buildGeo = new THREE.BoxGeometry(10, 22, 10);
-            const buildMat = new THREE.MeshStandardMaterial({ color: 0x11131a, roughness: 0.9 });
-            
-            const buildingL = new THREE.Mesh(buildGeo, buildMat);
-            buildingL.position.set(-16, 11, -11);
-            scene.add(buildingL);
-
-            const buildingR = buildingL.clone();
-            buildingR.position.set(16, 11, -11);
-            scene.add(buildingR);
         }
 
-        // Tabela de Basquete Completa
         function createHoopSystem() {
             const hoopGroup = new THREE.Group();
 
-            // Poste de aço pesado
-            const postGeo = new THREE.CylinderGeometry(0.12, 0.14, 5.8, 12);
-            const postMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.7 });
+            const postGeo = new THREE.CylinderGeometry(0.1, 0.12, 5.8, 16);
+            const postMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.25, metalness: 0.85 });
             const post = new THREE.Mesh(postGeo, postMat);
-            post.position.set(0, 2.9, -4.5);
+            post.position.set(0, 2.9, -4.6);
             post.castShadow = true;
             post.receiveShadow = true;
             hoopGroup.add(post);
 
-            // Tabela com Acrílico Transparente Realista
-            const boardGeo = new THREE.BoxGeometry(3.6, 2.4, 0.14);
+            const paddingGeo = new THREE.BoxGeometry(0.48, 2.4, 0.48);
+            const paddingMat = new THREE.MeshStandardMaterial({ 
+                map: Textures.createStanchionPadding(),
+                roughness: 0.65 
+            });
+            const padding = new THREE.Mesh(paddingGeo, paddingMat);
+            padding.position.set(0, 1.2, -4.6);
+            padding.castShadow = true;
+            hoopGroup.add(padding);
+
+            const armGeo = new THREE.BoxGeometry(0.22, 0.22, 1.2);
+            const arm = new THREE.Mesh(armGeo, postMat);
+            arm.position.set(0, 4.8, -4.1);
+            arm.castShadow = true;
+            hoopGroup.add(arm);
+
+            const boardGeo = new THREE.BoxGeometry(3.6, 2.4, 0.12);
             const boardMat = new THREE.MeshPhysicalMaterial({ 
                 color: 0xffffff, 
                 transparent: true, 
-                opacity: 0.35,
-                roughness: 0.1,
-                transmission: 0.85,
-                thickness: 1.0
+                opacity: 0.25,
+                roughness: 0.02,
+                transmission: 0.98, 
+                thickness: 0.9,
+                clearcoat: 1.0
             });
             backboard = new THREE.Mesh(boardGeo, boardMat);
-            backboard.position.set(0, 4.7, -4);
+            backboard.position.set(0, 4.7, -3.5);
             backboard.castShadow = true;
             hoopGroup.add(backboard);
 
-            // Borda interna de marcação da tabela
-            const boardBoxGeo = new THREE.BoxGeometry(1.2, 0.9, 0.02);
-            const boardBoxMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1.0 });
+            const boardFrameGeo = new THREE.BoxGeometry(3.64, 0.1, 0.14);
+            const redMetalMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.8, roughness: 0.2 }); 
+            const frameTop = new THREE.Mesh(boardFrameGeo, redMetalMat);
+            frameTop.position.set(0, 5.9, -3.5);
+            hoopGroup.add(frameTop);
+
+            const frameBot = frameTop.clone();
+            frameBot.position.y = 3.5;
+            hoopGroup.add(frameBot);
+
+            const boardBoxGeo = new THREE.BoxGeometry(1.2, 0.9, 0.01);
+            const boardBoxMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.6 });
             const boardBox = new THREE.Mesh(boardBoxGeo, boardBoxMat);
-            boardBox.position.set(0, 4.4, -3.91);
+            boardBox.position.set(0, 4.25, -3.44);
             hoopGroup.add(boardBox);
 
-            // O Aro (Laranja de metal fosco)
             const rimGeo = new THREE.TorusGeometry(rimRadius, 0.035, 12, 32);
-            const rimMat = new THREE.MeshStandardMaterial({ color: 0xea580c, metalness: 0.6, roughness: 0.35 });
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xea580c, metalness: 0.88, roughness: 0.15 });
             rim = new THREE.Mesh(rimGeo, rimMat);
             rim.rotation.x = Math.PI / 2;
             rim.position.copy(rimPosition);
             rim.castShadow = true;
             hoopGroup.add(rim);
 
-            // Rede aramada
+            const connectorGeo = new THREE.BoxGeometry(0.18, 0.08, 0.3);
+            const connector = new THREE.Mesh(connectorGeo, rimMat);
+            connector.position.set(0, 3.8, -3.4);
+            hoopGroup.add(connector);
+
             const netGeo = new THREE.CylinderGeometry(rimRadius, rimRadius * 0.68, 0.9, 16, 4, true);
             const netMat = new THREE.MeshBasicMaterial({ 
                 color: 0xffffff, 
                 wireframe: true,
                 transparent: true,
-                opacity: 0.5
+                opacity: 0.85
             });
             net = new THREE.Mesh(netGeo, netMat);
             net.position.set(rimPosition.x, rimPosition.y - 0.45, rimPosition.z);
@@ -461,44 +706,14 @@
             scene.add(hoopGroup);
         }
 
-        // Bola de Basquete Detalhada
         function createBasketball() {
             const ballGeo = new THREE.SphereGeometry(ballRadius, 32, 32);
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            
-            ctx.fillStyle = '#ea580c';
-            ctx.fillRect(0, 0, 512, 256);
-            
-            ctx.strokeStyle = '#111827';
-            ctx.lineWidth = 8;
-            
-            ctx.beginPath();
-            ctx.moveTo(0, 128);
-            ctx.lineTo(512, 128);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.moveTo(256, 0);
-            ctx.lineTo(256, 256);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(128, 128, 92, 0, Math.PI * 2);
-            ctx.stroke();
-
-            ctx.beginPath();
-            ctx.arc(384, 128, 92, 0, Math.PI * 2);
-            ctx.stroke();
-
-            const texture = new THREE.CanvasTexture(canvas);
             const ballMat = new THREE.MeshStandardMaterial({ 
-                map: texture,
-                roughness: 0.75,
-                metalness: 0.12
+                map: Textures.createBasketballLeather(),
+                bumpMap: Textures.createBasketballBump(),
+                bumpScale: 0.015, 
+                roughness: 0.72,
+                metalness: 0.05
             });
 
             ball = new THREE.Mesh(ballGeo, ballMat);
@@ -507,9 +722,146 @@
             scene.add(ball);
         }
 
+        // CORREÇÃO CRÍTICA DO BUG VISUAL: Bancada gerada através de degraus de betão modulares em arco
+        function createEliteStadium() {
+            arenaGroup = new THREE.Group();
+
+            const stepMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+            const seatColors = [0xdc2626, 0x1d4ed8, 0xf59e0b, 0x059669, 0x8b5cf6];
+
+            // 5 Camadas de bancadas perfeitamente espaçadas para evitar interseções com o court
+            for (let i = 0; i < 5; i++) {
+                const stepHeight = 0.8;
+                const r = 14 + i * 1.6; 
+                const y = 0.4 + i * stepHeight;
+                
+                // Dividimos o arco traseiro do pavilhão em segmentos discretos (deixa o centro livre)
+                const numSegments = 20;
+                const angleStep = Math.PI / numSegments;
+                
+                const blockWidth = (Math.PI * r) / numSegments * 1.05; 
+                const blockDepth = 1.6;
+                const blockGeo = new THREE.BoxGeometry(blockWidth, stepHeight, blockDepth);
+
+                for (let j = 0; j <= numSegments; j++) {
+                    const angle = Math.PI + j * angleStep;
+                    const bx = Math.cos(angle) * r;
+                    const bz = Math.sin(angle) * r;
+
+                    // Bloco de Betão do Degrau
+                    const stepMesh = new THREE.Mesh(blockGeo, stepMaterial);
+                    stepMesh.position.set(bx, y - stepHeight/2, bz);
+                    stepMesh.lookAt(0, y - stepHeight/2, 0); 
+                    stepMesh.castShadow = true;
+                    stepMesh.receiveShadow = true;
+                    arenaGroup.add(stepMesh);
+
+                    // Adicionar Poltronas Premium por cima de cada bloco
+                    if (Math.random() > 0.3) {
+                        const seatGeo = new THREE.BoxGeometry(0.4, 0.3, 0.4);
+                        const seatMat = new THREE.MeshStandardMaterial({ 
+                            color: seatColors[i % seatColors.length], 
+                            roughness: 0.6 
+                        });
+                        const seat = new THREE.Mesh(seatGeo, seatMat);
+                        seat.position.set(bx * 0.98, y + 0.15, bz * 0.98);
+                        seat.lookAt(0, y + 0.15, 0);
+                        arenaGroup.add(seat);
+
+                        // Espectador Dinâmico 3D
+                        if (Math.random() > 0.4) {
+                            const personGroup = new THREE.Group();
+                            
+                            const bodyGeo = new THREE.BoxGeometry(0.35, 0.35, 0.2);
+                            const bodyMat = new THREE.MeshStandardMaterial({ 
+                                color: Math.random() > 0.5 ? 0xffffff : 0x111827,
+                                roughness: 0.8
+                            });
+                            const body = new THREE.Mesh(bodyGeo, bodyMat);
+                            body.position.y = 0.18;
+                            personGroup.add(body);
+
+                            const headGeo = new THREE.SphereGeometry(0.11, 8, 8);
+                            const headMat = new THREE.MeshStandardMaterial({ color: 0xfdba74 });
+                            const head = new THREE.Mesh(headGeo, headMat);
+                            head.position.y = 0.42;
+                            personGroup.add(head);
+
+                            personGroup.position.set(bx * 0.98, y + 0.3, bz * 0.98);
+                            personGroup.lookAt(0, personGroup.position.y, 0);
+                            arenaGroup.add(personGroup);
+                        }
+                    }
+                }
+            }
+
+            // Muro de Proteção LED Lateral
+            const ledGeo = new THREE.PlaneGeometry(16, 1.2);
+            const ledMat = new THREE.MeshStandardMaterial({ 
+                map: Textures.createLEDAd(),
+                roughness: 0.2,
+                metalness: 0.5
+            });
+
+            const ledBack = new THREE.Mesh(ledGeo, ledMat);
+            ledBack.position.set(0, 0.6, -8.1);
+            ledBack.receiveShadow = true;
+            arenaGroup.add(ledBack);
+
+            const ledLeft = new THREE.Mesh(ledGeo, ledMat);
+            ledLeft.position.set(-8.1, 0.6, 0);
+            ledLeft.rotation.y = Math.PI / 2;
+            ledLeft.receiveShadow = true;
+            arenaGroup.add(ledLeft);
+
+            const ledRight = new THREE.Mesh(ledGeo, ledMat);
+            ledRight.position.set(8.1, 0.6, 0);
+            ledRight.rotation.y = -Math.PI / 2;
+            ledRight.receiveShadow = true;
+            arenaGroup.add(ledRight);
+
+            scene.add(arenaGroup);
+        }
+
+        function createVolumetricLights() {
+            const coneGeo = new THREE.ConeGeometry(3.5, 14, 16, 1, true);
+            const coneMat = new THREE.MeshBasicMaterial({ 
+                color: 0xfff6e9, 
+                transparent: true, 
+                opacity: 0.045, 
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending
+            });
+            const lightCone = new THREE.Mesh(coneGeo, coneMat);
+            lightCone.position.set(0, 8, 0.8);
+            lightCone.rotation.x = 0.18;
+            scene.add(lightCone);
+        }
+
+        function triggerAudienceFlash() {
+            if (Math.random() > 0.045) return; 
+
+            const flashGeo = new THREE.SphereGeometry(0.24, 8, 8);
+            const flashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const flash = new THREE.Mesh(flashGeo, flashMat);
+
+            const angle = Math.PI + Math.random() * Math.PI;
+            const radius = 14.5 + Math.random() * 6.0;
+            const fx = Math.cos(angle) * radius;
+            const fz = Math.sin(angle) * radius;
+            const fy = 1.0 + Math.random() * 4.5;
+
+            flash.position.set(fx, fy, fz);
+            scene.add(flash);
+
+            setTimeout(() => {
+                scene.remove(flash);
+            }, 55 + Math.random() * 70);
+        }
+
 
         // ==========================================
-        // CONTROLOS DE FÍSICA REALISTA (MIRA MANUAL)
+        // CONTROLOS DO LANÇAMENTO DE BOLA
         // ==========================================
         function setupControls() {
             window.addEventListener('mousedown', onPointerStart, { passive: false });
@@ -557,90 +909,118 @@
         }
 
         function fireBall(dx, dy, dt) {
+            if (resetTimerId) {
+                clearTimeout(resetTimerId);
+                resetTimerId = null;
+            }
+
             GAME.ballInAir = true;
+            GAME.ballIsResetting = false; 
+            hasTriggeredNet = false;
+            hitBoardOnce = false;
+            hitRimOnce = false;
 
             const speedMultiplier = Math.min(Math.max(52 / dt, 0.85), 2.2);
             
             const forceY = Math.min(Math.max(-dy * 0.043 * speedMultiplier, 9.8), 16.0);
-            const forceZ = Math.min(Math.max(-dy * 0.042 * speedMultiplier, 13.8), 21.5);
-            const forceX = dx * 0.033;
+            const forceZ = Math.min(Math.max(-dy * 0.041 * speedMultiplier, 13.8), 21.2);
+            const forceX = dx * 0.031;
 
             ballVelocity.set(forceX, forceY, -forceZ);
-            ball.rotation.x = Math.random();
+            
+            ballSpinSpeed = -15 - (Math.abs(forceZ) * 0.5); 
 
-            dom.guideText.textContent = "Bola em voo...";
+            dom.guideText.textContent = "A bola está no ar...";
         }
 
 
         // ==========================================
-        // FÍSICA E COLISÃO EXATA + ÍMAN DE APROXIMAÇÃO
+        // SISTEMA DE FÍSICA E INTERAÇÃO REALISTA
         // ==========================================
-        let hasTriggeredNet = false;
-        let hitBoardOnce = false;
-        let hitRimOnce = false;
-
         function updatePhysics(dt) {
             if (!GAME.ballInAir) {
                 ball.rotation.y += 0.005;
+                netDeformation += (targetNetDeformation - netDeformation) * 0.15;
+                net.scale.set(netDeformation, 1.0, netDeformation);
                 return;
             }
 
-            // Aplicar gravidade
             ballVelocity.y += gravity * dt;
+            ballVelocity.x *= 0.992; 
+            ballVelocity.z *= 0.992;
 
-            // Integrar posição
             ball.position.addScaledVector(ballVelocity, dt);
-            ball.rotation.x += 0.06;
+            ball.rotation.x += ballSpinSpeed * dt;
 
-            // 1. COLISÃO COM O SOLO DA QUADRA
+            if (cameraShakeIntensity > 0) {
+                cameraShakeIntensity -= dt * 3.5;
+                if (cameraShakeIntensity < 0) cameraShakeIntensity = 0;
+            }
+
+            netDeformation += (targetNetDeformation - netDeformation) * 0.15;
+            net.scale.set(netDeformation, 1.0, netDeformation);
+
+            // 1. COLISÃO COM O SOLO DA QUADRA (PARQUET)
             if (ball.position.y - ballRadius <= 0.01) {
                 ball.position.y = ballRadius + 0.01;
-                ballVelocity.y = -ballVelocity.y * 0.55; 
-                ballVelocity.x *= 0.75;
-                ballVelocity.z *= 0.75;
+                ballVelocity.y = -ballVelocity.y * 0.58; 
+                ballVelocity.x *= 0.72;
+                ballVelocity.z *= 0.72;
+                ballSpinSpeed *= 0.4;
 
                 if (Math.abs(ballVelocity.y) > 1.2) {
                     playSynthSound('bounce');
                 }
 
-                if (!hasTriggeredNet && ball.position.z < 1.0) {
-                    setTimeout(resetBallPosition, 1000);
-                } else {
-                    setTimeout(resetBallPosition, 1400);
+                if (!GAME.ballIsResetting) {
+                    GAME.ballIsResetting = true;
+                    if (resetTimerId) clearTimeout(resetTimerId);
+                    
+                    const delay = (ball.position.z < 1.0) ? 1000 : 1400;
+                    resetTimerId = setTimeout(resetBallPosition, delay);
                 }
             }
 
-            // 2. COLISÃO COM A TABELA
-            if (ball.position.z + ballRadius >= -4.05 && ball.position.z - ballRadius <= -3.85) {
+            // 2. COLISÃO COM A TABELA (VIDRO TEMPERADO)
+            if (ball.position.z + ballRadius >= -3.55 && ball.position.z - ballRadius <= -3.35) {
                 if (ball.position.x >= -1.8 && ball.position.x <= 1.8 &&
                     ball.position.y >= 3.5 && ball.position.y <= 5.9) {
                     
-                    ball.position.z = -3.85 + ballRadius; 
-                    ballVelocity.z = -ballVelocity.z * 0.55; 
-                    ballVelocity.x += (Math.random() - 0.5) * 0.8; 
+                    ball.position.z = -3.35 + ballRadius; 
+                    ballVelocity.z = -ballVelocity.z * 0.48; 
+                    
+                    ballVelocity.y += ballSpinSpeed * 0.12; 
+                    ballSpinSpeed *= -0.3; 
+                    
+                    ballVelocity.x += (Math.random() - 0.5) * 0.6; 
                     
                     hitBoardOnce = true;
                     playSynthSound('board');
+                    cameraShakeIntensity = 0.5; 
                 }
             }
 
-            // 3. COLISÃO TOROIDAL E CÁLCULO DE PROXIMIDADE DO CESTO
+            // 3. COLISÃO TOROIDAL COM O METAL DO ARO & ÍMAN DE ASSISTÊNCIA INVISÍVEL
             const ballCenterHoriz = new THREE.Vector2(ball.position.x, ball.position.z);
             const rimCenterHoriz = new THREE.Vector2(rimPosition.x, rimPosition.z);
             const distToRimCenter = ballCenterHoriz.distanceTo(rimCenterHoriz);
             const heightDiff = ball.position.y - rimPosition.y;
 
-            // --- ÍMAN DE APROXIMAÇÃO SUAVE (ATUA EXCLUSIVAMENTE AO REDOR DO CESTO) ---
-            if (ballVelocity.y < 0 && heightDiff >= -0.3 && heightDiff <= 0.6 && distToRimCenter < rimRadius * 1.3) {
-                const pullIntensity = 0.09; 
-                ball.position.x += (rimPosition.x - ball.position.x) * pullIntensity;
-                ball.position.z += (rimPosition.z - ball.position.z) * pullIntensity;
+            const captureRadius = rimRadius * 2.2; 
+            if (ballVelocity.y < 0 && heightDiff >= -0.2 && heightDiff <= 1.5 && distToRimCenter < captureRadius) {
+                const pullFactor = 0.22; 
+                
+                ball.position.x += (rimPosition.x - ball.position.x) * pullFactor;
+                ball.position.z += (rimPosition.z - ball.position.z) * pullFactor;
 
-                ballVelocity.x *= 0.94;
-                ballVelocity.z *= 0.94;
+                ballVelocity.x *= 0.82;
+                ballVelocity.z *= 0.82;
+                
+                if (distToRimCenter < rimRadius * 0.9) {
+                    ballVelocity.y = Math.min(ballVelocity.y, -3.8);
+                }
             }
 
-            // Colisão física real com o metal do aro
             if (Math.abs(heightDiff) <= ballRadius) {
                 const dirToBall = new THREE.Vector2().subVectors(ballCenterHoriz, rimCenterHoriz).normalize();
                 const closestPointOnRimRing = new THREE.Vector3(
@@ -656,56 +1036,64 @@
                     ball.position.copy(closestPointOnRimRing).addScaledVector(normalVec, ballRadius + 0.005);
                     
                     const dotProduct = ballVelocity.dot(normalVec);
-                    ballVelocity.subScaledVector(normalVec, (1.0 + 0.45) * dotProduct);
+                    ballVelocity.subScaledVector(normalVec, (1.0 + 0.5) * dotProduct); 
                     
-                    ballVelocity.x += (Math.random() - 0.5) * 0.6;
+                    ballSpinSpeed = (ballVelocity.z - ballVelocity.y) * 2;
+                    ballVelocity.x += (Math.random() - 0.5) * 0.5;
 
                     hitRimOnce = true;
                     playSynthSound('rim');
+                    cameraShakeIntensity = 0.65; 
                 }
             }
 
             // 4. SISTEMA DE REDE E MARCAÇÃO DE CESTO
             if (ball.position.y < rimPosition.y && ball.position.y > rimPosition.y - 0.9) {
                 if (distToRimCenter < rimRadius) {
-                    // Atrito subtil com o nylon da rede
-                    ballVelocity.x *= 0.9;
-                    ballVelocity.z *= 0.9;
-                    ballVelocity.y = Math.max(ballVelocity.y, -3.5);
+                    ballVelocity.x *= 0.88;
+                    ballVelocity.z *= 0.88;
+                    ballVelocity.y = Math.max(ballVelocity.y, -3.2); 
 
-                    ball.position.x += (rimPosition.x - ball.position.x) * 0.08;
-                    ball.position.z += (rimPosition.z - ball.position.z) * 0.08;
+                    ball.position.x += (rimPosition.x - ball.position.x) * 0.12;
+                    ball.position.z += (rimPosition.z - ball.position.z) * 0.12;
+
+                    targetNetDeformation = 1.35; 
 
                     if (!hasTriggeredNet && ballVelocity.y < 0 && ball.position.y <= rimPosition.y - 0.15) {
                         hasTriggeredNet = true;
                         triggerScore();
                     }
                 }
+            } else {
+                targetNetDeformation = 1.0; 
             }
 
-            // Limite de segurança contra queda infinita fora da área de jogo
-            if (Math.abs(ball.position.x) > 12 || ball.position.z < -14 || ball.position.z > 12) {
+            if (Math.abs(ball.position.x) > 15 || ball.position.z < -15 || ball.position.z > 15) {
                 resetBallPosition();
             }
         }
 
         function resetBallPosition() {
-            if (!GAME.ballInAir) return;
+            if (resetTimerId) {
+                clearTimeout(resetTimerId);
+                resetTimerId = null;
+            }
 
             GAME.ballInAir = false;
+            GAME.ballIsResetting = false; 
             hasTriggeredNet = false;
             hitBoardOnce = false;
             hitRimOnce = false;
+            ballSpinSpeed = 0;
+            targetNetDeformation = 1.0;
 
-            // Reposiciona o lançamento com variação dinâmica de distância e ângulo
-            const randomX = (Math.random() - 0.5) * 3.8; 
-            const randomZ = 4.6 + Math.random() * 2.2; 
+            const randomX = (Math.random() - 0.5) * 4.2; 
+            const randomZ = 4.8 + Math.random() * 2.5; 
             
             ballDefaultPos.set(randomX, 1.25, randomZ);
             ball.position.copy(ballDefaultPos);
             ballVelocity.set(0, 0, 0);
 
-            // Ajusta a posição de câmara
             camera.position.set(randomX, 2.3, randomZ + 2.7);
             camera.lookAt(new THREE.Vector3(0, 2.7, -3.5));
 
@@ -714,17 +1102,18 @@
 
 
         // ==========================================
-        // SISTEMA DE REGRAS E PONTUAÇÃO
+        // SISTEMA DE PONTUAÇÃO
         // ==========================================
         function triggerScore() {
+            if (GAME.ballIsResetting) return; 
+            GAME.ballIsResetting = true;
+
             playSynthSound('swish');
             playSynthSound('score');
 
-            let pointsGained = ballDefaultPos.z > 6.1 ? 3 : 2;
+            let pointsGained = ballDefaultPos.z > 6.0 ? 3 : 2;
             GAME.score += pointsGained;
             dom.scoreDisplay.textContent = String(GAME.score).padStart(3, '0');
-
-            // Mensagem de texto removida a pedido do utilizador para manter o ecrã limpo.
 
             if (GAME.score > GAME.highScore) {
                 GAME.highScore = GAME.score;
@@ -732,21 +1121,25 @@
                 dom.highScoreDisplay.textContent = String(GAME.highScore).padStart(3, '0');
             }
 
-            setTimeout(resetBallPosition, 800);
+            if (resetTimerId) clearTimeout(resetTimerId);
+            resetTimerId = setTimeout(resetBallPosition, 1000);
         }
 
 
         // ==========================================
-        // FLUXO DO JOGO E INTERFACES (UI)
+        // FLUXO DO JOGO E INTERFACES
         // ==========================================
         function startGame() {
             GAME.state = 'PLAYING';
             GAME.score = 0;
             GAME.ballInAir = false;
+            GAME.ballIsResetting = false;
             
             dom.scoreDisplay.textContent = "000";
             dom.menuScreen.classList.add('opacity-0');
             
+            startAmbientArenaSound();
+
             setTimeout(() => {
                 dom.menuScreen.style.display = 'none';
                 dom.gameHud.classList.remove('opacity-0');
@@ -761,9 +1154,17 @@
             if (GAME.soundEnabled) {
                 dom.iconSoundOn.classList.remove('hidden');
                 dom.iconSoundOff.classList.add('hidden');
+                if (ambientGainNode) {
+                    ambientGainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                } else {
+                    startAmbientArenaSound();
+                }
             } else {
                 dom.iconSoundOn.classList.add('hidden');
                 dom.iconSoundOff.classList.remove('hidden');
+                if (ambientGainNode) {
+                    ambientGainNode.gain.setValueAtTime(0.0, audioCtx.currentTime);
+                }
             }
         }
 
@@ -771,9 +1172,11 @@
             if (GAME.state === 'PLAYING') {
                 GAME.state = 'PAUSED';
                 dom.pauseModal.classList.remove('hidden');
+                if (ambientGainNode) ambientGainNode.gain.setValueAtTime(0.01, audioCtx.currentTime);
             } else if (GAME.state === 'PAUSED') {
                 GAME.state = 'PLAYING';
                 dom.pauseModal.classList.add('hidden');
+                if (ambientGainNode && GAME.soundEnabled) ambientGainNode.gain.setValueAtTime(0.04, audioCtx.currentTime);
             }
         }
 
@@ -782,6 +1185,9 @@
             dom.pauseModal.classList.add('hidden');
             dom.gameHud.classList.add('opacity-0');
             dom.menuScreen.style.display = 'flex';
+            if (ambientGainNode) {
+                ambientGainNode.gain.setValueAtTime(0.0, audioCtx.currentTime);
+            }
             setTimeout(() => {
                 dom.menuScreen.classList.remove('opacity-0');
             }, 50);
@@ -821,9 +1227,22 @@
 
             if (GAME.state === 'PLAYING') {
                 updatePhysics(dt);
+                triggerAudienceFlash(); 
+            }
+
+            if (cameraShakeIntensity > 0) {
+                const shakeX = (Math.random() - 0.5) * cameraShakeIntensity * 0.15;
+                const shakeY = (Math.random() - 0.5) * cameraShakeIntensity * 0.15;
+                camera.position.x += shakeX;
+                camera.position.y += shakeY;
             }
 
             renderer.render(scene, camera);
+
+            if (cameraShakeIntensity > 0 && GAME.state === 'PLAYING') {
+                camera.position.x = ballDefaultPos.x;
+                camera.position.y = 2.3;
+            }
         }
 
         window.onload = function() {
@@ -834,3 +1253,4 @@
     </script>
 </body>
 </html>
+
