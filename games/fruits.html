@@ -1,400 +1,769 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Caça Frutas 🍎</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 <style>
-
-:root{--primary:#00f2ff;--accent:#00ff88;--bg:#02020a;--ui:#f0f7ff;}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-touch-callout:none;}
-html,body{height:100dvh;width:100vw;overflow:hidden;background:var(--bg);font-family:'Fredoka',sans-serif;}
-
-/* ── STARS ── */
-.star{position:fixed;border-radius:50%;background:#fff;pointer-events:none;z-index:0;animation:stw var(--d,3s) ease-in-out infinite alternate;}
-@keyframes stw{from{opacity:.05}to{opacity:.85}}
-
-/* ══════════════════════════════
-   ETAPA 1: SCANNER
-══════════════════════════════ */
-#stage-scanner{
-  position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#ffffff;z-index:10000;transition:opacity .5s;
-}
-.scan-wrap{position:relative;width:230px;height:230px;display:flex;align-items:center;justify-content:center;}
-#touch-zone{position:absolute;inset:0;z-index:10050;border-radius:50%;cursor:pointer;}
-
-.fp-img{width:145px;height:145px;pointer-events:none;filter:drop-shadow(0 0 12px var(--primary));transition:.3s;}
-.scan-ring{position:absolute;inset:0;border:4px solid rgba(0,242,255,.1);border-top:4px solid var(--primary);border-radius:50%;opacity:0;}
-.active-scan .fp-img{filter:drop-shadow(0 0 28px var(--accent)) brightness(1.6);transform:scale(.94);}
-.active-scan .scan-ring{opacity:1;animation:spin .8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.laser{position:absolute;width:188px;height:4px;background:linear-gradient(90deg,transparent,var(--primary),transparent);top:50%;opacity:0;}
-.active-scan .laser{opacity:1;animation:laser 1.4s ease-in-out infinite;}
-@keyframes laser{0%,100%{transform:translateY(-72px)}50%{transform:translateY(72px)}}
-
-#scan-txt{color:var(--primary);margin-top:32px;letter-spacing:3px;font-weight:700;font-size:.65rem;font-family:'Orbitron';}
-.scan-hint{color:rgba(255,255,255,.3);font-size:.5rem;margin-top:8px;letter-spacing:2px;font-family:'Orbitron';}
-
-/* ══════════════════════════════
-   ETAPA 2: CADEADO
-══════════════════════════════ */
-#stage-lock{
-  position:fixed;inset:0;background:#fff;display:none;
-  flex-direction:column;align-items:center;justify-content:center;z-index:10001;
-}
-.lock-icon{font-size:100px;transform:translateY(30px);opacity:0;transition:.5s;}
-.lock-icon.show{opacity:1;transform:translateY(0);}
-.lock-label{margin-top:20px;font-weight:700;color:#aaa;letter-spacing:4px;font-size:.5rem;font-family:'Orbitron';}
-
-/* ══════════════════════════════
-   ETAPA 3: MENU PRINCIPAL
-══════════════════════════════ */
-#main-ui{
-  position:fixed;inset:0;display:none;flex-direction:column;align-items:center;
-  background:var(--ui);z-index:5000;overflow-y:auto;padding:12px 12px 110px;
-  -webkit-overflow-scrolling:touch;
-}
-#bot-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:10px;transition:.5s;}
-#biel-bot{font-size:68px;transition:.5s;filter:drop-shadow(0 4px 12px rgba(0,0,0,.15));}
-#biel-bot.mini{transform:scale(.68);}
-#bot-speech{
-  background:#fff;border-radius:18px;padding:10px 16px;max-width:280px;
-  font-size:.75rem;font-weight:600;color:#333;text-align:center;
-  box-shadow:0 4px 16px rgba(0,0,0,.08);position:relative;display:none;
-  border:2px solid #edf2f7;
-}
-#bot-speech::before{content:'';position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);
-  border:10px solid transparent;border-top-color:#fff;border-bottom:0;margin-left:0;}
-
-.game-frame{
-  width:100%;max-width:520px;background:#fff;border-radius:24px;
-  padding:16px 10px 16px;box-shadow:0 8px 28px rgba(0,0,0,.06);
-  opacity:0;transform:translateY(20px);transition:.6s;
-}
-.game-frame.show{opacity:1;transform:translateY(0);}
-.frame-title{text-align:center;color:#999;font-weight:700;margin-bottom:14px;font-size:.7rem;font-family:'Orbitron';letter-spacing:2px;}
-
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-.card{
-  background:#f8fbff;border-radius:18px;padding:14px 6px 12px;
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-  border:2px solid #edf2f7;cursor:pointer;transition:.18s;
-}
-.card:active{transform:scale(.9);background:#eef4ff;border-color:var(--primary);}
-.ci{font-size:2.3rem;line-height:1;}
-.cn{font-size:.62rem;font-weight:700;color:#222;text-align:center;}
-.cb2{font-size:.38rem;color:#00aa88;font-weight:600;text-align:center;opacity:.7;}
-.kid .cn{color:#d4800a;}
-.kid{border-color:#ffd47a;background:#fffbf2;}
-
-/* ══════════════════════════════
-   ETAPA 4: ARCADE ENGINE
-══════════════════════════════ */
-#gs{display:none;position:fixed;inset:0;z-index:20000;background:#000;}
-#gc{display:block;position:absolute;top:0;left:0;width:100%;height:100%;}
-
-#menubtn{
-  position:absolute;top:10px;left:10px;width:44px;height:44px;
-  background:rgba(0,0,0,.75);border:2px solid rgba(255,255,255,.35);
-  color:#fff;border-radius:10px;z-index:25000;font-size:1.2rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-}
-#hud{
-  position:absolute;top:10px;right:10px;font-family:'Orbitron';
-  color:var(--primary);font-size:clamp(.46rem,2vw,.76rem);
-  text-shadow:0 0 8px var(--primary);pointer-events:none;z-index:500;
-  text-align:right;line-height:1.9;
+:root {
+  --primary: #38bdf8;
+  --primary-light: #7dd3fc;
+  --accent: #4ade80;
+  --bg-gradient: linear-gradient(180deg, #020617 0%, #030712 100%);
+  --ui-font: 'Fredoka', sans-serif;
 }
 
-/* Controls */
-#ctrl{position:absolute;bottom:0;left:0;width:100%;height:158px;display:none;
-  justify-content:space-between;align-items:flex-end;padding:0 14px 13px;z-index:22000;pointer-events:none;}
-.dpad{position:relative;width:182px;height:126px;pointer-events:all;}
-.cb{position:absolute;width:54px;height:54px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);
-  border-radius:50%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:1.1rem;cursor:pointer;touch-action:none;}
-#cup{top:0;left:64px;}#cleft{top:64px;left:0;}#cdown{top:64px;left:64px;}#cright{top:64px;left:128px;}
-.cb.on{background:rgba(0,242,255,.45);border-color:var(--primary);}
-.ag{display:flex;flex-direction:column;gap:9px;align-items:flex-end;pointer-events:all;}
-.ab{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:1rem;cursor:pointer;touch-action:none;border:2.5px solid;font-weight:700;font-family:'Orbitron';}
-#abA{background:rgba(0,242,255,.18);border-color:var(--primary);}
-#abB{background:rgba(255,80,80,.18);border-color:#ff5050;}
-.ab.on{filter:brightness(2.2);}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 
-/* MC hotbar */
-#hbar{display:none;position:absolute;bottom:161px;left:50%;transform:translateX(-50%);
-  z-index:23000;background:rgba(0,0,0,.92);border:2px solid #666;border-radius:8px;
-  padding:5px;gap:4px;flex-wrap:nowrap;overflow-x:auto;max-width:96vw;}
-.hs{width:46px;height:46px;flex-shrink:0;background:#2a2a2a;border:2.5px solid #555;
-  border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;}
-.hs canvas{width:30px;height:30px;display:block;}
-.hs span{font-size:.26rem;color:#bbb;text-align:center;margin-top:1px;font-family:'Orbitron';}
-.hs.on{border-color:#ffe600;background:#3a3a1a;}
+html, body {
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  background: #020617;
+  font-family: var(--ui-font);
+}
 
-/* MC world select */
-#mcsel{display:none;position:absolute;inset:0;background:rgba(0,0,0,.97);z-index:24000;
-  flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;}
-#mcsel h2{font-family:'Orbitron';color:#66ff44;font-size:clamp(.85rem,3.8vw,1.35rem);text-align:center;}
-#mcsel p{font-family:'Orbitron';color:#888;font-size:.44rem;letter-spacing:2px;}
-.mcwbtn{background:#122208;border:2px solid #44aa22;border-radius:12px;padding:12px 18px;cursor:pointer;
-  font-family:'Orbitron';font-size:.5rem;color:#fff;width:min(290px,88vw);display:flex;justify-content:space-between;align-items:center;}
-.mcwbtn:active{background:#1e3a0e;}
-.mcwnew{background:rgba(0,242,255,.08);border-color:var(--primary);color:var(--primary);}
-.mcwdel{color:#ff5555;font-size:.9rem;padding:4px 10px;cursor:pointer;flex-shrink:0;}
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
-/* Overlays */
-.ov{display:none;position:absolute;inset:0;background:rgba(0,0,0,.88);z-index:26000;
-  flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;}
-.ov h2{font-family:'Orbitron';font-size:clamp(1.1rem,5vw,2.2rem);}
-.ov .pts{font-family:'Orbitron';font-size:clamp(.8rem,3.5vw,1.5rem);color:#ffe600;}
-.obtn{border:none;padding:12px 28px;border-radius:26px;font-family:'Orbitron';font-size:.58rem;cursor:pointer;letter-spacing:1.5px;margin:4px;}
-.obtn.p{background:var(--primary);color:#000;}
-.obtn.s{background:transparent;color:var(--primary);border:2px solid var(--primary);}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-gradient);
+}
 
-/* Loading */
-#gload{display:none;position:fixed;inset:0;background:#000;z-index:40000;
-  flex-direction:column;align-items:center;justify-content:center;gap:14px;}
-#gload span{color:var(--primary);font-family:'Orbitron';font-size:.58rem;letter-spacing:3px;}
-.lbar{width:160px;height:4px;background:#222;border-radius:2px;overflow:hidden;}
-.lfill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .65s ease;}
+/* ── INTERFACE SUPERIOR (HUD) ── */
+#hud-overlay {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  width: 100%;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 100;
+}
 
+.hud-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.hud-score {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #38bdf8;
+}
+
+.hud-lives {
+  display: flex;
+  gap: 4px;
+  font-size: 1.3rem;
+}
+
+.hud-timer {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* ── TELAS DE OVERLAY ── */
+.screen-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.screen-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.menu-card {
+  background: #0f172a;
+  border: 4px solid #1e293b;
+  border-radius: 32px;
+  padding: 32px 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.screen-overlay:not(.hidden) .menu-card {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8) translateY(30px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.menu-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #38bdf8;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(56, 189, 248, 0.3);
+}
+
+.menu-subtitle {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.game-btn {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 24px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.4);
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 240px;
+  margin: 8px auto;
+  display: block;
+}
+
+.game-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+}
+
+.game-btn.secondary {
+  background: #1e293b;
+  color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-hint {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+}
 </style>
 </head>
 <body>
-<!-- ══ ETAPA 4: ARCADE ══ -->
-<div id="gs" style="display:block">
+
+<div id="game-container">
   <canvas id="gc"></canvas>
-  <button id="menubtn">☰</button>
-  <div id="hud"></div>
-  <div id="hbar"></div>
 
-  <div id="ctrl">
-    <div class="dpad">
-      <div class="cb" id="cup">▲</div>
-      <div class="cb" id="cleft">◀</div>
-      <div class="cb" id="cdown">▼</div>
-      <div class="cb" id="cright">▶</div>
+  <!-- HUD -->
+  <div id="hud-overlay">
+    <div class="hud-panel">
+      <span class="hud-score" id="hud-score">⭐ 0</span>
     </div>
-    <div class="ag">
-      <div class="ab" id="abB">B</div>
-      <div class="ab" id="abA">A</div>
+    <div class="hud-panel" style="gap: 15px;">
+      <div class="hud-timer" id="hud-timer">60s</div>
+      <div class="hud-lives" id="hud-lives">❤️❤️❤️</div>
     </div>
   </div>
 
-  <div id="mcsel">
-    <h2>⛏️ MINECRAFT — MUNDOS</h2>
-    <p>TOQUE PARA JOGAR • 🗑 PARA APAGAR</p>
-    <div id="mcwlist" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;width:100%;align-items:center;"></div>
-    <button class="obtn s" onclick="toMenu()">← VOLTAR</button>
-  </div>
-
-  <div class="ov" id="gov">
-    <h2 style="color:#ff3366">GAME OVER</h2>
-    <div class="pts" id="gov-pts"></div>
-    <div>
-      <button class="obtn p" id="gbtn-re">↺ DE NOVO</button>
-      <button class="obtn s" onclick="toMenu()">⌂ MENU</button>
-    </div>
-  </div>
-  <div class="ov" id="gwin">
-    <h2 style="color:#00ff88">🏆 VOCÊ GANHOU!</h2>
-    <div class="pts" id="gwin-pts"></div>
-    <div>
-      <button class="obtn p" id="wbtn-re">↺ DE NOVO</button>
-      <button class="obtn s" onclick="toMenu()">⌂ MENU</button>
+  <!-- Tela Inicial / Menu -->
+  <div id="screen-menu" class="screen-overlay">
+    <div class="menu-card">
+      <div style="font-size: 4rem; margin-bottom: 10px;">🧺🍎</div>
+      <h1 class="menu-title">Frutas na Cesta</h1>
+      <p class="menu-subtitle">Mova a cesta arrastando para coletar as frutas e desviar das bombas!</p>
+      
+      <button class="game-btn" id="btn-play">JOGAR AGORA</button>
+      
+      <div class="tutorial-hint">
+        <span>🍉 +10 pts</span>
+        <span>|</span>
+        <span>💣 -1 Coração</span>
+      </div>
     </div>
   </div>
 
-  <div id="gload">
-    <span id="gload-txt">CARREGANDO…</span>
-    <div class="lbar"><div class="lfill" id="lfill" style="width:0%"></div></div>
+  <!-- Tela de Game Over -->
+  <div id="screen-gameover" class="screen-overlay hidden">
+    <div class="menu-card" style="border-color: #ef4444;">
+      <div style="font-size: 4rem; margin-bottom: 10px;">💔</div>
+      <h1 class="menu-title" style="color: #ef4444; text-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);">Fim de Jogo!</h1>
+      <p class="menu-subtitle">Você perdeu todas as suas chances. Vamos tentar de novo?</p>
+      
+      <div style="background: #020617; border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 24px;">
+        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 600;">Pontuação Final</span>
+        <div style="font-size: 2rem; font-weight: 700; color: #ef4444;" id="go-score">⭐ 0</div>
+      </div>
+
+      <button class="game-btn" id="btn-restart-go">TENTAR DE NOVO</button>
+      <button class="game-btn secondary" id="btn-menu-go">MENU PRINCIPAL</button>
+    </div>
+  </div>
+
+  <!-- Tela de Vitória -->
+  <div id="screen-victory" class="screen-overlay hidden">
+    <div class="menu-card" style="border-color: #22c55e;">
+      <div style="font-size: 4rem; margin-bottom: 10px;">🏆🎉</div>
+      <h1 class="menu-title" style="color: #22c55e; text-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);">Vitória Incrível!</h1>
+      <p class="menu-subtitle">Tempo esgotado! Você colheu as frutas perfeitamente!</p>
+      
+      <div style="background: #020617; border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 24px;">
+        <span style="font-size: 0.9rem; color: #94a3b8; font-weight: 600;">Pontuação Final</span>
+        <div style="font-size: 2rem; font-weight: 700; color: #22c55e;" id="win-score">⭐ 0</div>
+      </div>
+
+      <button class="game-btn" id="btn-restart-win" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);">JOGAR DE NOVO</button>
+      <button class="game-btn secondary" id="btn-menu-win">MENU PRINCIPAL</button>
+    </div>
   </div>
 </div>
+
 <script>
 'use strict';
 
 // ══════════════════════════════════════════════════════
-//  SONS & VOZ
+//  ÁUDIO E EFEITOS SONOROS (WEB AUDIO API)
 // ══════════════════════════════════════════════════════
 let _ac = null;
-function getAC(){
-  if(!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
-  if(_ac.state === 'suspended') _ac.resume();
+function getAC() {
+  if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (_ac.state === 'suspended') _ac.resume();
   return _ac;
 }
 
-function playBeep(freq=440, dur=.12, type='sine', vol=.4, delay=0){
-  try{
-    const ac=getAC();
-    const o=ac.createOscillator(), g=ac.createGain();
-    o.type=type; o.frequency.value=freq;
-    g.gain.setValueAtTime(0, ac.currentTime+delay);
-    g.gain.linearRampToValueAtTime(vol, ac.currentTime+delay+.01);
-    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+delay+dur);
-    o.connect(g); g.connect(ac.destination);
-    o.start(ac.currentTime+delay);
-    o.stop(ac.currentTime+delay+dur+.05);
+function playBeep(freq=440, dur=.12, type='sine', vol=.4, delay=0) {
+  try {
+    const ac = getAC();
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, ac.currentTime + delay);
+    g.gain.linearRampToValueAtTime(vol, ac.currentTime + delay + .01);
+    g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + delay + dur);
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start(ac.currentTime + delay);
+    o.stop(ac.currentTime + delay + dur + .05);
   } catch(e){}
 }
 
-function playScanSound(){
-  // Ascending scan beeps
-  [400,500,650,800,1000].forEach((f,i) => playBeep(f,.1,'sine',.3, i*.08));
+function playJuicySound() {
+  playBeep(520, .08, 'sine', 0.4, 0);
+  playBeep(780, .12, 'sine', 0.3, 0.04);
 }
 
-function playSuccessSound(){
-  // Da-da-daaaa unlock
-  playBeep(523,.1,'sine',.5, 0);
-  playBeep(659,.1,'sine',.5, .1);
-  playBeep(784,.18,'sine',.5, .2);
-  playBeep(1047,.35,'sine',.5, .35);
+function playHurtSound() {
+  playBeep(220, .15, 'sawtooth', 0.4, 0);
+  playBeep(130, .25, 'triangle', 0.5, 0.08);
 }
 
-function playClickSound(){
-  playBeep(660,.06,'square',.2);
+function playVictorySound() {
+  [523, 659, 784, 1047, 1318].forEach((f, i) => {
+    playBeep(f, .2, 'sine', 0.3, i * 0.1);
+  });
 }
 
-let _playedWelcome = false;
-function playWelcomeVoice(){
-  // Usar SpeechSynthesis com voz pt-BR mais natural e evitar duplicação
-  if(!window.speechSynthesis || _playedWelcome) return;
-  _playedWelcome = true;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance('Bem-vindo de volta, Gabriel! Estava te esperando. Vamos brincar!');
-  utter.lang = 'pt-BR';
-  // Slightly faster, natural pacing
-  utter.rate = 1.15;
-  utter.pitch = 1.02;
-  utter.volume = 1;
-
-  const chooseAndSpeak = () => {
-    const voices = window.speechSynthesis.getVoices() || [];
-    // Prefer high-quality Google pt-BR voices, then any pt-BR voice, then any pt voice
-    const pref =
-      voices.find(v => /google.*pt-?br/i.test(v.name) || /pt-?br/i.test(v.name) && /google/i.test(v.name)) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt-br') && /natural|premium|google/i.test(v.name)) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt-br')) ||
-      voices.find(v => v.lang && v.lang.toLowerCase().startsWith('pt')) ||
-      voices[0];
-    if(pref) utter.voice = pref;
-    try { window.speechSynthesis.speak(utter); } catch(e){}
-  };
-
-  // If voices already loaded, speak immediately; otherwise wait for voiceschanged once
-  if(window.speechSynthesis.getVoices().length > 0){
-    chooseAndSpeak();
-  } else {
-    const onVoices = () => { chooseAndSpeak(); window.speechSynthesis.removeEventListener('voiceschanged', onVoices); };
-    window.speechSynthesis.addEventListener('voiceschanged', onVoices);
-    // safety fallback
-    setTimeout(() => { if(!utter.voice) chooseAndSpeak(); }, 600);
-  }
-}
-
+// ══════════════════════════════════════════════════════
+//  CONFIGURAÇÃO DO CANVAS E ENGENHARIA DE RENDER
+// ══════════════════════════════════════════════════════
 const canvas = document.getElementById('gc');
-const ctx    = canvas.getContext('2d');
-const hud    = document.getElementById('hud');
-const ctrl   = document.getElementById('ctrl');
-const hbar   = document.getElementById('hbar');
-let W=0, H=0;
-function rsz(){
-  // HiDPI canvas resizing for crisper, more professional visuals
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  W = Math.floor(window.innerWidth);
-  H = Math.floor(window.innerHeight);
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('hud-score');
+const livesEl = document.getElementById('hud-lives');
+const timerEl = document.getElementById('hud-timer');
+
+let W = 0, H = 0;
+let dpr = 1;
+
+// Propriedades da cesta
+const basket = {
+  x: window.innerWidth / 2,
+  y: window.innerHeight - 110, // Sempre garantida acima do fundo e visível
+  w: 120,
+  h: 55,
+  targetX: window.innerWidth / 2,
+  squeezeX: 1,
+  squeezeY: 1
+};
+
+function rsz() {
+  dpr = Math.max(1.5, window.devicePixelRatio || 1);
+  W = window.innerWidth;
+  H = window.innerHeight;
   canvas.style.width = W + 'px';
   canvas.style.height = H + 'px';
   canvas.width = Math.floor(W * dpr);
   canvas.height = Math.floor(H * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  
+  // Atualiza dinamicamente a posição Y da cesta para que fique sempre visível
+  basket.y = H - 110;
 }
 window.addEventListener('resize', rsz);
+rsz();
 
-// INPUT
-const K={up:0,dn:0,lt:0,rt:0,a:0,b:0};
-const TAP={a:0,b:0,up:0};
-const _H2={};
-const BMAP={cup:'up',cleft:'lt',cdown:'dn',cright:'rt',abA:'a',abB:'b'};
-for(const[id,k] of Object.entries(BMAP)){
-  const el=document.getElementById(id);
-  el.addEventListener('pointerdown',e=>{e.preventDefault();K[k]=1;TAP[k]=1;el.classList.add('on');},{passive:false});
-  el.addEventListener('pointerup',  e=>{e.preventDefault();K[k]=0;el.classList.remove('on');},{passive:false});
-  el.addEventListener('pointercancel',()=>{K[k]=0;document.getElementById(id).classList.remove('on');});
-  el.addEventListener('pointerleave', ()=>{K[k]=0;document.getElementById(id).classList.remove('on');});
-}
-const KMAP={ArrowUp:'up',ArrowDown:'dn',ArrowLeft:'lt',ArrowRight:'rt',w:'up',s:'dn',a:'lt',d:'rt',' ':'a',z:'a',x:'b',Shift:'b'};
-document.addEventListener('keydown',e=>{const k=KMAP[e.key];if(!k)return;e.preventDefault();if(!_H2[k]){K[k]=1;TAP[k]=1;_H2[k]=1;}});
-document.addEventListener('keyup',  e=>{const k=KMAP[e.key];if(!k)return;K[k]=0;_H2[k]=0;});
-function clrT(){TAP.a=0;TAP.b=0;TAP.up=0;}
+// ══════════════════════════════════════════════════════
+//  ESTADO DO JOGO E CONTROLES
+// ══════════════════════════════════════════════════════
+let gameActive = false;
+let score = 0;
+let lives = 3;
+let timeLeft = 60;
+let lastTimeTick = 0;
+let items = [];
+let particles = [];
+let stars = [];
+let screenShake = 0;
 
-let rafId=null, gameActive=false, score=0, curGame='';
-const rnd=(a,b)=>a+Math.random()*(b-a);
-const rndI=(a,b)=>Math.floor(rnd(a,b+1));
-const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-const lerp=(a,b,t)=>a+(b-a)*t;
-const addPts=n=>{score+=n;};
-const setHUD=s=>{hud.innerHTML=s;};
-function setScore(v){ score=v; }
+// Configurações das frutas e obstáculos
+const GOOD_FRUITS = [
+  { emoji: '🍎', col: '#ef4444' },
+  { emoji: '🍊', col: '#f97316' },
+  { emoji: '🍋', col: '#eab308' },
+  { emoji: '🍇', col: '#a855f7' },
+  { emoji: '🍓', col: '#f43f5e' },
+  { emoji: '🍉', col: '#10b981' },
+  { emoji: '🍌', col: '#facc15' },
+  { emoji: '🍑', col: '#fb923c' },
+  { emoji: '🍒', col: '#e11d48' }
+];
 
-function toMenu(){gameActive=false;cancelAnimationFrame(rafId);window.location.href='index.html';}
+const BAD_ITEMS = [
+  { emoji: '💣', col: '#374151', bad: true },
+  { emoji: '⚡', col: '#facc15', bad: true }
+];
 
-function goOver(){
-  gameActive=false; cancelAnimationFrame(rafId);
-  playBeep(200,.4,'sawtooth',.35);
-  document.getElementById('gov-pts').textContent='⭐ '+score+' PTS';
-  document.getElementById('gov').style.display='flex';
-}
-
-function goWin(){
-  gameActive=false; cancelAnimationFrame(rafId);
-  // Victory fanfare
-  [523,659,784,1047].forEach((f,i)=>playBeep(f,.15,'sine',.5,i*.12));
-  document.getElementById('gwin-pts').textContent='⭐ '+score+' PTS';
-  document.getElementById('gwin').style.display='flex';
+function handlePointer(e) {
+  if (!gameActive) return;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  basket.targetX = clientX;
 }
 
-function showCtrl(aL='A',bL='B',bShow=true){
-  ctrl.style.display='flex';
-  const a=document.getElementById('abA'), b=document.getElementById('abB');
-  a.textContent=aL; b.textContent=bL;
-  a.style.fontSize=aL.length>2?'.5rem':'1rem';
-  b.style.fontSize=bL.length>2?'.5rem':'1rem';
-  b.style.display=bShow?'flex':'none';
+window.addEventListener('pointerdown', handlePointer);
+window.addEventListener('pointermove', handlePointer);
+window.addEventListener('touchmove', handlePointer, { passive: true });
+
+// Teclado para computadores
+window.addEventListener('keydown', (e) => {
+  if (!gameActive) return;
+  const speed = 30;
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    basket.targetX = Math.max(basket.w / 2, basket.targetX - speed);
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd') {
+    basket.targetX = Math.min(W - basket.w / 2, basket.targetX + speed);
+  }
+});
+
+// ══════════════════════════════════════════════════════
+//  SISTEMA DE PARTÍCULAS E ELEMENTOS VISUAIS
+// ══════════════════════════════════════════════════════
+function spawnJuiceParticles(x, y, color, count = 12) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 8,
+      vy: (Math.random() - 0.7) * 9,
+      r: Math.random() * 5 + 3,
+      life: 1.0,
+      decay: Math.random() * 0.03 + 0.02,
+      color
+    });
+  }
 }
 
-function mkP(arr,x,y,n,cols,spd=5){
-  for(let i=0;i<n;i++) arr.push({x,y,vx:rnd(-spd,spd),vy:rnd(-spd*.8,0),life:1,col:Array.isArray(cols)?cols[rndI(0,cols.length-1)]:cols,r:rnd(2,5)});
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.25; // gravidade
+    p.life -= p.decay;
+
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+      continue;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
-function tickP(arr){
-  return arr.filter(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vy+=.15; p.life-=.033;
-    if(p.life>0){ ctx.globalAlpha=p.life; ctx.fillStyle=p.col; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); ctx.globalAlpha=1; }
-    return p.life>0;
+// Inicializar estrelas sutis no céu noturno profundo
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 40; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * (H * 0.75),
+      size: Math.random() * 1.5 + 0.8,
+      alpha: Math.random(),
+      speed: Math.random() * 0.02 + 0.01
+    });
+  }
+}
+
+function drawBackground() {
+  // Gradiente Azul Marinho Escuro Masculino / Elegante
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  skyGrad.addColorStop(0, '#020617'); // Azul marinho quase preto profundo
+  skyGrad.addColorStop(0.6, '#080e1e'); // Azul escuro sólido
+  skyGrad.addColorStop(1, '#0f172a'); // Fundo sutilmente iluminado embaixo
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Desenhar estrelas com brilho discreto
+  stars.forEach(s => {
+    s.alpha += s.speed;
+    if (s.alpha > 1 || s.alpha < 0.2) {
+      s.speed = -s.speed;
+    }
+    ctx.save();
+    ctx.globalAlpha = s.alpha;
+    ctx.fillStyle = '#f1f5f9';
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Colinas noturnas discretas no fundo
+  ctx.fillStyle = '#090d16';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  ctx.quadraticCurveTo(W * 0.25, H - 140, W * 0.5, H - 90);
+  ctx.quadraticCurveTo(W * 0.75, H - 40, W, H - 100);
+  ctx.lineTo(W, H);
+  ctx.fill();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  ctx.quadraticCurveTo(W * 0.3, H - 70, W * 0.6, H - 110);
+  ctx.quadraticCurveTo(W * 0.85, H - 130, W, H - 80);
+  ctx.lineTo(W, H);
+  ctx.fill();
+}
+
+// ══════════════════════════════════════════════════════
+//  DESENHO DA CESTA (VISÍVEL E ELEGANTE)
+// ══════════════════════════════════════════════════════
+function drawBasket(b) {
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.scale(b.squeezeX, b.squeezeY);
+
+  const halfW = b.w / 2;
+  const halfH = b.h / 2;
+
+  // Sombra suave sob a cesta
+  const shadowGrad = ctx.createRadialGradient(0, halfH + 8, 2, 0, halfH + 8, halfW * 1.2);
+  shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.7)');
+  shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = shadowGrad;
+  ctx.fillRect(-halfW * 1.5, halfH + 2, halfW * 3, 14);
+
+  // Corpo Principal da Cesta (Palha Dourada e brilhante)
+  ctx.fillStyle = '#d97706'; 
+  ctx.beginPath();
+  ctx.moveTo(-halfW, -halfH + 10);
+  ctx.lineTo(-halfW + 12, halfH);
+  ctx.lineTo(halfW - 12, halfH);
+  ctx.lineTo(halfW, -halfH + 10);
+  ctx.closePath();
+  ctx.fill();
+
+  // Padrão de textura trançada
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  for (let i = -halfH + 15; i < halfH; i += 10) {
+    ctx.beginPath();
+    ctx.moveTo(-halfW + 6, i);
+    ctx.lineTo(halfW - 6, i);
+    ctx.stroke();
+  }
+  for (let x = -halfW + 15; x < halfW - 10; x += 18) {
+    ctx.beginPath();
+    ctx.moveTo(x, -halfH + 10);
+    ctx.quadraticCurveTo(x + 4, 0, x + 2, halfH);
+    ctx.stroke();
+  }
+
+  // Borda Grossa da Cesta (Destaque claro para visualização fácil)
+  ctx.fillStyle = '#fef08a'; 
+  ctx.beginPath();
+  ctx.roundRect(-halfW - 5, -halfH, b.w + 10, 14, 8);
+  ctx.fill();
+
+  // Detalhe central azul brilhante
+  ctx.fillStyle = '#38bdf8'; 
+  ctx.beginPath();
+  ctx.arc(0, -halfH + 7, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════════════
+//  ATUALIZAÇÃO E CONTROLE DOS ITENS (SENSIVELMENTE LENTO/SUAVE)
+// ══════════════════════════════════════════════════════
+function spawnItem() {
+  const isGood = Math.random() < 0.78; // Alta proporção de frutas boas
+  const config = isGood 
+    ? GOOD_FRUITS[Math.floor(Math.random() * GOOD_FRUITS.length)]
+    : BAD_ITEMS[Math.floor(Math.random() * BAD_ITEMS.length)];
+
+  items.push({
+    x: Math.random() * (W - 60) + 30,
+    y: -40,
+    r: 22,
+    vy: Math.random() * 1.0 + 1.8, // Velocidade de queda relaxante e lenta
+    emoji: config.emoji,
+    color: config.col,
+    bad: config.bad || false,
+    rot: Math.random() * Math.PI,
+    rotSpeed: (Math.random() - 0.5) * 0.04
   });
 }
 
-function lerpC(a,b,t){
-  const p=c=>[parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];
-  const A=p(a),B=p(b);
-  return'#'+A.map((v,i)=>clamp(Math.round(v+(B[i]-v)*t),0,255).toString(16).padStart(2,'0')).join('');
+function updateGameLogic() {
+  basket.squeezeX += (1 - basket.squeezeX) * 0.15;
+  basket.squeezeY += (1 - basket.squeezeY) * 0.15;
+
+  // Interpolação suave do movimento horizontal
+  basket.x += (basket.targetX - basket.x) * 0.22;
+  basket.x = Math.max(basket.w / 2, Math.min(W - basket.w / 2, basket.x));
+
+  // Cronômetro simples do Jogo
+  const now = Date.now();
+  if (now - lastTimeTick >= 1000) {
+    timeLeft--;
+    lastTimeTick = now;
+    timerEl.textContent = `${timeLeft}s`;
+    
+    if (timeLeft <= 0) {
+      endGame(true);
+    }
+  }
+
+  // Frequência de queda reduzida para jogo mais limpo e calmo
+  if (Math.random() < 0.015) {
+    spawnItem();
+  }
+
+  // Atualização dos elementos ativos
+  for (let i = items.length - 1; i >= 0; i--) {
+    const item = items[i];
+    item.y += item.vy;
+    item.rot += item.rotSpeed;
+
+    // Colisão direta com a Cesta
+    const hitX = Math.abs(item.x - basket.x) < (basket.w / 2 + 10);
+    const basketTop = basket.y - basket.h / 2;
+    const hitY = (item.y + item.r >= basketTop) && (item.y - item.r <= basketTop + 15);
+
+    if (hitX && hitY) {
+      items.splice(i, 1);
+      
+      if (!item.bad) {
+        // Coleta bem sucedida
+        score += 10;
+        scoreEl.textContent = `⭐ ${score}`;
+        playJuicySound();
+        spawnJuiceParticles(item.x, basketTop, item.color, 16);
+        
+        basket.squeezeX = 1.35;
+        basket.squeezeY = 0.7;
+      } else {
+        // Coletou obstáculo perigoso
+        lives--;
+        updateLivesUI();
+        playHurtSound();
+        spawnJuiceParticles(item.x, basketTop, '#4b5563', 22);
+        screenShake = 10; // Vibração suave de impacto
+
+        basket.squeezeX = 0.75;
+        basket.squeezeY = 1.3;
+
+        if (lives <= 0) {
+          endGame(false);
+        }
+      }
+      continue;
+    }
+
+    // Ultrapassou a borda inferior
+    if (item.y > H + 40) {
+      items.splice(i, 1);
+      if (!item.bad) {
+        spawnJuiceParticles(item.x, H - 5, item.color, 4);
+      }
+      continue;
+    }
+
+    // Desenho do item
+    ctx.save();
+    ctx.translate(item.x, item.y);
+    ctx.rotate(item.rot);
+    ctx.font = `${item.r * 1.8}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.emoji, 0, 0);
+    ctx.restore();
+  }
 }
 
-function gFruits(){ctrl.style.display='none';const FR=['🍎','🍊','🍋','🍇','🍓','🍌','🍉','🥝','🍑','🍒'],BD=['💀','⚡','🔥','💣','👾'];let items=[],pts2=[],fr=0,lives=3,timeLeft=60,lastSec=Date.now();const spawn=()=>{const good=Math.random()<.65;items.push({x:rnd(40,W-40),y:-50,vy:rnd(2.8,5.5),r:28,good,emoji:good?FR[rndI(0,FR.length-1)]:BD[rndI(0,BD.length-1)],alive:true,rot:0,rv:rnd(-.05,.05)});};for(let i=0;i<3;i++)spawn();canvas.addEventListener('pointerdown',e=>{const x=e.clientX,y=e.clientY;items.forEach(it=>{if(!it.alive)return;if(Math.hypot(x-it.x,y-it.y)<it.r+14){it.alive=false;if(it.good){addPts(10);playBeep(660,.08,'sine',.3);mkP(pts2,it.x,it.y,16,['#ff4','#f4f','#4ff','#4f4'],7);}else{lives--;playBeep(150,.2,'sawtooth',.3);mkP(pts2,it.x,it.y,10,['#f33','#f88'],5);if(lives<=0)goOver();}}});});function loop(){rafId=requestAnimationFrame(loop);if(!gameActive)return;fr++;if(Date.now()-lastSec>=1000){timeLeft--;lastSec=Date.now();if(timeLeft<=0){goWin();return;}}if(fr%35===0)spawn();const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#87ceeb');bg.addColorStop(1,'#d0f0a0');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(let i=0;i<3;i++){const cx2=(i*W/3+fr*.5)%W;ctx.fillStyle='rgba(255,255,255,.8)';ctx.beginPath();ctx.arc(cx2+20,H*.12,35,0,7);ctx.arc(cx2+55,H*.1,28,0,7);ctx.arc(cx2+80,H*.13,30,0,7);ctx.fill();}ctx.fillStyle='#6aac2c';ctx.fillRect(0,H*.85,W,H*.15);ctx.fillStyle='#8dc641';ctx.fillRect(0,H*.85,W,14);items=items.filter(it=>{if(!it.alive)return false;it.y+=it.vy;it.rot+=it.rv;if(it.y>H+60)return false;ctx.save();ctx.translate(it.x,it.y);ctx.rotate(it.rot);ctx.font=`${it.r*1.5}px sans-serif`;ctx.textAlign='center';ctx.fillText(it.emoji,0,it.r*.5);ctx.restore();return true;});pts2=tickP(pts2);for(let i=0;i<3;i++){ctx.font='22px sans-serif';ctx.textAlign='left';ctx.fillText(i<lives?'❤️':'🖤',16+i*28,H*.9+28);}ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,W,30);ctx.fillStyle='#fff';ctx.font=`bold ${clamp(W*.046,13,23)}px Fredoka`;ctx.textAlign='center';ctx.fillText(`🍎 PEGA FRUTAS! EVITA RUINS! ⏱${timeLeft}s`,W/2,21);setHUD(`⭐ ${score}`);}requestAnimationFrame(loop);}
+// UI de vidas com Coração Vermelho Clássico e Neutro
+function updateLivesUI() {
+  let hearts = '';
+  for (let i = 0; i < 3; i++) {
+    hearts += i < lives ? '❤️' : '🖤';
+  }
+  livesEl.textContent = hearts;
+}
 
+// ══════════════════════════════════════════════════════
+//  LOOP PRINCIPAL DO JOGO (ENGINE)
+// ══════════════════════════════════════════════════════
+let rId = null;
 
-// ── Init ──
-rsz();
-curGame = 'fruits';
-document.getElementById('menubtn').onclick = toMenu;
-document.getElementById('gbtn-re').onclick = () => { document.getElementById('gov').style.display='none'; score=0; gameActive=true; gFruits(); };
-document.getElementById('wbtn-re').onclick = () => { document.getElementById('gwin').style.display='none'; score=0; gameActive=true; gFruits(); };
-gameActive = true;
-gFruits();
+function gameLoop() {
+  if (!gameActive) return;
+
+  ctx.save();
+  if (screenShake > 0) {
+    const dx = (Math.random() - 0.5) * screenShake;
+    const dy = (Math.random() - 0.5) * screenShake;
+    ctx.translate(dx, dy);
+    screenShake *= 0.9;
+    if (screenShake < 0.5) screenShake = 0;
+  }
+
+  drawBackground();
+  updateParticles();
+  drawBasket(basket);
+  updateGameLogic();
+
+  ctx.restore();
+
+  rId = requestAnimationFrame(gameLoop);
+}
+
+// ══════════════════════════════════════════════════════
+//  FLUXOS DE INÍCIO, REINÍCIO E TELAS
+// ══════════════════════════════════════════════════════
+function startGame() {
+  score = 0;
+  lives = 3;
+  timeLeft = 60;
+  items = [];
+  particles = [];
+  screenShake = 0;
+  basket.x = W / 2;
+  basket.targetX = W / 2;
+
+  scoreEl.textContent = `⭐ 0`;
+  timerEl.textContent = `60s`;
+  updateLivesUI();
+  initStars();
+
+  document.querySelectorAll('.screen-overlay').forEach(el => el.classList.add('hidden'));
+
+  gameActive = true;
+  lastTimeTick = Date.now();
+  
+  getAC();
+  cancelAnimationFrame(rId);
+  gameLoop();
+}
+
+function endGame(victory) {
+  gameActive = false;
+  cancelAnimationFrame(rId);
+
+  if (victory) {
+    playVictorySound();
+    document.getElementById('win-score').textContent = `⭐ ${score} Pontos`;
+    document.getElementById('screen-victory').classList.remove('hidden');
+  } else {
+    playHurtSound();
+    document.getElementById('go-score').textContent = `⭐ ${score} Pontos`;
+    document.getElementById('screen-gameover').classList.remove('hidden');
+  }
+}
+
+function showMainMenu() {
+  gameActive = false;
+  cancelAnimationFrame(rId);
+  document.querySelectorAll('.screen-overlay').forEach(el => el.classList.add('hidden'));
+  document.getElementById('screen-menu').classList.remove('hidden');
+}
+
+document.getElementById('btn-play').onclick = () => { playBeep(600, 0.1); startGame(); };
+document.getElementById('btn-restart-go').onclick = () => { playBeep(600, 0.1); startGame(); };
+document.getElementById('btn-restart-win').onclick = () => { playBeep(600, 0.1); startGame(); };
+
+document.getElementById('btn-menu-go').onclick = () => { playBeep(400, 0.1); showMainMenu(); };
+document.getElementById('btn-menu-win').onclick = () => { playBeep(400, 0.1); showMainMenu(); };
+
+// Inicialização de desenho estático decorativo de fundo
+initStars();
+drawBackground();
+drawBasket(basket);
 
 </script>
 </body>
 </html>
+
