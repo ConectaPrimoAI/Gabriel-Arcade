@@ -183,10 +183,10 @@
     <!-- HEADER DA CONTA (Gabriel José) -->
     <header class="w-full bg-[#1E2024] border-b-4 border-[#2b3038] px-5 py-4 flex items-center justify-between z-10 shrink-0">
       <div class="flex items-center gap-3">
-        <!-- Foto de Perfil de Gabriel José com Moldura de Status -->
+        <!-- Foto de Perfil Premium de Gabriel José -->
         <div class="relative">
           <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-robloxBlue to-robloxCyan p-0.5 shadow-md">
-            <!-- Foto Oficial do Gabriel José definida pelo usuário -->
+            <!-- Foto Oficial do Gabriel José -->
             <img id="avatarImg" class="w-full h-full object-cover rounded-[14px]" src="https://files.catbox.moe/hepoxn.jpg" alt="Gabriel José">
           </div>
           <!-- Status Ativo/Online -->
@@ -217,7 +217,7 @@
     <!-- CONTEÚDO SCROLLÁVEL -->
     <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 no-scrollbar pb-10">
 
-      <!-- ==================== BANNER SLIDER (SELECIONADO ALEATORIAMENTE DO JSON) ==================== -->
+      <!-- ==================== BANNER SLIDER (SELECIONADO ALEATORIAMENTE DO JSON - ESTILO ANEXADO) ==================== -->
       <section class="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#2b3038] bg-robloxCard shadow-lg group">
         <!-- Wrapper dos Slides dinâmicos -->
         <div id="sliderWrapper" class="flex transition-transform duration-500 ease-in-out h-48 md:h-64" style="transform: translateX(0%);">
@@ -228,7 +228,7 @@
         </div>
 
         <!-- Botões de Navegação do Banner -->
-        <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-robloxBlue border border-white/20 flex items-center justify-center text-white transition-all active:scale-90 opacity-0 group-hover:opacity-100 z-10">
+        <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 hover:bg-robloxBlue border border-white/20 flex items-center justify-center text-white transition-all active:scale-90 opacity-0 group-hover:opacity-100 z-10">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-robloxBlue border border-white/20 flex items-center justify-center text-white transition-all active:scale-90 opacity-0 group-hover:opacity-100 z-10">
@@ -313,39 +313,34 @@
 
       update() {
         if (holding) {
-          // Atração magnética intensa para o centro
           const dx = 150 - this.x;
           const dy = 150 - this.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-          // Efeito de redemoinho gravitacional (órbita em espiral)
           const angle = Math.atan2(dy, dx);
-          const force = 0.35; // Força magnética para o centro
+          const force = 0.35;
 
           this.vx += Math.cos(angle) * force + Math.sin(angle) * 0.15;
           this.vy += Math.sin(angle) * force - Math.cos(angle) * 0.15;
-          this.radius = Math.max(0.5, this.radius - 0.015); // Partículas diminuem ao serem absorvidas
+          this.radius = Math.max(0.5, this.radius - 0.015);
 
           if (dist < 15) {
-            this.reset(); // Renasce uma partícula na borda
+            this.reset();
             this.x = Math.random() > 0.5 ? 0 : 300;
             this.y = Math.random() * 300;
           }
         } else {
-          // Flutuação casual e natural com rastro calmo
           this.vx += (Math.random() - 0.5) * 0.15;
           this.vy += (Math.random() - 0.5) * 0.15;
           this.radius = Math.min(3, this.radius + 0.02);
         }
 
-        // Limitação de velocidade (atrito)
         this.vx *= 0.92;
         this.vy *= 0.92;
 
         this.x += this.vx;
         this.y += this.vy;
 
-        // Limites da tela
         if (this.x < 0 || this.x > 300 || this.y < 0 || this.y > 300) {
           this.reset();
         }
@@ -369,7 +364,6 @@
     }
 
     function drawConnections() {
-      // Desenha linhas conectando as partículas se estiverem próximas
       const maxDistance = holding ? 45 : 30;
       ctx.lineWidth = 0.5;
       
@@ -382,7 +376,6 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           if (dist < maxDistance) {
-            // Opacidade baseada na proximidade
             const alpha = (1 - dist / maxDistance) * (holding ? 0.25 : 0.15);
             ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
             ctx.beginPath();
@@ -395,19 +388,15 @@
     }
 
     function loop() {
-      // Limpeza suave para criar rastro de movimento premium (motion blur)
       ctx.fillStyle = holding ? 'rgba(34, 38, 47, 0.25)' : 'rgba(34, 38, 47, 0.45)';
       ctx.fillRect(0, 0, 300, 300);
 
-      // Atualizar e desenhar partículas
       particles.forEach(p => {
         p.update();
         p.draw();
       });
 
-      // Desenhar conexões de constelação
       drawConnections();
-
       requestAnimationFrame(loop);
     }
     loop();
@@ -422,7 +411,6 @@
       holding = true;
       startTime = Date.now();
 
-      // Ativar laser e estilização visual do scanner
       laser.classList.remove("hidden");
       biometryBtn.style.borderColor = "#0084FF";
       biometryBtn.style.boxShadow = "0 0 25px rgba(0, 132, 255, 0.45)";
@@ -439,21 +427,16 @@
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / 3000, 1);
 
-        // Atualizar Anel de Carregamento Circular
         const offset = progressCircleCircumference - (progress * progressCircleCircumference);
         progressCircle.style.strokeDashoffset = offset;
 
-        // Gerenciar Graus de Vibração Mecânica Conforme o Avanço
         if (progress > 0.25 && progress < 0.6) {
-          // Fase 1: Vibração Leve
           scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-soft";
           document.getElementById("txt").innerText = "ANALISANDO PADRÕES...";
         } else if (progress >= 0.6 && progress < 0.85) {
-          // Fase 2: Vibração Média
           scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-medium";
           document.getElementById("txt").innerText = "DECRIFTANDO ASSINATURA...";
         } else if (progress >= 0.85) {
-          // Fase 3: Vibração Crítica (Cinemática)
           scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-hard";
           document.getElementById("txt").innerText = "CONECTANDO AO GABRIEL ARCADE...";
         }
@@ -462,7 +445,6 @@
           clearInterval(interval);
           holding = false;
           
-          // Sucesso e Liberação
           scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-robloxGreen shadow-glow-cyan flex flex-col items-center justify-center p-6 overflow-hidden";
           document.getElementById("txt").innerText = "AUTORIZADO!";
           document.getElementById("txt").className = "text-robloxGreen font-extrabold text-sm tracking-widest font-roblox";
@@ -490,7 +472,6 @@
       holding = false;
       clearInterval(interval);
 
-      // Limpar todos os efeitos de varredura mecânica
       laser.classList.add("hidden");
       scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden";
       biometryBtn.style.borderColor = "#2D333F";
@@ -504,7 +485,6 @@
       progressCircle.style.strokeDashoffset = progressCircleCircumference;
     }
 
-    // Suporte amplo Multi-Touch e Desktop
     hold.addEventListener("touchstart", start, { passive: false });
     hold.addEventListener("touchend", end);
     hold.addEventListener("touchcancel", end);
@@ -513,7 +493,6 @@
     hold.addEventListener("mouseup", end);
     hold.addEventListener("mouseleave", end);
 
-    // Logout do Aplicativo
     logoutBtn.onclick = () => {
       app.style.display = "none";
       scanner.style.display = "flex";
@@ -526,7 +505,7 @@
 
 
     /* ============================================
-       SLIDER DE BANNER TOTALMENTE DINÂMICO
+       SLIDER DE BANNER DE ALTO CONTRASTE (ESTILO ANEXO)
        ============================================ */
     let currentSlide = 0;
     const totalSlides = 3;
@@ -539,22 +518,27 @@
       sliderWrapper.innerHTML = "";
       sliderDots.innerHTML = "";
 
-      // Fundos decorativos de jogos para os banners do carrossel
-      const bannerBgUrls = [
-        "https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80",
-        "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80"
-      ];
-
       chosenGames.forEach((g, idx) => {
         const slide = document.createElement("div");
-        slide.className = "min-w-full h-full relative flex items-end p-6 bg-gradient-to-t from-black/95 via-black/40 to-transparent cursor-pointer";
+        // Layout inspirado no anexo: Fundo branco, emoji gigante cortado no canto inferior esquerdo e texto em caixa alta
+        slide.className = "min-w-full h-full relative flex items-center justify-end p-8 bg-white text-black cursor-pointer overflow-hidden select-none transition-all duration-300";
         slide.innerHTML = `
-          <div class="absolute inset-0 bg-cover bg-center -z-10 filter brightness-75 transition-transform duration-1000 group-hover:scale-105" style="background-image: url('${bannerBgUrls[idx]}')"></div>
-          <div class="space-y-1">
-            <span class="bg-robloxBlue text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider font-roblox">RECOMENDADO</span>
-            <h3 class="text-xl md:text-2xl font-black tracking-wide font-roblox">${g.nm}</h3>
-            <p class="text-gray-300 text-xs md:text-sm max-w-md line-clamp-2">${g.bd}</p>
+          <!-- Emoji Gigante Cortado no canto esquerdo inferior -->
+          <div class="absolute -left-12 -bottom-12 text-[11rem] md:text-[14rem] select-none pointer-events-none transform -rotate-12 leading-none drop-shadow-md select-none">
+            ${g.ic}
+          </div>
+          
+          <!-- Título do Jogo em Caixa Alta e Negrito estilo o anexo -->
+          <div class="z-10 w-2/3 flex flex-col items-end justify-center pr-2 md:pr-10">
+            <span class="bg-[#111214] text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-widest font-roblox mb-2">
+              Destaque
+            </span>
+            <h3 class="text-2xl md:text-5xl font-black tracking-wide text-black uppercase leading-tight font-roblox text-right">
+              ${g.nm}
+            </h3>
+            <p class="text-gray-500 text-xs mt-1 hidden md:line-clamp-2 max-w-sm text-right">
+              ${g.bd}
+            </p>
           </div>
         `;
         
@@ -563,7 +547,7 @@
         };
         sliderWrapper.appendChild(slide);
 
-        // Dot de Navegação
+        // Ponto Indicador
         const dot = document.createElement("span");
         dot.className = "w-3.5 h-3.5 rounded-full bg-white/40 cursor-pointer transition-all hover:bg-white" + (idx === 0 ? " dot-active" : "");
         dot.onclick = (e) => {
@@ -615,7 +599,7 @@
 
 
     /* ============================================
-       CARREGAMENTO DOS DADOS (INTERAÇÃO COM games.json)
+       CARREGAMENTO DOS JOGOS (DADOS DINÂMICOS DO games.json)
        ============================================ */
     async function loadGames() {
       const grid = document.getElementById("grid");
@@ -628,28 +612,27 @@
         if (data && data.games && data.games.length > 0) {
           setupDashboard(data.games);
         } else {
-          showError("Nenhum jogo encontrado no games.json.");
+          showError("Nenhum jogo cadastrado no arquivo 'games.json'.");
         }
       } catch (err) {
-        console.error("Erro crítico ao carregar games.json:", err);
-        showError("Não foi possível carregar o arquivo 'games.json'. Verifique as suas conexões.");
+        console.error("Erro ao ler games.json:", err);
+        showError("Não foi possível carregar o arquivo 'games.json'. Certifique-se de que ele existe no mesmo diretório.");
       }
     }
 
-    // Configuração de dados baseados 100% no arquivo JSON obtido do servidor
     function setupDashboard(gamesList) {
-      // Misturar o array aleatoriamente para selecionar 3 jogos exclusivos para o Banner Slider
+      // Embaralha para selecionar 3 jogos aleatórios para o carrossel superior
       const shuffled = [...gamesList].sort(() => 0.5 - Math.random());
       const chosenForBanner = shuffled.slice(0, Math.min(3, gamesList.length));
       
-      // Duplicar se a lista conter quantidade inferior de jogos
+      // Duplicar elementos se houver menos de 3 jogos
       while (chosenForBanner.length < 3 && gamesList.length > 0) {
         chosenForBanner.push(gamesList[Math.floor(Math.random() * gamesList.length)]);
       }
 
       initSlider(chosenForBanner);
 
-      // Renderizar a listagem total de jogos na grade inferior do Dashboard
+      // Renderizar o grid de jogos inferior
       renderGamesGrid(gamesList);
     }
 
@@ -658,7 +641,6 @@
       grid.innerHTML = "";
 
       gamesList.forEach(g => {
-        // Estatísticas fictícias de atividade com excelente estética Roblox
         const activePlayers = (Math.random() * 14 + 1).toFixed(1) + "K";
         
         const card = document.createElement("div");
@@ -667,7 +649,7 @@
         card.innerHTML = `
           <!-- Ícone do Jogo -->
           <div class="w-full aspect-square bg-[#121418] rounded-2xl flex items-center justify-center text-6xl shadow-inner border-2 border-white/5 relative overflow-hidden">
-            <span class="z-10 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transform hover:scale-110 transition-transform">${g.ic}</span>
+            <span class="z-10 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transform hover:scale-110 transition-transform select-none">${g.ic}</span>
             <div class="absolute inset-0 bg-gradient-to-tr from-robloxBlue/10 to-transparent"></div>
           </div>
           
@@ -682,7 +664,7 @@
               <p class="text-gray-400 text-xs mt-1 leading-normal line-clamp-2">${g.bd}</p>
             </div>
             
-            <!-- Botão 3D estilo Roblox -->
+            <!-- Botão 3D Roblox -->
             <button class="btn-3d w-full mt-4 bg-robloxGreen text-white font-extrabold text-sm py-2.5 rounded-xl shadow-3d-green tracking-wider uppercase border-b-4 border-transparent font-roblox">
               Jogar <i class="fa-solid fa-play ml-1 text-xs"></i>
             </button>
@@ -709,4 +691,3 @@
   </script>
 </body>
 </html>
-
