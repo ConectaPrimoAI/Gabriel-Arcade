@@ -3,135 +3,496 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-    <title>Space Wars</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Orbit Vanguard: Elite Starfighter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --accent: #00fff2;
-            --bg: #020205;
+            --accent: #3b82f6;
+            --accent-rgb: 59, 130, 246;
+            --bg: #05070c;
+            --panel-bg: rgba(10, 15, 30, 0.95);
+            --border-color: rgba(255, 255, 255, 0.08);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
         body { 
             background: var(--bg); 
-            color: #fff; 
-            font-family: 'Inter', sans-serif; 
+            color: #f1f5f9; 
+            font-family: 'Rajdhani', sans-serif; 
             overflow: hidden; 
+            height: 100vh;
             height: 100dvh;
         }
 
-        #game-wrap { position: relative; width: 100vw; height: 100dvh; }
-        canvas { display: block; width: 100%; height: 100%; }
+        #game-wrap { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            height: 100dvh; 
+            overflow: hidden; 
+        }
 
-        /* HUD Clean e Grande */
+        #gameCanvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* HUD Tático */
         #hud {
-            position: absolute; top: 20px; left: 0; width: 100%; padding: 0 30px;
-            display: none; justify-content: space-between; pointer-events: none; z-index: 10;
+            position: absolute; 
+            top: 25px; 
+            left: 0; 
+            width: 100%; 
+            padding: 0 30px;
+            display: none; 
+            justify-content: space-between; 
+            pointer-events: none; 
+            z-index: 10;
         }
-        .stat { font-size: 14px; letter-spacing: 1px; font-weight: 400; }
-        .stat b { display: block; font-size: 28px; font-weight: 900; color: var(--accent); }
+        .stat-box { 
+            background: rgba(10, 15, 30, 0.85);
+            padding: 8px 16px;
+            border-radius: 4px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent);
+            min-width: 150px;
+        }
+        .stat-label { 
+            font-size: 10px; 
+            letter-spacing: 2px; 
+            font-weight: 700; 
+            color: #64748b;
+            text-transform: uppercase;
+        }
+        .stat-value { 
+            font-size: 24px; 
+            font-weight: 700; 
+            color: #ffffff; 
+            font-variant-numeric: tabular-nums;
+        }
 
-        /* Hangar de Personalização */
+        /* Hangar Showroom */
         #hangar {
-            position: fixed; inset: 0; background: radial-gradient(circle at center, #0a0a12, #020205);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50;
-            padding: 20px;
+            position: absolute; 
+            inset: 0; 
+            background: radial-gradient(circle at center, #0f172a, #020408);
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; 
+            z-index: 50;
+            padding: 30px 20px;
+            overflow-y: auto;
         }
-        .ship-preview { width: 180px; height: 180px; margin-bottom: 30px; }
-        .custom-panel { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 320px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; }
-        .opt-group { display: flex; justify-content: space-between; align-items: center; }
         
-        .color-dot { width: 35px; height: 35px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-        .color-dot.active { border-color: #fff; box-shadow: 0 0 15px currentColor; }
-        
-        .start-btn {
-            margin-top: 30px; padding: 18px 60px; background: var(--accent); color: #000;
-            font-weight: 900; border: none; border-radius: 10px; cursor: pointer;
-            letter-spacing: 2px; font-size: 18px;
+        .header-area {
+            text-align: center;
+        }
+        .header-area h1 {
+            font-weight: 700;
+            font-size: 36px;
+            letter-spacing: 8px;
+            color: #ffffff;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        .header-area p {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
-        /* Controles Ergonômicos */
+        .showcase-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+            gap: 40px;
+            margin: 15px 0;
+            z-index: 60;
+        }
+
+        .arrow-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .arrow-btn:hover {
+            background: #ffffff;
+            color: #020408;
+            border-color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .preview-box { 
+            width: 260px; 
+            height: 260px; 
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #shipPreview {
+            display: block;
+            width: 260px;
+            height: 260px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Interface Técnica */
+        .customizer-ui {
+            display: flex;
+            flex-direction: row;
+            gap: 25px;
+            width: 100%;
+            max-width: 900px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+        }
+
+        .ui-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .ui-section-title {
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: #475569;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .ship-info-card h2 {
+            font-size: 20px;
+            letter-spacing: 1px;
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .ship-info-card p {
+            font-size: 13px;
+            color: #94a3b8;
+            line-height: 1.5;
+            min-height: 60px;
+            margin-top: 4px;
+        }
+
+        .stat-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .stat-bar-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #cbd5e1;
+        }
+        .stat-bar-outer {
+            width: 130px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .stat-bar-inner {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .color-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 5px;
+        }
+        .color-dot { 
+            width: 26px; 
+            height: 26px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            border: 2px solid transparent; 
+            transition: transform 0.2s ease; 
+        }
+        .color-dot:hover { 
+            transform: scale(1.15); 
+        }
+        .color-dot.active { 
+            border-color: #ffffff; 
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        .start-btn {
+            padding: 14px 50px; 
+            background: #ffffff;
+            color: #020408;
+            font-weight: 700; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            letter-spacing: 2px; 
+            font-size: 14px; 
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
+        }
+        .start-btn:hover {
+            background: var(--accent);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.3);
+        }
+
+        /* Controles Mobile */
         #controls {
-            position: absolute; bottom: 30px; width: 100%;
-            display: none; justify-content: space-between; align-items: center; padding: 0 30px; z-index: 20;
+            position: absolute; 
+            bottom: 40px; 
+            width: 100%;
+            display: none; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 50px; 
+            z-index: 20;
+            pointer-events: none;
         }
         .mini-joy { 
-            width: 90px; height: 90px; border: 2px solid rgba(255,255,255,0.1); 
-            border-radius: 50%; position: relative; background: rgba(0,0,0,0.3);
+            width: 120px; 
+            height: 120px; 
+            border: 1px solid rgba(255, 255, 255, 0.12); 
+            border-radius: 50%; 
+            position: relative; 
+            background: rgba(10, 15, 30, 0.5);
+            backdrop-filter: blur(8px);
+            pointer-events: auto; 
+            touch-action: none;
         }
         .knob {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 40px; height: 40px; background: #fff; border-radius: 50%; opacity: 0.6;
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            width: 44px; 
+            height: 44px; 
+            background: rgba(255, 255, 255, 0.85); 
+            border-radius: 50%; 
+            pointer-events: none; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
         .btn-fire {
-            width: 85px; height: 85px; background: rgba(255,255,255,0.1);
-            border: 2px solid var(--accent); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 35px;
+            width: 90px; 
+            height: 90px; 
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            border-radius: 50%;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            font-size: 13px; 
+            pointer-events: auto; 
+            cursor: pointer;
+            touch-action: none;
+            color: #ffffff;
+            font-weight: 700;
+            letter-spacing: 1px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn-fire:active {
+            background: rgba(255, 255, 255, 0.12);
+            transform: scale(0.94);
         }
 
+        #desktop-instructions {
+            position: absolute; 
+            bottom: 15px; 
+            width: 100%; 
+            text-align: center;
+            font-size: 11px; 
+            opacity: 0.5; 
+            pointer-events: none; 
+            z-index: 5;
+            letter-spacing: 1.5px;
+            color: #64748b;
+        }
+
+        /* Overlays */
         .overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; 
+            inset: 0; 
+            background: rgba(2, 4, 8, 0.96);
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
             z-index: 100;
+            padding: 20px;
+        }
+        .game-over-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        .game-over-box h2 {
+            font-weight: 700; 
+            margin-bottom: 12px; 
+            color: #f87171;
+            font-size: 26px;
+            letter-spacing: 2px;
+        }
+        .game-over-box p {
+            font-size: 15px; 
+            margin-bottom: 25px; 
+            color: #94a3b8;
+        }
+
+        @media(max-width: 768px) {
+            #hangar { justify-content: flex-start; gap: 15px; padding: 20px 10px; }
+            .header-area h1 { font-size: 28px; }
+            .showcase-container { gap: 10px; margin: 5px 0; }
+            .preview-box { width: 180px; height: 180px; }
+            #shipPreview { width: 180px; height: 180px; }
+            .arrow-btn { width: 44px; height: 44px; font-size: 16px; }
+            .customizer-ui { flex-direction: column; padding: 15px; gap: 15px; }
+            .ship-info-card h2 { font-size: 18px; text-align: center; }
+            .ship-info-card p { font-size: 12px; text-align: center; min-height: auto; }
+            .stat-bar-outer { width: 45%; }
+            .color-selector { justify-content: center; }
+            .start-btn { width: 100%; padding: 12px 0; font-size: 13px; }
+            #controls { padding: 0 25px; bottom: 25px; }
         }
     </style>
 </head>
 <body>
 
 <div id="game-wrap">
-    <!-- Hangar de Início -->
+    <!-- Hangar de Configurações -->
     <div id="hangar">
-        <h1 style="margin-bottom: 5px; font-weight: 900; letter-spacing: 3px; font-size: 32px;">GABRIEL N-1</h1>
-        <p style="margin-bottom: 25px; font-size: 14px; opacity: 0.6;">SISTEMA DE CUSTOMIZAÇÃO</p>
+        <div class="header-area">
+            <h1>ORBIT VANGUARD</h1>
+            <p>INTEGRAÇÃO E DESEMPENHO AEROESPACIAL</p>
+        </div>
         
-        <div class="ship-preview">
-            <canvas id="shipPreview" width="180" height="180"></canvas>
+        <div class="showcase-container">
+            <button class="arrow-btn" id="prev-ship">&lt;</button>
+            <div class="preview-box">
+                <canvas id="shipPreview" width="260" height="260"></canvas>
+            </div>
+            <button class="arrow-btn" id="next-ship">&gt;</button>
         </div>
 
-        <div class="custom-panel">
-            <div class="opt-group">
-                <span>ESTILO DO NÚCLEO</span>
-                <div style="display: flex; gap: 15px;">
-                    <div class="color-dot active" style="background: #00fff2; color: #00fff2;" data-color="#00fff2"></div>
-                    <div class="color-dot" style="background: #ff0055; color: #ff0055;" data-color="#ff0055"></div>
-                    <div class="color-dot" style="background: #ffcc00; color: #ffcc00;" data-color="#ffcc00"></div>
+        <div class="customizer-ui">
+            <div class="ui-section">
+                <div class="ui-section-title">CHASSI DE ASSALTO</div>
+                <div class="ship-info-card">
+                    <h2 id="ship-name">-</h2>
+                    <p id="ship-desc">-</p>
                 </div>
             </div>
-            <div class="opt-group">
-                <span>ASA</span>
-                <select id="wing-type" style="background: #222; color: #fff; border: none; padding: 8px; border-radius: 5px; font-weight: bold;">
-                    <option value="standard">INTERCEPTOR</option>
-                    <option value="wide">DEFENDER</option>
-                    <option value="forward">STRIKER</option>
-                </select>
+
+            <div class="ui-section">
+                <div class="ui-section-title">MÉTRICAS DA ESTRUTURA</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar-wrapper">
+                        <span>PROPULSÃO</span>
+                        <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-speed"></div></div>
+                    </div>
+                    <div class="stat-bar-wrapper">
+                        <span>ESTABILIDADE</span>
+                        <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-armor"></div></div>
+                    </div>
+                    <div class="stat-bar-wrapper">
+                        <span>PODER DE FOGO</span>
+                        <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-fire"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-section">
+                <div class="ui-section-title">INDUTOR TÉRMICO</div>
+                <div class="color-selector">
+                    <div class="color-dot active" style="background: #3b82f6;" data-color="#3b82f6"></div>
+                    <div class="color-dot" style="background: #10b981;" data-color="#10b981"></div>
+                    <div class="color-dot" style="background: #f59e0b;" data-color="#f59e0b"></div>
+                    <div class="color-dot" style="background: #f43f5e;" data-color="#f43f5e"></div>
+                    <div class="color-dot" style="background: #e2e8f0;" data-color="#e2e8f0"></div>
+                </div>
             </div>
         </div>
 
-        <button class="start-btn" id="start-game">LANÇAR NAVE</button>
+        <button class="start-btn" id="start-game">Decolar para Combate</button>
     </div>
 
-    <!-- Interface HUD -->
+    <!-- Telemetria HUD -->
     <div id="hud">
-        <div class="stat">CASCO<b id="hp-txt">100%</b></div>
-        <div class="stat" style="text-align: right;">PONTUAÇÃO<b id="score-txt">00000</b></div>
+        <div class="stat-box">
+            <div class="stat-label">SISTEMA DE ESCUDO</div>
+            <div class="stat-value" id="hp-txt">100%</div>
+        </div>
+        <div class="stat-box" style="text-align: right; border-left: none; border-right: 4px solid var(--accent); border-radius: 0 4px 4px 0;">
+            <div class="stat-label">ASSINATURAS DESTRUÍDAS</div>
+            <div class="stat-value" id="score-txt">00000</div>
+        </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Painel de Comando -->
+    <!-- Controles -->
     <div id="controls">
         <div class="mini-joy" id="joy">
             <div class="knob" id="knob"></div>
         </div>
-        <div class="btn-fire" id="fire">🔫 </div>
+        <div class="btn-fire" id="fire">ARMAS</div>
     </div>
+
+    <div id="desktop-instructions">COMANDO: [WASD] MOVER • [ESPAÇO / CLIQUE ESQUERDO] DISPARAR</div>
 </div>
 
 <div class="overlay" id="screen-over">
-    <h1 style="font-weight: 900; margin-bottom: 10px; color: #ff0055;">SISTEMA OFFLINE</h1>
-    <p id="final-score" style="margin-bottom: 30px; opacity: 0.7;">PONTOS RECUPERADOS: 0</p>
-    <button class="start-btn" onclick="location.reload()">REINICIAR</button>
+    <div class="game-over-box">
+        <h2>SINAL DA NAVE PERDIDO</h2>
+        <p id="final-score">-</p>
+        <button class="start-btn" onclick="resetGame()">Retornar ao Hangar</button>
+    </div>
 </div>
 
 <script>
@@ -141,7 +502,41 @@ const previewCanvas = document.getElementById('shipPreview');
 const pCtx = previewCanvas.getContext('2d');
 
 let W, H;
-let shipConfig = { color: '#00fff2', wings: 'standard' };
+let shipConfig = { color: '#3b82f6', typeIdx: 0 };
+let previewAngle = -0.2;
+let previewFloat = 0;
+
+// --- 11 NAVES COMPLEXAS E EXCLUSIVAS (DESIGNS INCRÍVEIS E PERSONALIZADOS) ---
+const SHIPS_CATALOG = [
+    { name: "Scythe interceptor S-1", desc: "Asas finas em foice agressiva com estabilizadores de calor nas pontas. Desvia rapidamente de projéteis.", wings: "scythe", speed: 95, armor: 35, fireRate: 75, size: 70, gunOffset: 12 },
+    { name: "Vanguard Guard V-8", desc: "Design encorpado de asas duplas sobrepostas e canhões internos duplos. Confiável em qualquer setor.", wings: "double", speed: 70, armor: 65, fireRate: 70, size: 74, gunOffset: 16 },
+    { name: "Raptor Apex Razor", desc: "Asas de varredura frontal afiada projetadas para cortar poeira estelar em alta velocidade. Letal.", wings: "razor", speed: 85, armor: 45, fireRate: 85, size: 68, gunOffset: 14 },
+    { name: "Colossus Siege MK-III", desc: "Asas largas blindadas e propulsores triplos integrados. Feito para aguentar rajadas incessantes.", wings: "siege", speed: 40, armor: 95, fireRate: 60, size: 84, gunOffset: 24 },
+    { name: "Wraith Ghost Recon", desc: "Silhueta em forma de diamante unificado com aletas estabilizadoras verticais. Reduz atrito atmosférico.", wings: "diamond", speed: 90, armor: 30, fireRate: 80, size: 66, gunOffset: 10 },
+    { name: "Kodiak Defender", desc: "Asas de ponta invertida que geram blindagem de campo eletrostático ao redor da fuselagem.", wings: "inverted", speed: 55, armor: 85, fireRate: 65, size: 80, gunOffset: 20 },
+    { name: "Aero-Swift Cruiser", desc: "Design em flecha pura, com canhões recuados junto ao bico principal. Foco em tiro centralizado.", wings: "arrow", speed: 78, armor: 50, fireRate: 90, size: 72, gunOffset: 10 },
+    { name: "Manticore Bomber", desc: "Chassi estendido horizontalmente com canhões avançados nas pontas externas das asas.", wings: "horizontal", speed: 48, armor: 75, fireRate: 70, size: 82, gunOffset: 26 },
+    { name: "Starhawk Interceptor", desc: "Asas que simulam garras e propulsores dinâmicos nas articulações externas da carcaça.", wings: "claws", speed: 88, armor: 40, fireRate: 80, size: 70, gunOffset: 15 },
+    { name: "Orion Spearhead", desc: "Bico incrivelmente longo e asas delgadas paralelas para ataques de penetração rápida.", wings: "spear", speed: 80, armor: 55, fireRate: 75, size: 74, gunOffset: 14 },
+    { name: "Eclipse Horizon", desc: "Asa em disco semicircular com propulsor centralizado de grande vazão de energia térmica.", wings: "ring", speed: 60, armor: 80, fireRate: 65, size: 76, gunOffset: 18 }
+];
+
+// --- ESTADOS DO MOTOR DO JOGO ---
+const state = {
+    p: { x: 0, y: 0, vx: 0, vy: 0, hp: 100, maxHp: 100, rot: 0, bulletType: 'normal', powerupTimer: 0 },
+    enemies: [], 
+    enemyBullets: [],
+    bullets: [], 
+    stars: [], 
+    particles: [], 
+    powerups: [],
+    score: 0, 
+    active: false,
+    lastShotTime: 0,
+    shake: 0,
+    input: { x: 0, y: 0, fire: false },
+    keys: {}
+};
 
 function resize() {
     W = window.innerWidth;
@@ -152,202 +547,545 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// --- DESENHO DA NAVE (MODELO REFINADO) ---
-function drawDetailedShip(context, x, y, size, config, angle = 0, isFiring = false) {
+// --- DESENHO DE DESIGN COMPLEXO PARA AS NAVES ---
+function drawAdvancedShip(context, x, y, size, config, angle = 0, engineFlame = true) {
     context.save();
     context.translate(x, y);
     context.rotate(angle);
     
-    const s = size / 60;
+    const s = size / 80;
+    const currentShip = SHIPS_CATALOG[config.typeIdx];
+    const coreColor = config.color;
 
-    // 1. Motores Duplos (Chamas)
-    const flameSize = 15 + Math.random() * 10;
-    context.shadowBlur = 15;
-    context.shadowColor = config.color;
-    context.fillStyle = config.color;
-    // Motor Esquerdo
-    context.fillRect(-14 * s, 10 * s, 4 * s, flameSize * s);
-    // Motor Direito
-    context.fillRect(10 * s, 10 * s, 4 * s, flameSize * s);
-    context.shadowBlur = 0;
+    // 1. PROPULSÃO TRAPEZOIDAL AVANÇADA
+    if (engineFlame) {
+        context.save();
+        const fp = (16 + Math.sin(Date.now() * 0.05) * 4 + Math.random() * 8) * s;
+        let flame = context.createLinearGradient(0, 10 * s, 0, (10 + fp) * s);
+        flame.addColorStop(0, '#ffffff');
+        flame.addColorStop(0.2, coreColor);
+        flame.addColorStop(0.8, 'rgba(' + (coreColor === '#3b82f6' ? '59,130,246' : '244,63,94') + ', 0.1)');
+        flame.addColorStop(1, 'rgba(0,0,0,0)');
+        context.fillStyle = flame;
+        
+        // Jato duplo esquerdo e direito
+        context.beginPath();
+        context.moveTo(-8 * s, 10 * s);
+        context.lineTo(-2 * s, 10 * s);
+        context.lineTo(-5 * s, (10 + fp) * s);
+        context.closePath();
+        context.fill();
 
-    // 2. Fuselagem Principal (Corpo)
-    context.fillStyle = '#2a2a35';
-    context.strokeStyle = '#444';
-    context.lineWidth = 2;
-    
+        context.beginPath();
+        context.moveTo(2 * s, 10 * s);
+        context.lineTo(8 * s, 10 * s);
+        context.lineTo(5 * s, (10 + fp) * s);
+        context.closePath();
+        context.fill();
+        context.restore();
+    }
+
+    // RASTRO DE ENGINE (FUMAÇA) NO CANVAS DO JOGO
+    if (engineFlame && Math.random() < 0.25 && state.active) {
+        state.particles.push({
+            x: x - Math.sin(angle) * (15 * s),
+            y: y + Math.cos(angle) * (15 * s),
+            vx: -Math.sin(angle) * 2 + (Math.random() - 0.5),
+            vy: Math.cos(angle) * 2 + 1,
+            radius: Math.random() * 3 + 2,
+            color: 'rgba(255,255,255,0.08)',
+            alpha: 0.6,
+            decay: 0.015
+        });
+    }
+
+    // 2. MODELAGEM POLIGONAL DE ASAS (SUPERIOR, INFERIOR E SUPORTES)
+    context.fillStyle = '#1e293b';
+    context.strokeStyle = '#334155';
+    context.lineWidth = 1.5;
+
     context.beginPath();
-    context.moveTo(0, -35 * s); // Ponta
-    context.lineTo(15 * s, 10 * s);
-    context.lineTo(10 * s, 15 * s);
-    context.lineTo(-10 * s, 15 * s);
-    context.lineTo(-15 * s, 10 * s);
-    context.closePath();
-    context.fill();
-    context.stroke();
-
-    // 3. Asas de Combate
-    context.fillStyle = '#1c1c22';
-    context.beginPath();
-    if(config.wings === 'standard') {
-        // Interceptor
-        context.moveTo(-15 * s, 0); context.lineTo(-40 * s, 25 * s); context.lineTo(-15 * s, 15 * s);
-        context.moveTo(15 * s, 0); context.lineTo(40 * s, 25 * s); context.lineTo(15 * s, 15 * s);
-    } else if(config.wings === 'wide') {
-        // Defender
-        context.moveTo(-12 * s, 5 * s); context.lineTo(-50 * s, 15 * s); context.lineTo(-12 * s, 20 * s);
-        context.moveTo(12 * s, 5 * s); context.lineTo(50 * s, 15 * s); context.lineTo(12 * s, 20 * s);
+    const w = currentShip.wings;
+    if (w === "scythe") {
+        // Asas finas e pontiagudas voltadas para trás
+        context.moveTo(-8 * s, -5 * s);
+        context.lineTo(-52 * s, 25 * s);
+        context.lineTo(-44 * s, 30 * s);
+        context.lineTo(-10 * s, 12 * s);
+        context.moveTo(8 * s, -5 * s);
+        context.lineTo(52 * s, 25 * s);
+        context.lineTo(44 * s, 30 * s);
+        context.lineTo(10 * s, 12 * s);
+    } else if (w === "double") {
+        // Duas asas paralelas de cada lado
+        context.moveTo(-8 * s, -12 * s); context.lineTo(-40 * s, -10 * s); context.lineTo(-32 * s, -2 * s); context.lineTo(-8 * s, 2 * s);
+        context.moveTo(-8 * s, 5 * s); context.lineTo(-48 * s, 15 * s); context.lineTo(-38 * s, 22 * s); context.lineTo(-8 * s, 10 * s);
+        context.moveTo(8 * s, -12 * s); context.lineTo(40 * s, -10 * s); context.lineTo(32 * s, -2 * s); context.lineTo(8 * s, 2 * s);
+        context.moveTo(8 * s, 5 * s); context.lineTo(48 * s, 15 * s); context.lineTo(38 * s, 22 * s); context.lineTo(8 * s, 10 * s);
+    } else if (w === "razor") {
+        // Asas agressivas viradas para frente
+        context.moveTo(-8 * s, -15 * s); context.lineTo(-48 * s, -35 * s); context.lineTo(-36 * s, 0); context.lineTo(-8 * s, 6 * s);
+        context.moveTo(8 * s, -15 * s); context.lineTo(48 * s, -35 * s); context.lineTo(36 * s, 0); context.lineTo(8 * s, 6 * s);
+    } else if (w === "siege") {
+        // Estrutura maciça em formato de placas largas trapezoidais
+        context.moveTo(-10 * s, 12 * s); context.lineTo(-55 * s, 18 * s); context.lineTo(-45 * s, 32 * s); context.lineTo(-10 * s, 18 * s);
+        context.moveTo(10 * s, 12 * s); context.lineTo(55 * s, 18 * s); context.lineTo(45 * s, 32 * s); context.lineTo(10 * s, 18 * s);
+    } else if (w === "diamond") {
+        // Fuselagem diamante suave
+        context.moveTo(-8 * s, -10 * s); context.lineTo(-38 * s, 0); context.lineTo(-8 * s, 12 * s);
+        context.moveTo(8 * s, -10 * s); context.lineTo(38 * s, 0); context.lineTo(8 * s, 12 * s);
     } else {
-        // Striker
-        context.moveTo(-12 * s, -15 * s); context.lineTo(-35 * s, -30 * s); context.lineTo(-12 * s, 10 * s);
-        context.moveTo(12 * s, -15 * s); context.lineTo(35 * s, -30 * s); context.lineTo(12 * s, 10 * s);
+        // Padrão estrutural militar detalhado para os outros chassis
+        context.moveTo(-8 * s, 0); context.lineTo(-45 * s, 20 * s); context.lineTo(-35 * s, 26 * s); context.lineTo(-8 * s, 12 * s);
+        context.moveTo(8 * s, 0); context.lineTo(45 * s, 20 * s); context.lineTo(35 * s, 26 * s); context.lineTo(8 * s, 12 * s);
     }
     context.fill();
     context.stroke();
 
-    // 4. Cockpit (Janela)
-    context.fillStyle = 'rgba(100, 200, 255, 0.6)';
+    // Detalhes extras de painéis pretos para dar complexidade e "profundidade" mecânica
+    context.fillStyle = '#0f172a';
     context.beginPath();
-    context.ellipse(0, -8 * s, 6 * s, 12 * s, 0, 0, Math.PI * 2);
+    context.moveTo(-6 * s, 2 * s);
+    context.lineTo(-24 * s, 10 * s);
+    context.lineTo(-20 * s, 14 * s);
+    context.closePath();
+    context.moveTo(6 * s, 2 * s);
+    context.lineTo(24 * s, 10 * s);
+    context.lineTo(20 * s, 14 * s);
+    context.closePath();
     context.fill();
-    context.strokeStyle = '#fff';
+
+    // 3. ESTRUTURA CENTRAL DA FUSELAGEM
+    context.fillStyle = '#334155';
+    context.strokeStyle = '#64748b';
+    context.beginPath();
+    context.moveTo(0, -45 * s); // Nariz ultra-fino
+    context.lineTo(12 * s, 6 * s);
+    context.lineTo(8 * s, 22 * s);
+    context.lineTo(-8 * s, 22 * s);
+    context.lineTo(-12 * s, 6 * s);
+    context.closePath();
+    context.fill();
     context.stroke();
 
-    // 5. Linhas de detalhe Neon
-    context.strokeStyle = config.color;
-    context.lineWidth = 2;
+    // Placa de reforço central superior
+    context.fillStyle = '#475569';
     context.beginPath();
-    context.moveTo(-10 * s, 5 * s); context.lineTo(-30 * s, 15 * s);
-    context.moveTo(10 * s, 5 * s); context.lineTo(30 * s, 15 * s);
-    context.stroke();
+    context.moveTo(0, -22 * s);
+    context.lineTo(6 * s, 5 * s);
+    context.lineTo(-6 * s, 5 * s);
+    context.closePath();
+    context.fill();
+
+    // 4. CABINE REFLEXIVA FOSCA
+    let glassGrad = context.createLinearGradient(0, -25 * s, 0, -2 * s);
+    glassGrad.addColorStop(0, '#ffffff');
+    glassGrad.addColorStop(0.4, '#475569');
+    glassGrad.addColorStop(1, '#020408');
+    context.fillStyle = glassGrad;
+    context.beginPath();
+    context.ellipse(0, -10 * s, 4 * s, 10 * s, 0, 0, Math.PI * 2);
+    context.fill();
+
+    // 5. NÚCLEO DE COR DA INTERFACE E REATOR
+    context.fillStyle = coreColor;
+    context.fillRect(-3 * s, 10 * s, 6 * s, 2 * s);
 
     context.restore();
 }
 
-// --- HANGAR ---
+// --- APRESENTAÇÃO E NAVEGAÇÃO DO SHOWROOM ---
+function updateHangarDisplay() {
+    const ship = SHIPS_CATALOG[shipConfig.typeIdx];
+    document.getElementById('ship-name').innerText = ship.name.toUpperCase();
+    document.getElementById('ship-desc').innerText = ship.desc;
+    document.getElementById('stat-speed').style.width = ship.speed + '%';
+    document.getElementById('stat-armor').style.width = ship.armor + '%';
+    document.getElementById('stat-fire').style.width = ship.fireRate + '%';
+    updatePreview();
+}
+
+function updatePreview() {
+    pCtx.clearRect(0,0,260,260);
+    drawAdvancedShip(pCtx, 130, 130, 120, shipConfig, previewAngle, false);
+}
+
+document.getElementById('prev-ship').onclick = () => {
+    shipConfig.typeIdx = (shipConfig.typeIdx - 1 + SHIPS_CATALOG.length) % SHIPS_CATALOG.length;
+    updateHangarDisplay();
+};
+document.getElementById('next-ship').onclick = () => {
+    shipConfig.typeIdx = (shipConfig.typeIdx + 1) % SHIPS_CATALOG.length;
+    updateHangarDisplay();
+};
+
 document.querySelectorAll('.color-dot').forEach(dot => {
     dot.onclick = () => {
         document.querySelector('.color-dot.active').classList.remove('active');
         dot.classList.add('active');
         shipConfig.color = dot.dataset.color;
-        updatePreview();
+        document.documentElement.style.setProperty('--accent', shipConfig.color);
+        updateHangarDisplay();
     };
 });
 
-document.getElementById('wing-type').onchange = (e) => {
-    shipConfig.wings = e.target.value;
-    updatePreview();
-};
-
-function updatePreview() {
-    pCtx.clearRect(0,0,180,180);
-    drawDetailedShip(pCtx, 90, 90, 100, shipConfig, 0, false);
+function animateHangarPreview() {
+    if (document.getElementById('hangar').style.display !== 'none') {
+        previewFloat += 0.02;
+        previewAngle = -0.2 + Math.sin(previewFloat) * 0.06;
+        updatePreview();
+        requestAnimationFrame(animateHangarPreview);
+    }
 }
-updatePreview();
 
-// --- ENGINE ---
-const state = {
-    p: { x: 0, y: 0, vx: 0, vy: 0, hp: 100, rot: 0 },
-    enemies: [], bullets: [], stars: [], score: 0, active: false,
-    input: { x:0, y:0, fire: false }
-};
+// --- ARQUITETURA INDESTRUTÍVEL DO JOYSTICK (POINTER EVENTS COM CAPTURE) ---
+const joy = document.getElementById('joy');
+const knob = document.getElementById('knob');
+let joyActive = false;
+let joyCenterX = 0;
+let joyCenterY = 0;
 
+function updateJoystickCenter() {
+    const rect = joy.getBoundingClientRect();
+    joyCenterX = rect.left + rect.width / 2;
+    joyCenterY = rect.top + rect.height / 2;
+}
+
+// Quando o ponteiro toca/clica no controle, capturamos ele globalmente
+joy.addEventListener('pointerdown', (e) => {
+    joyActive = true;
+    joy.setPointerCapture(e.pointerId); // Garante que o evento pointermove seja disparado NESTE elemento mesmo se sair do círculo!
+    updateJoystickCenter();
+    processJoystick(e.clientX, e.clientY);
+});
+
+joy.addEventListener('pointermove', (e) => {
+    if (!joyActive) return;
+    processJoystick(e.clientX, e.clientY);
+});
+
+function processJoystick(clientX, clientY) {
+    const dx = clientX - joyCenterX;
+    const dy = clientY - joyCenterY;
+    const dist = Math.min(45, Math.hypot(dx, dy));
+    const angle = Math.atan2(dy, dx);
+    const kx = Math.cos(angle) * dist;
+    const ky = Math.sin(angle) * dist;
+    
+    knob.style.transform = `translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
+    state.input.x = kx / 45;
+    state.input.y = ky / 45;
+}
+
+// Liberação segura independente de onde estiver o ponteiro
+function releaseJoystick(e) {
+    if (joyActive) {
+        joyActive = false;
+        if(e && e.pointerId) joy.releasePointerCapture(e.pointerId);
+        knob.style.transform = 'translate(-50%, -50%)';
+        state.input.x = 0;
+        state.input.y = 0;
+    }
+}
+
+joy.addEventListener('pointerup', releaseJoystick);
+joy.addEventListener('pointercancel', releaseJoystick);
+
+// Gatilho de Armas
+const fBtn = document.getElementById('fire');
+fBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); state.input.fire = true; });
+fBtn.addEventListener('pointerup', () => state.input.fire = false);
+fBtn.addEventListener('pointercancel', () => state.input.fire = false);
+
+// Disparo também pelo clique esquerdo em telas desktop no próprio canvas do jogo
+window.addEventListener('pointerdown', (e) => {
+    if(state.active && e.target === canvas) state.input.fire = true;
+});
+window.addEventListener('pointerup', (e) => {
+    if(state.active) state.input.fire = false;
+});
+
+// Teclado Desktop
+window.addEventListener('keydown', (e) => {
+    state.keys[e.key.toLowerCase()] = true;
+    if (e.key === ' ') state.input.fire = true;
+});
+window.addEventListener('keyup', (e) => {
+    state.keys[e.key.toLowerCase()] = false;
+    if (e.key === ' ') state.input.fire = false;
+});
+
+function handleKeyboard() {
+    let kx = 0, ky = 0;
+    if (state.keys['arrowleft'] || state.keys['a']) kx = -1;
+    if (state.keys['arrowright'] || state.keys['d']) kx = 1;
+    if (state.keys['arrowup'] || state.keys['w']) ky = -1;
+    if (state.keys['arrowdown'] || state.keys['s']) ky = 1;
+
+    if (kx !== 0 || ky !== 0) {
+        state.input.x = kx;
+        state.input.y = ky;
+    } else if (!joyActive) {
+        state.input.x = 0;
+        state.input.y = 0;
+    }
+}
+
+// --- LANÇAR AO COMBATE ---
 document.getElementById('start-game').onclick = () => {
     document.getElementById('hangar').style.display = 'none';
     document.getElementById('hud').style.display = 'flex';
     document.getElementById('controls').style.display = 'flex';
+    
+    const chosenShip = SHIPS_CATALOG[shipConfig.typeIdx];
+    state.p.maxHp = Math.floor(chosenShip.armor * 1.5) + 60;
+    state.p.hp = state.p.maxHp;
+    state.p.x = W / 2;
+    state.p.y = H - 180;
+    state.p.vx = 0; 
+    state.p.vy = 0;
+    state.p.bulletType = 'normal';
+    state.p.powerupTimer = 0;
+    state.score = 0;
+    state.bullets = []; 
+    state.enemies = []; 
+    state.enemyBullets = [];
+    state.particles = [];
+    state.powerups = [];
     state.active = true;
-    state.p.x = W/2;
-    state.p.y = H - 200;
-    initStars();
+    
+    initSpaceScene();
     update();
 };
 
-function initStars() {
-    for(let i=0; i<80; i++) {
-        state.stars.push({ x: Math.random()*W, y: Math.random()*H, s: Math.random()*3, v: Math.random()*2 + 1 });
+function initSpaceScene() {
+    state.stars = [];
+    for(let i=0; i<120; i++) {
+        state.stars.push({ 
+            x: Math.random() * W, 
+            y: Math.random() * H, 
+            s: Math.random() * 2 + 0.5, 
+            v: Math.random() * 2.2 + 0.8 
+        });
     }
 }
 
-// --- CONTROLES MELHORADOS ---
-const joy = document.getElementById('joy');
-const knob = document.getElementById('knob');
-joy.addEventListener('touchmove', (e) => {
-    const t = e.touches[0];
-    const r = joy.getBoundingClientRect();
-    const dx = t.clientX - (r.left + r.width/2);
-    const dy = t.clientY - (r.top + r.height/2);
-    const dist = Math.min(35, Math.hypot(dx, dy));
-    const ang = Math.atan2(dy, dx);
-    const kx = Math.cos(ang) * dist;
-    const ky = Math.sin(ang) * dist;
-    knob.style.transform = `translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
-    state.input.x = kx / 35;
-    state.input.y = ky / 35;
-});
-joy.addEventListener('touchend', () => {
-    knob.style.transform = 'translate(-50%, -50%)';
-    state.input.x = 0; state.input.y = 0;
-});
-document.getElementById('fire').ontouchstart = (e) => { e.preventDefault(); state.input.fire = true; };
-document.getElementById('fire').ontouchend = () => state.input.fire = false;
+// Explosão Espacial Incrível com partículas dispersas e fumaça
+function triggerExplosion(x, y, color, count = 15, isBig = false) {
+    // Ondas de choque (Shockwaves) estéticas
+    state.particles.push({
+        x: x, y: y,
+        vx: 0, vy: 0,
+        radius: 4,
+        maxRadius: isBig ? 80 : 35,
+        color: color,
+        alpha: 0.8,
+        decay: 0.03,
+        isShockwave: true
+    });
 
-// --- LOOP PRINCIPAL ---
+    for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * (isBig ? 6 : 3.5) + 1.5;
+        state.particles.push({
+            x: x, y: y,
+            vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            radius: Math.random() * 3 + 1, 
+            color: color, 
+            alpha: 1, 
+            decay: Math.random() * 0.02 + 0.015,
+            isShockwave: false
+        });
+    }
+}
+
+// --- ENGINE E LAÇO DE COMBATE FRENÉTICO ---
 function update() {
     if(!state.active) return;
+    handleKeyboard();
 
+    const chosenShip = SHIPS_CATALOG[shipConfig.typeIdx];
     const p = state.p;
-    p.vx += state.input.x * 1.2;
-    p.vy += state.input.y * 1.2;
-    p.vx *= 0.9; p.vy *= 0.9;
-    p.x += p.vx; p.y += p.vy;
-    p.rot = p.vx * 0.05;
-
-    p.x = Math.max(40, Math.min(W-40, p.x));
-    p.y = Math.max(60, Math.min(H-120, p.y));
-
-    // Tiro mais robusto
-    if(state.input.fire && Date.now() % 180 < 30) {
-        state.bullets.push({ x: p.x - 15, y: p.y - 10, v: -18 });
-        state.bullets.push({ x: p.x + 15, y: p.y - 10, v: -18 });
-        navigator.vibrate?.(15);
-    }
-
-    state.stars.forEach(s => {
-        s.y += s.v; if(s.y > H) s.y = -10;
-    });
-
-    // Spawn controlado: Menos inimigos para menos confusão
-    if(state.enemies.length < 4) {
-        state.enemies.push({
-            x: 50 + Math.random() * (W - 100), y: -100, hp: 3, v: 1.5 + Math.random() * 2,
-            type: Math.floor(Math.random() * 3)
-        });
-    }
-
-    state.enemies.forEach(en => {
-        en.y += en.v;
-        // Colisão aumentada para objetos maiores
-        if(Math.hypot(en.x - p.x, en.y - p.y) < 60) { p.hp -= 20; en.hp = 0; }
-    });
     
-    state.bullets = state.bullets.filter(b => {
-        b.y += b.v;
-        let hit = false;
-        state.enemies.forEach(en => {
-            if(Math.hypot(b.x - en.x, b.y - en.y) < 45) {
-                en.hp--; hit = true;
-                if(en.hp <= 0) state.score += 250;
-            }
-        });
-        return !hit && b.y > -50;
+    // Movimento dinâmico e veloz da nave
+    const speedFactor = 1.4 + (chosenShip.speed / 100) * 1.8;
+    p.vx += state.input.x * speedFactor;
+    p.vy += state.input.y * speedFactor;
+    p.vx *= 0.82; 
+    p.vy *= 0.82;
+    p.x += p.vx; 
+    p.y += p.vy;
+    p.rot = p.vx * 0.035;
+
+    // Limites de tela responsivos
+    p.x = Math.max(30, Math.min(W - 30, p.x));
+    p.y = Math.max(50, Math.min(H - 50, p.y));
+
+    if (state.shake > 0) state.shake -= 0.2;
+
+    // Atualização de Power-ups temporários
+    if (p.powerupTimer > 0) {
+        p.powerupTimer--;
+        if (p.powerupTimer <= 0) p.bulletType = 'normal';
+    }
+
+    // Armas: Gatilhos de Disparo
+    const now = Date.now();
+    const cooldown = Math.max(80, 210 - (chosenShip.fireRate * 1.5));
+    if(state.input.fire && (now - state.lastShotTime > cooldown)) {
+        if (p.bulletType === 'triple') {
+            // Tiro Triplo (Spread)
+            state.bullets.push({ x: p.x - chosenShip.gunOffset, y: p.y - 10, vx: -3, vy: -16 });
+            state.bullets.push({ x: p.x, y: p.y - 15, vx: 0, vy: -18 });
+            state.bullets.push({ x: p.x + chosenShip.gunOffset, y: p.y - 10, vx: 3, vy: -16 });
+        } else {
+            // Tiro Duplo Padrão
+            state.bullets.push({ x: p.x - chosenShip.gunOffset, y: p.y - 8, vx: 0, vy: -16 });
+            state.bullets.push({ x: p.x + chosenShip.gunOffset, y: p.y - 8, vx: 0, vy: -16 });
+        }
+        state.lastShotTime = now;
+    }
+
+    // Estrelas Paralaxe de Fundo
+    state.stars.forEach(s => {
+        s.y += s.v; 
+        if(s.y > H) { s.y = -10; s.x = Math.random() * W; }
     });
 
-    state.enemies = state.enemies.filter(en => en.hp > 0 && en.y < H + 100);
+    // Partículas e Efeitos de Explosão
+    state.particles.forEach((pt, idx) => {
+        if (pt.isShockwave) {
+            pt.radius += (pt.maxRadius - pt.radius) * 0.12;
+            pt.alpha -= pt.decay;
+        } else {
+            pt.x += pt.vx; 
+            pt.y += pt.vy; 
+            pt.alpha -= pt.decay;
+        }
+        if (pt.alpha <= 0) state.particles.splice(idx, 1);
+    });
 
-    if(p.hp <= 0) {
+    // Power-ups Flutuantes
+    if (Math.random() < 0.003) {
+        const types = ['shield', 'triple', 'speed'];
+        state.powerups.push({
+            x: Math.random() * (W - 80) + 40,
+            y: -50,
+            vy: 2,
+            type: types[Math.floor(Math.random() * types.length)],
+            angle: 0
+        });
+    }
+
+    state.powerups.forEach((pu, idx) => {
+        pu.y += pu.vy;
+        pu.angle += 0.02;
+
+        // Coleta de Power-up pelo Jogador
+        if (Math.hypot(pu.x - p.x, pu.y - p.y) < (chosenShip.size / 2 + 15)) {
+            if (pu.type === 'shield') {
+                p.hp = Math.min(p.maxHp, p.hp + Math.floor(p.maxHp * 0.35));
+                triggerExplosion(pu.x, pu.y, '#10b981', 10);
+            } else if (pu.type === 'triple') {
+                p.bulletType = 'triple';
+                p.powerupTimer = 350; // Tempo do power-up ativo
+                triggerExplosion(pu.x, pu.y, '#f59e0b', 12);
+            } else if (pu.type === 'speed') {
+                p.vx += 10;
+                p.vy -= 10;
+                p.powerupTimer = 250;
+                triggerExplosion(pu.x, pu.y, '#3b82f6', 12);
+            }
+            state.powerups.splice(idx, 1);
+        }
+
+        if (pu.y > H + 50) state.powerups.splice(idx, 1);
+    });
+
+    // IA Inimiga Dinâmica e Agressiva (Eles atiram de volta!)
+    const enemySpawnRate = 0.015 + (state.score / 15000) * 0.005;
+    if (state.enemies.length < 8 && Math.random() < enemySpawnRate) {
+        const speed = Math.random() * 1.5 + 2 + (state.score / 25000);
+        state.enemies.push({
+            x: Math.random() * (W - 80) + 40, 
+            y: -60,
+            vy: speed, 
+            vx: (Math.random() - 0.5) * 2,
+            hp: 2 + Math.floor(state.score / 4000), 
+            maxHp: 2 + Math.floor(state.score / 4000), 
+            size: 52,
+            lastShot: 0,
+            shootInterval: 1200 + Math.random() * 1000
+        });
+    }
+
+    state.enemies.forEach((en, idx) => {
+        en.y += en.vy;
+        en.x += en.vx + Math.sin(en.y / 25) * 1.5; // Movimento em S suave
+
+        // Inimigos Atirando contra o Jogador
+        const nowMs = Date.now();
+        if (nowMs - en.lastShot > en.shootInterval && en.y > 50 && en.y < H - 200) {
+            state.enemyBullets.push({ x: en.x, y: en.y + 15, vy: en.vy + 4 });
+            en.lastShot = nowMs;
+        }
+
+        // Colisão Física Nave-contra-Nave
+        const dist = Math.hypot(en.x - p.x, en.y - p.y);
+        if (dist < (en.size / 2 + chosenShip.size / 2 - 8)) {
+            p.hp -= Math.floor(p.maxHp * 0.25); 
+            state.shake = 15;
+            triggerExplosion(en.x, en.y, '#f43f5e', 22, true);
+            state.enemies.splice(idx, 1);
+        }
+
+        if (en.y > H + 50) {
+            p.hp -= 15; // Penalidade por deixar o inimigo invadir
+            state.enemies.splice(idx, 1);
+        }
+    });
+
+    // Atualização dos Projéteis Inimigos
+    state.enemyBullets.forEach((eb, idx) => {
+        eb.y += eb.vy;
+
+        // Acertou o jogador?
+        if (Math.hypot(eb.x - p.x, eb.y - p.y) < (chosenShip.size / 2 - 4)) {
+            p.hp -= 12;
+            state.shake = 6;
+            triggerExplosion(eb.x, eb.y, '#f43f5e', 8);
+            state.enemyBullets.splice(idx, 1);
+        }
+
+        if (eb.y > H + 20) state.enemyBullets.splice(idx, 1);
+    });
+
+    // Atualização e colisão dos nossos lasers contra inimigos
+    state.bullets = state.bullets.filter(b => {
+        b.x += b.vx || 0;
+        b.y += b.vy;
+        let hit = false;
+        for (let i = 0; i < state.enemies.length; i++) {
+            const en = state.enemies[i];
+            if (Math.hypot(b.x - en.x, b.y - en.y) < (en.size / 2 + 5)) {
+                en.hp--; 
+                hit = true;
+                triggerExplosion(b.x, b.y, '#ffffff', 4);
+                if(en.hp <= 0) {
+                    state.score += 250;
+                    triggerExplosion(en.x, en.y, '#64748b', 16, true);
+                    state.enemies.splice(i, 1);
+                }
+                break;
+            }
+        }
+        return !hit && b.y > -20 && b.x > -20 && b.x < W + 20;
+    });
+
+    // Sinal perdido (Derrota)
+    if (p.hp <= 0) {
         state.active = false;
-        document.getElementById('final-score').innerText = `PONTOS RECUPERADOS: ${state.score}`;
+        document.getElementById('final-score').innerText = `DESEMPENHO DO OPERADOR: ${state.score} PONTOS`;
         document.getElementById('screen-over').style.display = 'flex';
     }
 
@@ -356,39 +1094,138 @@ function update() {
 }
 
 function draw() {
-    ctx.clearRect(0,0,W,H);
-    
-    // Estrelas
+    ctx.save();
+    if (state.shake > 0) {
+        ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
+    }
+    ctx.clearRect(0, 0, W, H);
+
+    // 1. Estrelas de fundo
     state.stars.forEach(s => {
-        ctx.fillStyle = `rgba(255,255,255,${s.s/3})`;
+        ctx.fillStyle = 'rgba(255, 255, 255, ' + (s.v / 3) + ')';
+        ctx.fillRect(s.x, s.y, s.s, s.s);
+    });
+
+    // 2. Power-ups Flutuantes
+    state.powerups.forEach(pu => {
+        ctx.save();
+        ctx.translate(pu.x, pu.y);
+        ctx.rotate(pu.angle);
+        
+        let color = '#3b82f6';
+        if (pu.type === 'shield') color = '#10b981';
+        if (pu.type === 'triple') color = '#f59e0b';
+        
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        
+        // Forma hexagonal
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.s, 0, 7);
+        for(let i=0; i<6; i++) {
+            const angle = (Math.PI / 3) * i;
+            ctx.lineTo(Math.cos(angle) * 14, Math.sin(angle) * 14);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Núcleo do Powerup
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(0,0, 4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // 3. Nossos Projéteis (Lasers Táticos)
+    state.bullets.forEach(b => {
+        ctx.fillStyle = shipConfig.color;
+        ctx.fillRect(b.x - 2, b.y, 4, 18);
+    });
+
+    // 4. Projéteis Inimigos
+    state.enemyBullets.forEach(eb => {
+        ctx.fillStyle = '#f43f5e';
+        ctx.beginPath();
+        ctx.arc(eb.x, eb.y, 4, 0, Math.PI * 2);
         ctx.fill();
     });
 
-    // Tiros Maiores
-    state.bullets.forEach(b => {
-        ctx.fillStyle = shipConfig.color;
-        ctx.shadowBlur = 15; ctx.shadowColor = shipConfig.color;
-        ctx.fillRect(b.x - 2, b.y, 4, 25);
+    // 5. Partículas de explosões e ondas de choque
+    state.particles.forEach(pt => {
+        ctx.save();
+        ctx.globalAlpha = pt.alpha;
+        ctx.fillStyle = pt.color;
+        ctx.strokeStyle = pt.color;
+        
+        if (pt.isShockwave) {
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
+            ctx.stroke();
+        } else {
+            ctx.beginPath(); 
+            ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2); 
+            ctx.fill();
+        }
+        ctx.restore();
     });
-    ctx.shadowBlur = 0;
 
-    // Inimigos Detalhados (Emojis Maiores)
+    // 6. Caças Inimigos (Designs Hostis Diversificados)
     state.enemies.forEach(en => {
-        ctx.font = "60px Arial"; // Emoji Gigante
-        ctx.textAlign = "center";
-        const visual = ['🛸', '👾',👽 '][en.type];
-        ctx.fillText(visual, en.x, en.y);
+        ctx.save();
+        ctx.translate(en.x, en.y);
+        ctx.rotate(Math.PI); // Virados para baixo
+        
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.8;
+        
+        // Asa dupla agressiva inimiga
+        ctx.beginPath();
+        ctx.moveTo(0, -18);
+        ctx.lineTo(24, 12);
+        ctx.lineTo(18, 18);
+        ctx.lineTo(0, 4);
+        ctx.lineTo(-18, 18);
+        ctx.lineTo(-24, 12);
+        ctx.closePath();
+        ctx.fill(); 
+        ctx.stroke();
+
+        // Indutores hostis vermelhos
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(-6, -12, 12, 3);
+        ctx.restore();
     });
 
-    // Nave do Gabriel (Grande)
-    drawDetailedShip(ctx, state.p.x, state.p.y, 80, shipConfig, state.p.rot, state.input.fire);
+    // 7. Nave do Jogador
+    const chosenShip = SHIPS_CATALOG[shipConfig.typeIdx];
+    drawAdvancedShip(ctx, state.p.x, state.p.y, chosenShip.size, shipConfig, state.p.rot, true);
 
-    // Update HUD
-    document.getElementById('hp-txt').innerText = Math.max(0, state.p.hp) + '%';
+    ctx.restore();
+
+    // Atualização de telemetria
+    const hpPercent = Math.max(0, Math.floor((state.p.hp / state.p.maxHp) * 100));
+    document.getElementById('hp-txt').innerText = hpPercent + '%';
     document.getElementById('score-txt').innerText = state.score.toString().padStart(5, '0');
 }
+
+function resetGame() {
+    document.getElementById('screen-over').style.display = 'none';
+    document.getElementById('hangar').style.display = 'flex';
+    document.getElementById('hud').style.display = 'none';
+    document.getElementById('controls').style.display = 'none';
+    animateHangarPreview();
+    updateHangarDisplay();
+}
+
+window.onload = () => {
+    animateHangarPreview();
+    updateHangarDisplay();
+};
 </script>
 </body>
 </html>
+
