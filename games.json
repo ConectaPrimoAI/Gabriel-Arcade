@@ -16,9 +16,9 @@
     },
     {
       "id": "snake",
-      "nm": "Snake Neon",
+      "nm": "Snake ",
       "ic": "🐍",
-      "bd": "Cobrinha Neon"
+      "bd": "Cobrinha "
     },
     {
       "id": "tetris",
@@ -39,10 +39,10 @@
       "bd": "Voo Infinito"
     },
     {
-      "id": "dino",
-      "nm": "Dino Run",
-      "ic": "🦕",
-      "bd": "Fuja dos Obstáculos"
+      "id": "Moto run",
+      "nm": "moto Run",
+      "ic": "🏍️ ",
+      "bd": "Desvie dos obstáculos"
     },
     {
       "id": "breakout",
@@ -58,7 +58,7 @@
     },
     {
       "id": "pong",
-      "nm": "Pong",
+      "nm": "Ping Pong",
       "ic": "🏸",
       "bd": "Ping-Pong"
     },
