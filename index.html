@@ -1,415 +1,712 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>PlayWorld</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gabriel Arcade - Portal</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts - Fredoka (A tipografia arredondada e divertida estilo Roblox) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
 
-<style>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-/* =========================
-   BASE
-========================= */
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            roblox: ['"Fredoka"', 'sans-serif'],
+          },
+          colors: {
+            robloxDark: '#1E2024',
+            robloxDarker: '#111214',
+            robloxCard: '#252930',
+            robloxBlue: '#0084FF',
+            robloxCyan: '#00F0FF',
+            robloxGreen: '#00E676',
+          },
+          boxShadow: {
+            '3d-blue': '0 6px 0 #005fbd, 0 10px 20px rgba(0,132,255,0.25)',
+            '3d-green': '0 6px 0 #00b35c, 0 8px 15px rgba(0,230,118,0.2)',
+            'card-rbx': '0 8px 0 rgba(0,0,0,0.35), 0 12px 24px rgba(0,0,0,0.4)',
+            'glow-cyan': '0 0 20px rgba(0, 240, 255, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
+  <style>
+    body {
+      font-family: 'Fredoka', sans-serif;
+      background-color: #111214;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  font-family:system-ui;
-  background:#f1f4f8;
-}
+    /* Animações de Vibração Progressiva para o Scanner */
+    @keyframes shakeLevel1 {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-1px, 1px); }
+      75% { transform: translate(1px, -1px); }
+    }
 
-/* =========================
-   SCANNER
-========================= */
+    @keyframes shakeLevel2 {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-2px, 2px) rotate(-0.5deg); }
+      40% { transform: translate(2px, -2px) rotate(0.5deg); }
+      60% { transform: translate(-2px, -2px) rotate(-0.5deg); }
+      80% { transform: translate(2px, 2px) rotate(0.5deg); }
+    }
 
-#scanner{
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-}
+    @keyframes shakeLevel3 {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-4px, 3px) rotate(-1.5deg); }
+      30% { transform: translate(4px, -3px) rotate(1.5deg); }
+      50% { transform: translate(-4px, -3px) rotate(-1.5deg); }
+      70% { transform: translate(4px, 3px) rotate(1.5deg); }
+      90% { transform: translate(-2px, 3px) rotate(0deg); }
+    }
 
-.box{
-  width:300px;
-  height:300px;
-  border-radius:28px;
-  background:rgba(255,255,255,.85);
-  border:1px solid rgba(0,0,0,.06);
-  box-shadow:0 25px 60px rgba(0,0,0,.12);
-  position:relative;
-  overflow:hidden;
-}
+    .vibrate-soft {
+      animation: shakeLevel1 0.15s infinite ease-in-out;
+    }
 
-canvas{
-  position:absolute;
-  inset:0;
-  z-index:1;
-}
+    .vibrate-medium {
+      animation: shakeLevel2 0.12s infinite ease-in-out;
+    }
 
-/* fingerprint centralizada */
-.fp{
-  width:110px;
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  z-index:3;
-}
+    .vibrate-hard {
+      animation: shakeLevel3 0.08s infinite ease-in-out;
+    }
 
-#hold{
-  position:absolute;
-  inset:0;
-  z-index:9999;
-  touch-action:none;
-}
+    /* Linha laser de escaneamento biométrico */
+    @keyframes laserSwipe {
+      0% { top: -5%; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 105%; opacity: 0; }
+    }
+    .laser-line {
+      animation: laserSwipe 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
 
-#txt{
-  margin-top:18px;
-  font-size:14px;
-  color:#444;
-}
+    /* Efeito de clique 3D gordinho clássico do Roblox */
+    .btn-3d {
+      transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .btn-3d:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 currentColor, 0 4px 10px rgba(0,0,0,0.4) !important;
+    }
 
-/* =========================
-   APP
-========================= */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
 
-#app{
-  position:fixed;
-  inset:0;
-  display:none;
-  overflow:auto;
-  padding:16px;
-}
-
-.title{
-  font-size:18px;
-  font-weight:800;
-  margin-bottom:14px;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-}
-
-/* =========================
-   GLASS CARDS 3D (NOVO)
-========================= */
-
-.card{
-  position:relative;
-
-  background:rgba(255,255,255,.55);
-  border-radius:22px;
-
-  padding:14px;
-
-  border:1px solid rgba(255,255,255,.35);
-
-  box-shadow:
-    0 10px 25px rgba(0,0,0,.10),
-    0 20px 60px rgba(0,0,0,.08);
-
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-
-  transition:transform .25s ease, box-shadow .25s ease;
-  transform-style:preserve-3d;
-}
-
-/* brilho interno */
-.card::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:22px;
-
-  background:
-    radial-gradient(circle at 25% 20%, rgba(255,255,255,.9), transparent 45%),
-    radial-gradient(circle at 80% 90%, rgba(255,255,255,.25), transparent 55%);
-
-  pointer-events:none;
-  opacity:.7;
-}
-
-/* reflexo animado */
-.card::after{
-  content:"";
-  position:absolute;
-  inset:-50%;
-
-  background:linear-gradient(
-    120deg,
-    transparent 40%,
-    rgba(255,255,255,.22),
-    transparent 60%
-  );
-
-  transform:rotate(25deg);
-  animation:shine 6s infinite linear;
-
-  pointer-events:none;
-}
-
-@keyframes shine{
-  0%{transform:translateX(-50%) rotate(25deg);}
-  100%{transform:translateX(50%) rotate(25deg);}
-}
-
-/* interação 3D */
-.card:active{
-  transform:translateY(-6px) scale(.97) rotateX(6deg);
-  box-shadow:
-    0 15px 35px rgba(0,0,0,.12),
-    0 35px 90px rgba(0,0,0,.12);
-}
-
-/* conteúdo */
-.icon{
-  font-size:52px;
-  filter:drop-shadow(0 10px 15px rgba(0,0,0,.15));
-}
-
-.name{
-  font-weight:900;
-  margin-top:6px;
-  text-align:center;
-  color:#111;
-}
-
-.desc{
-  font-size:11px;
-  opacity:.6;
-  text-align:center;
-  margin-top:3px;
-}
-
-.btn{
-  margin-top:12px;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:14px;
-  background:#1f2937;
-  color:#fff;
-  font-weight:700;
-}
-
-/* melhora mobile */
-@media (min-width:600px){
-  .grid{grid-template-columns:repeat(3,1fr);}
-}
-
-</style>
+    /* Ponto indicador ativo do slide superior */
+    .dot-active {
+      width: 24px !important;
+      background-color: #0084FF !important;
+    }
+  </style>
 </head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white overflow-hidden p-0 m-0">
 
-<body>
+  <!-- ============================================
+       TELA DE LOGIN CINEMATOGRÁFICA LIMPA (SEM LOGS)
+       ============================================ -->
+  <div id="scanner" class="fixed inset-0 flex flex-col justify-center items-center z-50 transition-all duration-700 bg-robloxDarker">
+    
+    <!-- Efeito estético de grade cibernética ao fundo -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#0084FF 1px, transparent 1px); background-size: 24px 24px;"></div>
 
-<!-- SCANNER -->
-<div id="scanner">
+    <!-- Título da Plataforma -->
+    <div class="mb-8 text-center px-4 z-10">
+      <h1 class="text-3xl font-black tracking-widest bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent font-roblox drop-shadow-md">
+        GABRIEL ARCADE
+      </h1>
+      <p class="text-[10px] text-robloxBlue font-bold uppercase tracking-[0.25em] mt-1 opacity-80">Portal de Jogos Seguro</p>
+    </div>
 
-  <div class="box" id="box">
+    <!-- Scanner de Segurança Premium com Vibração Progressiva -->
+    <div class="relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden transition-all duration-300" id="scannerContainer">
+      
+      <!-- Linha laser ativa de leitura biométrica -->
+      <div id="laser" class="laser-line hidden absolute left-6 right-6 h-[3px] bg-gradient-to-r from-transparent via-robloxCyan to-transparent shadow-[0_0_15px_#00F0FF] rounded-full z-20 pointer-events-none"></div>
+      
+      <!-- Canvas de Partículas Melhoradas e Fluídas -->
+      <canvas id="particles" class="absolute inset-0 w-full h-full opacity-90"></canvas>
 
-    <canvas id="particles"></canvas>
+      <!-- Anel de Progresso de Autenticação -->
+      <svg class="absolute w-64 h-64 transform -rotate-90 pointer-events-none z-20">
+        <circle cx="128" cy="128" r="95" stroke="#171920" stroke-width="8" fill="transparent" class="rounded-full" />
+        <circle id="progressCircle" cx="128" cy="128" r="95" stroke="#0084FF" stroke-width="8" fill="transparent" stroke-dasharray="597" stroke-dashoffset="597" stroke-linecap="round" class="transition-all duration-75" />
+      </svg>
 
-    <img class="fp" src="https://files.catbox.moe/jar7fm.png">
+      <!-- Botão Central de Biometria -->
+      <div class="relative w-40 h-40 bg-[#15171B] rounded-full border-4 border-[#2D333F] flex items-center justify-center shadow-inner z-30 transition-all duration-300 cursor-pointer" id="biometryBtn">
+        <!-- Brilho Interno Pulsante -->
+        <div class="absolute inset-2 rounded-full bg-[radial-gradient(circle_at_center,_rgba(0,132,255,0.08)_0%,_transparent_75%)] animate-pulse"></div>
+        <img class="w-20 h-20 opacity-80 pointer-events-none z-10 transition-transform duration-300" id="fingerprintImg" src="https://files.catbox.moe/jar7fm.png" alt="Digital">
+      </div>
 
-    <div id="hold"></div>
+      <!-- Sensor Invisível de Toque -->
+      <div id="hold" class="absolute inset-0 z-40 touch-none cursor-pointer"></div>
 
+    </div>
+
+    <!-- Instruções Dinâmicas de Status -->
+    <div class="mt-8 text-center px-6 z-10">
+      <div id="txt" class="text-sm font-extrabold text-gray-300 tracking-wider uppercase transition-all duration-300">Segure para autenticar</div>
+    </div>
   </div>
 
-  <div id="txt">Segure por 3 segundos</div>
 
-</div>
+  <!-- ============================================
+       TELA DO APLICATIVO PRINCIPAL (DASHBOARD)
+       ============================================ -->
+  <div id="app" class="hidden w-full h-screen flex flex-col bg-[#111214] text-white overflow-hidden transition-all duration-500">
+    
+    <!-- HEADER DA CONTA (Gabriel José) -->
+    <header class="w-full bg-[#1E2024] border-b-4 border-[#2b3038] px-5 py-4 flex items-center justify-between z-10 shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- Foto de Perfil de Gabriel José com Moldura de Status -->
+        <div class="relative">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-robloxBlue to-robloxCyan p-0.5 shadow-md">
+            <!-- Foto Oficial do Gabriel José definida pelo usuário -->
+            <img id="avatarImg" class="w-full h-full object-cover rounded-[14px]" src="https://files.catbox.moe/hepoxn.jpg" alt="Gabriel José">
+          </div>
+          <!-- Status Ativo/Online -->
+          <span class="absolute -bottom-1 -right-1 w-4 h-4 bg-robloxGreen border-4 border-[#1E2024] rounded-full"></span>
+        </div>
 
-<!-- APP -->
-<div id="app">
-  <div class="title">PlayWorld</div>
-  <div class="grid" id="grid"></div>
-</div>
+        <div>
+          <!-- Nome do Usuário -->
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-lg text-white tracking-wide">Gabriel José</span>
+            <i class="fa-solid fa-circle-check text-robloxBlue text-sm" title="Verificado"></i>
+          </div>
+          <!-- Identificação de Conexão -->
+          <span class="bg-[#111214] text-robloxCyan text-[9px] px-2.5 py-0.5 rounded-full font-bold tracking-widest uppercase border border-robloxCyan/10">
+            Gabriel Arcade Player
+          </span>
+        </div>
+      </div>
 
-<script>
+      <!-- Ações do Header (Botão de Sair) -->
+      <div class="flex items-center gap-3">
+        <button id="logoutBtn" class="btn-3d w-10 h-10 bg-red-600/10 hover:bg-red-600 border-2 border-red-500/20 hover:border-red-600 text-red-500 hover:text-white rounded-xl flex items-center justify-center transition-all">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </header>
 
-/* =========================
-   ELEMENTOS
-========================= */
+    <!-- CONTEÚDO SCROLLÁVEL -->
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 no-scrollbar pb-10">
 
-const hold = document.getElementById("hold");
-const scanner = document.getElementById("scanner");
-const app = document.getElementById("app");
+      <!-- ==================== BANNER SLIDER (SELECIONADO ALEATORIAMENTE DO JSON) ==================== -->
+      <section class="relative w-full max-w-4xl mx-auto rounded-3xl overflow-hidden border-4 border-[#2b3038] bg-robloxCard shadow-lg group">
+        <!-- Wrapper dos Slides dinâmicos -->
+        <div id="sliderWrapper" class="flex transition-transform duration-500 ease-in-out h-48 md:h-64" style="transform: translateX(0%);">
+          <!-- Carregado dinamicamente via JS -->
+          <div class="min-w-full h-full bg-[#1E2024] flex items-center justify-center">
+            <i class="fa-solid fa-circle-notch animate-spin text-3xl text-robloxBlue"></i>
+          </div>
+        </div>
 
-const canvas = document.getElementById("particles");
-const ctx = canvas.getContext("2d");
+        <!-- Botões de Navegação do Banner -->
+        <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-robloxBlue border border-white/20 flex items-center justify-center text-white transition-all active:scale-90 opacity-0 group-hover:opacity-100 z-10">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-robloxBlue border border-white/20 flex items-center justify-center text-white transition-all active:scale-90 opacity-0 group-hover:opacity-100 z-10">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
 
-canvas.width = 300;
-canvas.height = 300;
+        <!-- Indicadores de Slides (Dots) -->
+        <div class="absolute bottom-4 right-6 flex gap-1.5 z-10" id="sliderDots">
+          <!-- Gerado via JavaScript -->
+        </div>
+      </section>
 
-/* =========================
-   PARTICLES
-========================= */
+      <!-- ==================== GRID DE JOGOS DO PORTAL ==================== -->
+      <section class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-3.5 h-7 bg-robloxBlue rounded-full"></span>
+            <h2 class="text-2xl font-black tracking-wide font-roblox">Descobrir Jogos</h2>
+          </div>
+          <span class="text-xs bg-[#212429] border border-white/10 px-3 py-1 rounded-full text-gray-400 font-bold uppercase tracking-wider">
+            Coleção Gabriel Arcade
+          </span>
+        </div>
 
-let particles = [];
-let holding = false;
-let startTime = 0;
+        <!-- Grade Dinâmica populada estritamente pelo games.json -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-5" id="grid">
+          <!-- Carregamento Visível (Skeleton) -->
+          <div class="animate-pulse bg-robloxCard rounded-2xl h-60"></div>
+          <div class="animate-pulse bg-robloxCard rounded-2xl h-60"></div>
+        </div>
+      </section>
 
-for(let i=0;i<80;i++){
-  particles.push({
-    x:Math.random()*300,
-    y:Math.random()*300,
-    vx:(Math.random()-0.5)*1.2,
-    vy:(Math.random()-0.5)*1.2,
-    tx:150,
-    ty:150
-  });
-}
+    </main>
+  </div>
 
-/* =========================
-   LOOP
-========================= */
+  <script>
+    /* ============================================
+       ELEMENTOS & CONFIGURAÇÃO DO SISTEMA
+       ============================================ */
+    const hold = document.getElementById("hold");
+    const scanner = document.getElementById("scanner");
+    const scannerContainer = document.getElementById("scannerContainer");
+    const app = document.getElementById("app");
+    const progressCircle = document.getElementById("progressCircle");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const biometryBtn = document.getElementById("biometryBtn");
+    const fingerprintImg = document.getElementById("fingerprintImg");
+    const laser = document.getElementById("laser");
 
-function loop(){
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
 
-  ctx.clearRect(0,0,300,300);
+    function resizeCanvas() {
+      canvas.width = 300;
+      canvas.height = 300;
+    }
+    resizeCanvas();
 
-  for(let p of particles){
+    /* ============================================
+       SISTEMA DE PARTÍCULAS ULTRA AVANÇADO (FISICA REAL)
+       ============================================ */
+    let particles = [];
+    let holding = false;
+    let startTime = 0;
+    const progressCircleRadius = 95;
+    const progressCircleCircumference = 2 * Math.PI * progressCircleRadius;
 
-    let dx = p.tx - p.x;
-    let dy = p.ty - p.y;
+    class Particle {
+      constructor() {
+        this.reset();
+      }
 
-    let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      reset() {
+        this.x = Math.random() * 300;
+        this.y = Math.random() * 300;
+        this.vx = (Math.random() - 0.5) * 1.6;
+        this.vy = (Math.random() - 0.5) * 1.6;
+        this.radius = Math.random() * 2 + 1;
+        this.alpha = Math.random() * 0.5 + 0.3;
+        this.color = Math.random() > 0.4 ? '0, 132, 255' : '0, 240, 255';
+      }
 
-    let force = holding ? 0.12 : -0.01;
+      update() {
+        if (holding) {
+          // Atração magnética intensa para o centro
+          const dx = 150 - this.x;
+          const dy = 150 - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    p.vx += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
-    p.vy += (Math.random()-0.5) * (holding ? 0.2 : 0.6);
+          // Efeito de redemoinho gravitacional (órbita em espiral)
+          const angle = Math.atan2(dy, dx);
+          const force = 0.35; // Força magnética para o centro
 
-    p.vx += dx / dist * force;
-    p.vy += dy / dist * force;
+          this.vx += Math.cos(angle) * force + Math.sin(angle) * 0.15;
+          this.vy += Math.sin(angle) * force - Math.cos(angle) * 0.15;
+          this.radius = Math.max(0.5, this.radius - 0.015); // Partículas diminuem ao serem absorvidas
 
-    p.vx *= 0.90;
-    p.vy *= 0.90;
+          if (dist < 15) {
+            this.reset(); // Renasce uma partícula na borda
+            this.x = Math.random() > 0.5 ? 0 : 300;
+            this.y = Math.random() * 300;
+          }
+        } else {
+          // Flutuação casual e natural com rastro calmo
+          this.vx += (Math.random() - 0.5) * 0.15;
+          this.vy += (Math.random() - 0.5) * 0.15;
+          this.radius = Math.min(3, this.radius + 0.02);
+        }
 
-    p.x += p.vx;
-    p.y += p.vy;
+        // Limitação de velocidade (atrito)
+        this.vx *= 0.92;
+        this.vy *= 0.92;
 
-    if(p.x<0) p.x=300;
-    if(p.x>300) p.x=0;
-    if(p.y<0) p.y=300;
-    if(p.y>300) p.y=0;
+        this.x += this.vx;
+        this.y += this.vy;
 
-    ctx.fillStyle = holding
-      ? "rgba(74,144,226,.9)"
-      : "rgba(0,0,0,.35)";
+        // Limites da tela
+        if (this.x < 0 || this.x > 300 || this.y < 0 || this.y > 300) {
+          this.reset();
+        }
+      }
 
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,2.2,0,Math.PI*2);
-    ctx.fill();
-  }
-
-  requestAnimationFrame(loop);
-}
-
-loop();
-
-/* =========================
-   HOLD 3s
-========================= */
-
-function start(e){
-  e.preventDefault();
-
-  holding = true;
-  startTime = Date.now();
-
-  document.getElementById("txt").innerText = "Analisando...";
-
-  const interval = setInterval(()=>{
-
-    if(!holding){
-      clearInterval(interval);
-      return;
+      draw() {
+        ctx.save();
+        ctx.shadowBlur = holding ? 8 : 4;
+        ctx.shadowColor = `rgba(${this.color}, ${this.alpha})`;
+        ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
-    if(Date.now() - startTime >= 3000){
+    // Inicializar Pool de Partículas
+    for (let i = 0; i < 60; i++) {
+      particles.push(new Particle());
+    }
 
-      clearInterval(interval);
+    function drawConnections() {
+      // Desenha linhas conectando as partículas se estiverem próximas
+      const maxDistance = holding ? 45 : 30;
+      ctx.lineWidth = 0.5;
+      
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const p1 = particles[i];
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
 
+          if (dist < maxDistance) {
+            // Opacidade baseada na proximidade
+            const alpha = (1 - dist / maxDistance) * (holding ? 0.25 : 0.15);
+            ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function loop() {
+      // Limpeza suave para criar rastro de movimento premium (motion blur)
+      ctx.fillStyle = holding ? 'rgba(34, 38, 47, 0.25)' : 'rgba(34, 38, 47, 0.45)';
+      ctx.fillRect(0, 0, 300, 300);
+
+      // Atualizar e desenhar partículas
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+
+      // Desenhar conexões de constelação
+      drawConnections();
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    /* ============================================
+       SISTEMA DE LOGIN COM VIBRAÇÃO MECÂNICA
+       ============================================ */
+    let interval;
+
+    function start(e) {
+      e.preventDefault();
+      holding = true;
+      startTime = Date.now();
+
+      // Ativar laser e estilização visual do scanner
+      laser.classList.remove("hidden");
+      biometryBtn.style.borderColor = "#0084FF";
+      biometryBtn.style.boxShadow = "0 0 25px rgba(0, 132, 255, 0.45)";
+      fingerprintImg.style.transform = "scale(0.9)";
+      document.getElementById("txt").innerText = "Varrendo Biometria...";
+      document.getElementById("txt").className = "text-robloxBlue font-extrabold text-sm tracking-widest animate-pulse font-roblox";
+
+      interval = setInterval(() => {
+        if (!holding) {
+          clearInterval(interval);
+          return;
+        }
+
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / 3000, 1);
+
+        // Atualizar Anel de Carregamento Circular
+        const offset = progressCircleCircumference - (progress * progressCircleCircumference);
+        progressCircle.style.strokeDashoffset = offset;
+
+        // Gerenciar Graus de Vibração Mecânica Conforme o Avanço
+        if (progress > 0.25 && progress < 0.6) {
+          // Fase 1: Vibração Leve
+          scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-soft";
+          document.getElementById("txt").innerText = "ANALISANDO PADRÕES...";
+        } else if (progress >= 0.6 && progress < 0.85) {
+          // Fase 2: Vibração Média
+          scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-medium";
+          document.getElementById("txt").innerText = "DECRIFTANDO ASSINATURA...";
+        } else if (progress >= 0.85) {
+          // Fase 3: Vibração Crítica (Cinemática)
+          scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden vibrate-hard";
+          document.getElementById("txt").innerText = "CONECTANDO AO GABRIEL ARCADE...";
+        }
+
+        if (elapsed >= 3000) {
+          clearInterval(interval);
+          holding = false;
+          
+          // Sucesso e Liberação
+          scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-robloxGreen shadow-glow-cyan flex flex-col items-center justify-center p-6 overflow-hidden";
+          document.getElementById("txt").innerText = "AUTORIZADO!";
+          document.getElementById("txt").className = "text-robloxGreen font-extrabold text-sm tracking-widest font-roblox";
+          
+          biometryBtn.style.borderColor = "#00E676";
+          biometryBtn.style.boxShadow = "0 0 35px rgba(0, 230, 118, 0.6)";
+          progressCircle.style.stroke = "#00E676";
+
+          setTimeout(() => {
+            scanner.style.opacity = "0";
+            scanner.style.transform = "scale(0.95)";
+            
+            setTimeout(() => {
+              scanner.style.display = "none";
+              app.style.display = "flex";
+              loadGames();
+            }, 400);
+          }, 600);
+        }
+      }, 40);
+    }
+
+    function end() {
+      if (!holding) return;
       holding = false;
+      clearInterval(interval);
 
-      scanner.style.opacity = "0";
-
-      setTimeout(()=>{
-        scanner.style.display="none";
-        app.style.display="block";
-        loadGames();
-      },300);
+      // Limpar todos os efeitos de varredura mecânica
+      laser.classList.add("hidden");
+      scannerContainer.className = "relative w-80 h-80 rounded-[48px] bg-[#22262F] border-4 border-[#323846] shadow-card-rbx flex flex-col items-center justify-center p-6 overflow-hidden";
+      biometryBtn.style.borderColor = "#2D333F";
+      biometryBtn.style.boxShadow = "";
+      fingerprintImg.style.transform = "scale(1)";
+      
+      document.getElementById("txt").innerText = "Segure para autenticar";
+      document.getElementById("txt").className = "text-sm font-extrabold text-gray-300 tracking-wider uppercase font-roblox";
+      
+      progressCircle.style.stroke = "#0084FF";
+      progressCircle.style.strokeDashoffset = progressCircleCircumference;
     }
 
-  },50);
-}
+    // Suporte amplo Multi-Touch e Desktop
+    hold.addEventListener("touchstart", start, { passive: false });
+    hold.addEventListener("touchend", end);
+    hold.addEventListener("touchcancel", end);
 
-function end(){
-  holding = false;
-  document.getElementById("txt").innerText = "Segure por 3 segundos";
-}
+    hold.addEventListener("mousedown", start);
+    hold.addEventListener("mouseup", end);
+    hold.addEventListener("mouseleave", end);
 
-hold.addEventListener("touchstart",start,{passive:false});
-hold.addEventListener("touchend",end);
-hold.addEventListener("touchcancel",end);
-
-/* =========================
-   LOAD GAMES
-========================= */
-
-async function loadGames(){
-
-  const res = await fetch("./games.json",{cache:"no-store"});
-  const data = await res.json();
-
-  const grid = document.getElementById("grid");
-  grid.innerHTML="";
-
-  data.games.forEach(g=>{
-
-    const card=document.createElement("div");
-    card.className="card";
-
-    card.innerHTML=`
-      <div class="icon">${g.ic}</div>
-      <div class="name">${g.nm}</div>
-      <div class="desc">${g.bd}</div>
-      <button class="btn">Jogar</button>
-    `;
-
-    card.querySelector("button").onclick=()=>{
-      location.href="games/"+g.id+".html";
+    // Logout do Aplicativo
+    logoutBtn.onclick = () => {
+      app.style.display = "none";
+      scanner.style.display = "flex";
+      setTimeout(() => {
+        scanner.style.opacity = "1";
+        scanner.style.transform = "scale(1)";
+        end();
+      }, 50);
     };
 
-    grid.appendChild(card);
 
-  });
+    /* ============================================
+       SLIDER DE BANNER TOTALMENTE DINÂMICO
+       ============================================ */
+    let currentSlide = 0;
+    const totalSlides = 3;
+    let slideInterval;
 
-}
+    function initSlider(chosenGames) {
+      const sliderWrapper = document.getElementById("sliderWrapper");
+      const sliderDots = document.getElementById("sliderDots");
+      
+      sliderWrapper.innerHTML = "";
+      sliderDots.innerHTML = "";
 
-</script>
+      // Fundos decorativos de jogos para os banners do carrossel
+      const bannerBgUrls = [
+        "https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=800&q=80",
+        "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=800&q=80"
+      ];
 
+      chosenGames.forEach((g, idx) => {
+        const slide = document.createElement("div");
+        slide.className = "min-w-full h-full relative flex items-end p-6 bg-gradient-to-t from-black/95 via-black/40 to-transparent cursor-pointer";
+        slide.innerHTML = `
+          <div class="absolute inset-0 bg-cover bg-center -z-10 filter brightness-75 transition-transform duration-1000 group-hover:scale-105" style="background-image: url('${bannerBgUrls[idx]}')"></div>
+          <div class="space-y-1">
+            <span class="bg-robloxBlue text-white text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider font-roblox">RECOMENDADO</span>
+            <h3 class="text-xl md:text-2xl font-black tracking-wide font-roblox">${g.nm}</h3>
+            <p class="text-gray-300 text-xs md:text-sm max-w-md line-clamp-2">${g.bd}</p>
+          </div>
+        `;
+        
+        slide.onclick = () => {
+          location.href = "games/" + g.id + ".html";
+        };
+        sliderWrapper.appendChild(slide);
+
+        // Dot de Navegação
+        const dot = document.createElement("span");
+        dot.className = "w-3.5 h-3.5 rounded-full bg-white/40 cursor-pointer transition-all hover:bg-white" + (idx === 0 ? " dot-active" : "");
+        dot.onclick = (e) => {
+          e.stopPropagation();
+          setSlide(idx);
+        };
+        sliderDots.appendChild(dot);
+      });
+
+      startSlideShow();
+    }
+
+    function startSlideShow() {
+      clearInterval(slideInterval);
+      slideInterval = setInterval(() => {
+        nextSlide();
+      }, 5000);
+    }
+
+    function updateSliderUI() {
+      const sliderWrapper = document.getElementById("sliderWrapper");
+      sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+      
+      const dots = document.querySelectorAll("#sliderDots span");
+      dots.forEach((dot, index) => {
+        if (index === currentSlide) {
+          dot.classList.add("dot-active");
+        } else {
+          dot.classList.remove("dot-active");
+        }
+      });
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateSliderUI();
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+      updateSliderUI();
+    }
+
+    function setSlide(index) {
+      currentSlide = index;
+      updateSliderUI();
+      startSlideShow();
+    }
+
+
+    /* ============================================
+       CARREGAMENTO DOS DADOS (INTERAÇÃO COM games.json)
+       ============================================ */
+    async function loadGames() {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+
+      try {
+        const res = await fetch("./games.json", { cache: "no-store" });
+        const data = await res.json();
+        
+        if (data && data.games && data.games.length > 0) {
+          setupDashboard(data.games);
+        } else {
+          showError("Nenhum jogo encontrado no games.json.");
+        }
+      } catch (err) {
+        console.error("Erro crítico ao carregar games.json:", err);
+        showError("Não foi possível carregar o arquivo 'games.json'. Verifique as suas conexões.");
+      }
+    }
+
+    // Configuração de dados baseados 100% no arquivo JSON obtido do servidor
+    function setupDashboard(gamesList) {
+      // Misturar o array aleatoriamente para selecionar 3 jogos exclusivos para o Banner Slider
+      const shuffled = [...gamesList].sort(() => 0.5 - Math.random());
+      const chosenForBanner = shuffled.slice(0, Math.min(3, gamesList.length));
+      
+      // Duplicar se a lista conter quantidade inferior de jogos
+      while (chosenForBanner.length < 3 && gamesList.length > 0) {
+        chosenForBanner.push(gamesList[Math.floor(Math.random() * gamesList.length)]);
+      }
+
+      initSlider(chosenForBanner);
+
+      // Renderizar a listagem total de jogos na grade inferior do Dashboard
+      renderGamesGrid(gamesList);
+    }
+
+    function renderGamesGrid(gamesList) {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = "";
+
+      gamesList.forEach(g => {
+        // Estatísticas fictícias de atividade com excelente estética Roblox
+        const activePlayers = (Math.random() * 14 + 1).toFixed(1) + "K";
+        
+        const card = document.createElement("div");
+        card.className = "relative bg-[#1E2024] rounded-3xl border-4 border-[#2D333F] shadow-lg flex flex-col p-4 transition-all duration-200 hover:-translate-y-1";
+
+        card.innerHTML = `
+          <!-- Ícone do Jogo -->
+          <div class="w-full aspect-square bg-[#121418] rounded-2xl flex items-center justify-center text-6xl shadow-inner border-2 border-white/5 relative overflow-hidden">
+            <span class="z-10 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)] transform hover:scale-110 transition-transform">${g.ic}</span>
+            <div class="absolute inset-0 bg-gradient-to-tr from-robloxBlue/10 to-transparent"></div>
+          </div>
+          
+          <!-- Metadados -->
+          <div class="flex-1 flex flex-col mt-3 justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 text-[11px] text-robloxGreen font-bold mb-1 font-roblox">
+                <span class="w-2 h-2 rounded-full bg-robloxGreen animate-pulse"></span>
+                <span>${activePlayers} JOGANDO</span>
+              </div>
+              <h4 class="font-extrabold text-base tracking-wide text-white leading-tight line-clamp-1 font-roblox">${g.nm}</h4>
+              <p class="text-gray-400 text-xs mt-1 leading-normal line-clamp-2">${g.bd}</p>
+            </div>
+            
+            <!-- Botão 3D estilo Roblox -->
+            <button class="btn-3d w-full mt-4 bg-robloxGreen text-white font-extrabold text-sm py-2.5 rounded-xl shadow-3d-green tracking-wider uppercase border-b-4 border-transparent font-roblox">
+              Jogar <i class="fa-solid fa-play ml-1 text-xs"></i>
+            </button>
+          </div>
+        `;
+
+        card.querySelector("button").onclick = () => {
+          location.href = "games/" + g.id + ".html";
+        };
+
+        grid.appendChild(card);
+      });
+    }
+
+    function showError(message) {
+      const grid = document.getElementById("grid");
+      grid.innerHTML = `
+        <div class="col-span-full bg-red-950/40 border-2 border-red-500/30 rounded-2xl p-6 text-center font-roblox">
+          <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-2"></i>
+          <p class="font-bold text-red-200">${message}</p>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
+
