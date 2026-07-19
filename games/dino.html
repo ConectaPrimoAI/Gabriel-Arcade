@@ -1,399 +1,1234 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Moto City </title>
+    <title>Highway Rider: Simulador Realista de Motas</title>
+    <!-- Tailwind CSS para Interface Premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --primary: #ffcc00;
-            --secondary: #222;
-        }
-        body { margin: 0; overflow: hidden; background-color: #87CEEB; font-family: 'Segoe UI', Roboto, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
         
-        /* UI Screens */
-        .screen {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            transition: opacity 0.5s;
-        }
-
-        #menu-screen { background: radial-gradient(circle, #fff 0%, #ddd 100%); }
-        #game-ui { pointer-events: none; justify-content: flex-start; padding-top: 40px; }
-        #game-over-screen { background: rgba(0,0,0,0.85); display: none; color: white; }
-
-        /* Customization Panel */
-        .panel {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-        }
-
-        h1 { margin-bottom: 20px; color: #333; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .options { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .color-dot {
-            width: 40px; height: 40px; border-radius: 50%; border: 3px solid #eee;
-            cursor: pointer; transition: transform 0.2s;
-        }
-        .color-dot.active { transform: scale(1.2); border-color: #333; }
-
-        .btn {
-            background: var(--primary);
-            color: #000;
-            border: none;
-            padding: 18px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
+        html, body {
+            margin: 0;
+            padding: 0;
             width: 100%;
-            box-shadow: 0 5px 0 #b38f00;
-            text-transform: uppercase;
-        }
-        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #b38f00; }
-
-        #score-container {
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 50px;
-            font-size: 24px;
-            font-weight: bold;
-            border: 2px solid var(--primary);
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
         }
 
-        /* Mobile Controls Hints */
-        .controls-hint {
-            position: absolute;
-            bottom: 40px;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            pointer-events: none;
+        .premium-text {
+            font-family: 'Montserrat', sans-serif;
         }
-        .side-hint { color: rgba(0,0,0,0.2); font-size: 12px; font-weight: bold; }
+
+        .blur-panel {
+            background: rgba(5, 5, 8, 0.95);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Moldura Circular do Preview 3D - Totalmente Preto */
+        .preview-circle-frame {
+            width: 175px;
+            height: 175px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 1.0);
+            background: #000000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Ocultar elementos de rolamento padrão */
+        ::-webkit-scrollbar {
+            display: none;
+        }
     </style>
 </head>
-<body>
+<body class="w-full h-full relative">
 
-    <!-- Menu Inicial / Customização -->
-    <div id="menu-screen" class="screen">
-        <div class="panel">
-            <h1>MOTO CUSTOM</h1>
-            <p>Escolha a Cor da Moto:</p>
-            <div class="options" id="color-options">
-                <div class="color-dot active" style="background: #ffcc00;" data-color="#ffcc00"></div>
-                <div class="color-dot" style="background: #e74c3c;" data-color="#e74c3c"></div>
-                <div class="color-dot" style="background: #3498db;" data-color="#3498db"></div>
-                <div class="color-dot" style="background: #9b59b6;" data-color="#9b59b6"></div>
+    <!-- CANVAS DO JOGO PRINCIPAL -->
+    <canvas id="gameCanvas" class="absolute inset-0 w-full h-full z-10 block"></canvas>
+
+    <!-- INTERFACE DO MENU PRINCIPAL (FUNDO PRETO PREMIUM) -->
+    <div id="menu-screen" class="absolute inset-0 z-30 flex flex-col justify-between items-center p-6 bg-black/85 transition-opacity duration-500">
+        
+        <!-- Cabeçalho -->
+        <div class="text-center mt-2 pointer-events-none">
+            <h1 class="premium-text text-3xl font-black text-white tracking-wider drop-shadow-lg">HIGHWAY RIDER</h1>
+            <p class="text-emerald-500 text-xs font-bold tracking-widest uppercase">SIMULADOR REALISTA DE PRODUÇÃO</p>
+        </div>
+
+        <!-- Seletor de Motas com Preview Circular Central -->
+        <div class="flex flex-col items-center gap-4 my-auto w-full">
+            <div class="flex items-center justify-center gap-4 w-full pointer-events-auto">
+                <!-- Botão Anterior -->
+                <button id="btn-prev" class="w-12 h-12 rounded-full bg-neutral-950 border border-white/10 flex items-center justify-center text-white text-xl font-bold active:scale-90 shadow-2xl transition-transform z-50">
+                    ◀
+                </button>
+                
+                <!-- Contentor Circular com Canvas Dedicado para o Preview -->
+                <div class="preview-circle-frame flex items-center justify-center">
+                    <canvas id="previewCanvas" class="w-full h-full block"></canvas>
+                </div>
+
+                <!-- Botão Seguinte -->
+                <button id="btn-next" class="w-12 h-12 rounded-full bg-neutral-950 border border-white/10 flex items-center justify-center text-white text-xl font-bold active:scale-90 shadow-2xl transition-transform z-50">
+                    ▶
+                </button>
             </div>
-            <button class="btn" onclick="startGame()">DAR PARTIDA</button>
+
+            <!-- Informações do Modelo Ativo -->
+            <div class="text-center blur-panel px-6 py-3 rounded-2xl shadow-xl max-w-xs pointer-events-none">
+                <h2 id="moto-name" class="premium-text text-base font-black text-white uppercase tracking-wider">Super Desportiva 1000R</h2>
+                <p id="moto-desc" class="text-gray-400 text-[10px] uppercase tracking-widest mt-1">Alta Performance & Aerodinâmica Aguda</p>
+            </div>
+        </div>
+
+        <!-- Painel Inferior de Customização e Play -->
+        <div class="blur-panel p-5 rounded-2xl w-full max-w-sm flex flex-col gap-4 shadow-2xl border border-white/5 mb-4 z-40 pointer-events-auto">
+            <div>
+                <label class="block text-gray-400 text-[10px] font-bold uppercase tracking-wider text-center mb-2">Pintura da Carenagem</label>
+                <div class="flex justify-center gap-3">
+                    <button onclick="changeMotoColor('#e53935', this, event)" class="w-8 h-8 rounded-full bg-[#e53935] border-2 border-white scale-110 transition-all duration-150"></button>
+                    <button onclick="changeMotoColor('#1e88e5', this, event)" class="w-8 h-8 rounded-full bg-[#1e88e5] border-2 border-transparent transition-all duration-150"></button>
+                    <button onclick="changeMotoColor('#43a047', this, event)" class="w-8 h-8 rounded-full bg-[#43a047] border-2 border-transparent transition-all duration-150"></button>
+                    <button onclick="changeMotoColor('#ffb300', this, event)" class="w-8 h-8 rounded-full bg-[#ffb300] border-2 border-transparent transition-all duration-150"></button>
+                    <button onclick="changeMotoColor('#ffffff', this, event)" class="w-8 h-8 rounded-full bg-[#ffffff] border-2 border-transparent transition-all duration-150"></button>
+                </div>
+            </div>
+
+            <button onclick="startGame(event)" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold py-3.5 rounded-xl text-xs tracking-widest uppercase transition-all duration-200 shadow-lg active:scale-95">
+                INICIAR CORRIDA REALISTA
+            </button>
         </div>
     </div>
 
-    <!-- Interface Durante o Jogo -->
-    <div id="game-ui" class="screen" style="display: none;">
-        <div id="score-container">0 m</div>
-        <div class="controls-hint">
-            <span class="side-hint">◄ TOQUE PARA ESQUERDA</span>
-            <span class="side-hint">DIREITA TOQUE PARA ►</span>
+    <!-- HUD DURANTE O JOGO -->
+    <div id="game-ui" class="absolute inset-0 z-20 flex flex-col justify-between p-4 pointer-events-none hidden">
+        <!-- Estatísticas no Topo -->
+        <div class="flex justify-between items-center w-full mt-2">
+            <div class="blur-panel px-4 py-2 rounded-xl flex items-center gap-3 border border-white/5 shadow-md">
+                <span class="text-gray-400 text-[10px] font-bold tracking-widest">DISTÂNCIA</span>
+                <span id="score-val" class="text-lg font-black text-white">0 m</span>
+            </div>
+            <div class="blur-panel px-4 py-2 rounded-xl flex items-center gap-3 border border-white/5 shadow-md">
+                <span class="text-emerald-500 text-[10px] font-bold tracking-widest">VELOCIDADE</span>
+                <span id="speed-val" class="text-lg font-black text-white">0 km/h</span>
+            </div>
+        </div>
+
+        <!-- Alerta de Derrapagem -->
+        <div id="slip-alert" class="self-center blur-panel px-6 py-3 rounded-full border border-yellow-500/50 text-yellow-500 font-bold text-xs tracking-wider scale-0 transition-all duration-150 shadow-lg">
+            ⚠️ PERDA DE TRACÇÃO! ESCORREGOU NA BANANA
+        </div>
+
+        <!-- Controlos Laterais Invisíveis (Toque) -->
+        <div class="absolute inset-0 flex pointer-events-auto">
+            <div class="w-1/2 h-full cursor-pointer" onclick="moveLane(-1)" title="Mover para Esquerda"></div>
+            <div class="w-1/2 h-full cursor-pointer" onclick="moveLane(1)" title="Mover para Direita"></div>
         </div>
     </div>
 
-    <!-- Tela de Game Over -->
-    <div id="game-over-screen" class="screen">
-        <h1 style="color: white;">GAME OVER</h1>
-        <p id="final-stats" style="font-size: 20px; margin-bottom: 20px;"></p>
-        <div style="width: 200px;">
-            <button class="btn" onclick="location.reload()">VOLTAR AO MENU</button>
+    <!-- ECRÃ DE GAME OVER -->
+    <div id="game-over-screen" class="absolute inset-0 z-40 bg-black/95 flex items-center justify-center p-6 hidden">
+        <div class="blur-panel p-8 rounded-2xl max-w-sm w-full text-center border border-red-900/30 shadow-2xl z-50">
+            <h1 class="text-red-500 premium-text text-2xl font-black tracking-wider mb-2">SIMULAÇÃO TERMINADA</h1>
+            <p class="text-gray-400 text-[10px] uppercase tracking-widest mb-6">O veículo colidiu de forma crítica no trânsito</p>
+            
+            <div class="bg-black/40 rounded-xl p-5 mb-6 border border-white/5">
+                <span class="block text-gray-500 text-[10px] font-bold mb-1 uppercase tracking-wider">Distância Coberta</span>
+                <span id="final-stats" class="text-white text-3xl font-extrabold">0 m</span>
+            </div>
+
+            <button onclick="resetGame(event)" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl text-xs tracking-widest uppercase transition-all duration-200">
+                TENTAR NOVAMENTE
+            </button>
         </div>
     </div>
 
+    <!-- Três.js Biblioteca Gráfica -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script>
-        let scene, camera, renderer, moto, road;
-        let obstacles = [], buildings = [], clouds = [];
-        let score = 0, gameActive = false;
-        let speed = 0.4, targetLane = 0;
-        let motoColor = "#ffcc00";
-        const laneWidth = 3.8;
+        // --- GERADOR DE SONS EM TEMPO REAL (WEB AUDIO API) ---
+        let audioCtx, engineOsc, engineFilter, engineGain;
+        let isAudioInitialized = false;
 
-        // Configuração das cores
-        document.querySelectorAll('.color-dot').forEach(dot => {
-            dot.addEventListener('click', () => {
-                document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-                dot.classList.add('active');
-                motoColor = dot.getAttribute('data-color');
-                updateMotoColor();
-            });
-        });
+        function initAudio() {
+            if (isAudioInitialized) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                engineOsc = audioCtx.createOscillator();
+                engineFilter = audioCtx.createBiquadFilter();
+                engineGain = audioCtx.createGain();
 
-        // --- Texturas Dinâmicas ---
-        function createRoadTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 1024;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#444';
-            ctx.fillRect(0, 0, 512, 1024);
-            // Calçadas
-            ctx.fillStyle = '#999';
-            ctx.fillRect(0, 0, 40, 1024);
-            ctx.fillRect(472, 0, 40, 1024);
-            // Faixas
-            ctx.setLineDash([60, 60]);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 10;
-            ctx.beginPath();
-            ctx.moveTo(170, 0); ctx.lineTo(170, 1024);
-            ctx.moveTo(340, 0); ctx.lineTo(340, 1024);
-            ctx.stroke();
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-            tex.repeat.set(1, 15);
-            return tex;
-        }
+                engineOsc.type = 'sawtooth';
+                engineOsc.frequency.setValueAtTime(45, audioCtx.currentTime);
 
-        function createBuildingTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 128; canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#eee'; ctx.fillRect(0, 0, 128, 256);
-            ctx.fillStyle = '#add8e6';
-            for(let y=20; y<256; y+=40) {
-                for(let x=15; x<128; x+=40) {
-                    ctx.fillRect(x, y, 20, 20);
-                }
+                engineFilter.type = 'lowpass';
+                engineFilter.frequency.setValueAtTime(180, audioCtx.currentTime);
+
+                engineGain.gain.setValueAtTime(0.0, audioCtx.currentTime);
+
+                engineOsc.connect(engineFilter);
+                engineFilter.connect(engineGain);
+                engineGain.connect(audioCtx.destination);
+
+                engineOsc.start();
+                isAudioInitialized = true;
+            } catch (e) {
+                console.warn("Áudio não suportado ou bloqueado.");
             }
-            return new THREE.CanvasTexture(canvas);
         }
 
-        // --- Inicialização do Mundo ---
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87CEEB);
-            scene.fog = new THREE.Fog(0x87CEEB, 30, 120);
-            
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 6, 14);
-            camera.lookAt(0, 2, 0);
+        function playEngineSound(speedVal) {
+            if (!isAudioInitialized) return;
+            const frequency = 45 + (speedVal * 220);
+            const cutoff = 160 + (speedVal * 420);
+            const volume = Math.min(0.16, 0.04 + (speedVal * 0.12));
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            document.body.appendChild(renderer.domElement);
+            if (engineOsc && engineFilter && engineGain) {
+                engineOsc.frequency.setTargetAtTime(frequency, audioCtx.currentTime, 0.1);
+                engineFilter.frequency.setTargetAtTime(cutoff, audioCtx.currentTime, 0.1);
+                engineGain.gain.setTargetAtTime(volume, audioCtx.currentTime, 0.1);
+            }
+        }
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
-            scene.add(hemiLight);
+        function stopEngineSound() {
+            if (engineGain) engineGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+        }
 
-            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
-            sunLight.position.set(50, 50, 20);
+        function playCrashSound() {
+            if (!isAudioInitialized) return;
+            try {
+                const bufferSize = audioCtx.sampleRate * 0.5;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+
+                const noiseFilter = audioCtx.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                noiseFilter.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.45);
+
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+                noiseNode.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+                noiseNode.start();
+            } catch (e) {}
+        }
+
+        function playSlipSound() {
+            if (!isAudioInitialized) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(360, audioCtx.currentTime + 0.3);
+
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch (e) {}
+        }
+
+        // --- BASE DE DADOS DAS MOTAS ---
+        const MOTOS_DATABASE = [
+            {
+                name: "Super Desportiva 1000R",
+                desc: "Velocidade de Ponta, Carenagem Completa, Faróis Duplos e Escape de Carbono",
+                type: 0
+            },
+            {
+                name: "Cruiser Custom V-Twin",
+                desc: "Garfo Cromado Estendido, Guiador Alto Ape-Hanger e Escapes Duplos",
+                type: 1
+            },
+            {
+                name: "Roadster Naked 650S",
+                desc: "Quadro Vermelho em Treliça Exposta, Farol Redondo Clássico e Espelhos",
+                type: 2
+            },
+            {
+                name: "Scooter Bella Retro",
+                desc: "Estilo Clássico Europeu, Assento de Pele, Farol Redondo e Frisos",
+                type: 3
+            },
+            {
+                name: "Hyper Trail Adventure",
+                desc: "Suspensão de Longo Curso, Baús Rígidos de Alumínio e Protetor de Guiador",
+                type: 4
+            }
+        ];
+
+        let activeMotoIndex = 0;
+
+        // --- SISTEMA E VARIÁVEIS THREE.JS ---
+        let mainRenderer, mainScene, mainCamera;
+        let previewRenderer, previewScene, previewCamera;
+        let mainBike, previewBike;
+        let road;
+        let obstacles = [], cityBuildings = [];
+        let score = 0, speed = 0.5, gameActive = false, showroomActive = true;
+        let targetLane = 0;
+        let spinTimer = 0;
+        let gameTime = 0;
+        const laneWidth = 4.2;
+        let motoColor = "#e53935";
+
+        // Materiais realistas polidos otimizados para telemóveis
+        const matChrome = new THREE.MeshPhongMaterial({ color: 0xeeeeee, specular: 0xffffff, shininess: 95 });
+        const matRubber = new THREE.MeshLambertMaterial({ color: 0x111111 });
+        const matLeather = new THREE.MeshLambertMaterial({ color: 0x1d1d1d });
+        const matGlass = new THREE.MeshPhongMaterial({ color: 0xdcf7fa, transparent: true, opacity: 0.65, shininess: 90 });
+        const matYellow = new THREE.MeshPhongMaterial({ color: 0xffca28, shininess: 50 });
+        const matChassisGrey = new THREE.MeshLambertMaterial({ color: 0x2a2a2a });
+        const matEngineMetal = new THREE.MeshPhongMaterial({ color: 0x555555, specular: 0x888888, shininess: 60 });
+        const matRedNeon = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Luz traseira
+
+        // Construtor Geométrico Altamente Realista e Detalhado de Motas 3D
+        function buildDetailedMotorcycle(type, customColor) {
+            const bikeGroup = new THREE.Group();
+            const matPaint = new THREE.MeshPhongMaterial({ color: new THREE.Color(customColor), specular: 0xffffff, shininess: 85 });
+
+            // Rodas Realistas Avançadas com Discos de Travão Ventilados, Raios e Pneus Detalhados
+            const createRealisticWheel = (radius, width) => {
+                const wheelGroup = new THREE.Group();
+                
+                // Pneu de borracha
+                const tyre = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 24), matRubber);
+                tyre.rotation.z = Math.PI / 2;
+                wheelGroup.add(tyre);
+
+                // Aro de liga metálica interior
+                const rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.75, radius * 0.75, width + 0.02, 16), matChrome);
+                rim.rotation.z = Math.PI / 2;
+                wheelGroup.add(rim);
+
+                // Raios/Raiados internos metálicos
+                for (let i = 0; i < 5; i++) {
+                    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.04, radius * 1.4, 0.04), matChrome);
+                    spoke.rotation.z = (i * Math.PI) / 5;
+                    wheelGroup.add(spoke);
+                }
+
+                // Disco de travão ventilado
+                const brakeDisc = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.52, radius * 0.52, 0.02, 12), matChrome);
+                brakeDisc.rotation.z = Math.PI / 2;
+                brakeDisc.position.x = width * 0.55;
+                wheelGroup.add(brakeDisc);
+
+                // Pinça de travão vermelha de alto desempenho
+                const caliper = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.18, 0.08), new THREE.MeshPhongMaterial({ color: 0xd32f2f, shininess: 60 }));
+                caliper.position.set(width * 0.65, radius * 0.4, 0);
+                wheelGroup.add(caliper);
+
+                return wheelGroup;
+            };
+
+            // Guiador Padrão Detalhado com Punhos e Espelhos Retrovisores
+            const addHandlebarsAndMirrors = (heightOffset, widthOffset, angleX) => {
+                const handlebarGroup = new THREE.Group();
+                
+                // Barra principal cromada
+                const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.9, 12), matChrome);
+                bar.rotation.z = Math.PI / 2;
+                handlebarGroup.add(bar);
+
+                // Punhos de borracha preta nas extremidades
+                const gripL = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.18, 8), matRubber);
+                gripL.rotation.z = Math.PI / 2;
+                gripL.position.x = -0.38;
+                handlebarGroup.add(gripL);
+
+                const gripR = gripL.clone();
+                gripR.position.x = 0.38;
+                handlebarGroup.add(gripR);
+
+                // Hastes e espelhos retrovisores ovais realistas
+                const mirrorStalkL = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.25, 8), matChrome);
+                mirrorStalkL.position.set(-0.3, 0.12, 0);
+                mirrorStalkL.rotation.z = -0.3;
+                handlebarGroup.add(mirrorStalkL);
+
+                const mirrorGlassL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.03), matChrome);
+                mirrorGlassL.position.set(-0.34, 0.24, 0);
+                handlebarGroup.add(mirrorGlassL);
+
+                const mirrorStalkR = mirrorStalkL.clone();
+                mirrorStalkR.position.x = 0.3;
+                mirrorStalkR.rotation.z = 0.3;
+                handlebarGroup.add(mirrorStalkR);
+
+                const mirrorGlassR = mirrorGlassL.clone();
+                mirrorGlassR.position.x = 0.34;
+                handlebarGroup.add(mirrorGlassR);
+
+                handlebarGroup.position.set(0, heightOffset, widthOffset);
+                handlebarGroup.rotation.x = angleX;
+                bikeGroup.add(handlebarGroup);
+            };
+
+            // Lanterna de travão traseira vermelha (comum a todas)
+            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.08, 0.06), matRedNeon);
+            tailLight.position.set(0, 0.95, -0.92);
+            bikeGroup.add(tailLight);
+
+            if (type === 0) {
+                // SUPER DESPORTIVA
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.75, 1.8), matPaint);
+                body.position.y = 0.75;
+                bikeGroup.add(body);
+
+                // Bico aerodinâmico afunilado
+                const front = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.85, 4), matPaint);
+                front.rotation.x = Math.PI / 2.3;
+                front.position.set(0, 0.95, 0.75);
+                bikeGroup.add(front);
+
+                // Lentes duplas dos faróis dianteiros integradas
+                const headlightL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.1, 12), matGlass);
+                headlightL.rotation.x = Math.PI / 2;
+                headlightL.position.set(-0.12, 0.9, 1.12);
+                bikeGroup.add(headlightL);
+
+                const headlightR = headlightL.clone();
+                headlightR.position.x = 0.12;
+                bikeGroup.add(headlightR);
+
+                // Rabeta desportiva empinada
+                const tail = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.35, 0.75), matPaint);
+                tail.position.set(0, 1.08, -0.72);
+                tail.rotation.x = -Math.PI / 15;
+                bikeGroup.add(tail);
+
+                // Bolha/Vidro de proteção aerodinâmica
+                const windShield = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.25, 0.45), matGlass);
+                windShield.position.set(0, 1.25, 0.58);
+                bikeGroup.add(windShield);
+
+                // Assento antiderrapante desportivo
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.52), matLeather);
+                seat.position.set(0, 0.96, -0.12);
+                bikeGroup.add(seat);
+
+                // Rodas desportivas aro 17 com discos
+                const wheelF = createRealisticWheel(0.42, 0.32);
+                wheelF.position.set(0, 0.42, 0.82);
+                bikeGroup.add(wheelF);
+
+                const wheelB = createRealisticWheel(0.42, 0.38);
+                wheelB.position.set(0, 0.42, -0.82);
+                bikeGroup.add(wheelB);
+
+                // Escapamento Akrapovic de Carbono/Metal com ponteira dupla
+                const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.78, 8), matChrome);
+                pipe.rotation.x = Math.PI / 4.5;
+                pipe.position.set(0.28, 0.55, -0.72);
+                bikeGroup.add(pipe);
+
+                // Adicionar Guiador Desportivo com espelhos
+                addHandlebarsAndMirrors(1.15, 0.45, 0);
+
+            } else if (type === 1) {
+                // MODELO 1: CRUISER CUSTOM (Chopper)
+                const tank = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), matPaint);
+                tank.scale.set(1.15, 1.0, 1.6);
+                tank.position.set(0, 0.95, 0.1);
+                bikeGroup.add(tank);
+
+                // Assento de pele ultra-baixo e anatómico
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.18, 0.68), matLeather);
+                seat.position.set(0, 0.72, -0.48);
+                bikeGroup.add(seat);
+
+                // Garfos frontais cromados estendidos de longo alcance
+                const forkL = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.5, 8), matChrome);
+                forkL.rotation.x = Math.PI / 5.2;
+                forkL.position.set(-0.16, 0.9, 0.76);
+                bikeGroup.add(forkL);
+
+                const forkR = forkL.clone();
+                forkR.position.x = 0.16;
+                bikeGroup.add(forkR);
+
+                // Farol redondo cromado frontal proeminente
+                const bigHeadlamp = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.22, 12), matGlass);
+                bigHeadlamp.rotation.x = Math.PI / 2;
+                bigHeadlamp.position.set(0, 1.05, 0.92);
+                bikeGroup.add(bigHeadlamp);
+
+                // Guiador alto cromado "Ape Hanger"
+                addHandlebarsAndMirrors(1.36, 0.42, Math.PI / 15);
+
+                // Bloco do Motor V-Twin altamente detalhado com aletas de refrigeração cromadas
+                const engineBlock = new THREE.Group();
+                const crankcase = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.42, 0.45), matEngineMetal);
+                engineBlock.add(crankcase);
+
+                // Dois cilindros em V inclinados
+                const cyl1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.35, 10), matEngineMetal);
+                cyl1.rotation.z = -0.35;
+                cyl1.position.set(-0.08, 0.22, 0);
+                engineBlock.add(cyl1);
+
+                const cyl2 = cyl1.clone();
+                cyl2.rotation.z = 0.35;
+                cyl2.position.set(0.08, 0.22, 0);
+                engineBlock.add(cyl2);
+
+                engineBlock.position.set(0, 0.52, 0);
+                bikeGroup.add(engineBlock);
+
+                // Escapamento duplo longo cromado arrastando nas laterais
+                const pipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 8), matChrome);
+                pipe1.rotation.x = Math.PI / 2;
+                pipe1.position.set(0.26, 0.35, -0.6);
+                bikeGroup.add(pipe1);
+
+                const pipe2 = pipe1.clone();
+                pipe2.position.set(0.26, 0.24, -0.5);
+                bikeGroup.add(pipe2);
+
+                // Rodas clássicas com travões
+                const wheelF = createRealisticWheel(0.48, 0.18);
+                wheelF.position.set(0, 0.48, 1.22);
+                bikeGroup.add(wheelF);
+
+                const wheelB = createRealisticWheel(0.38, 0.45);
+                wheelB.position.set(0, 0.38, -0.92);
+                bikeGroup.add(wheelB);
+
+            } else if (type === 2) {
+                // MODELO 2: ROADSTER NAKED
+                const frameMat = new THREE.MeshPhongMaterial({ color: 0xd32f2f, specular: 0xffffff, shininess: 85 });
+                
+                // Depósito robusto e musculado com cavas de joelho
+                const tank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.52, 0.88), matPaint);
+                tank.position.set(0, 0.95, 0.15);
+                bikeGroup.add(tank);
+
+                // Quadro em treliça tubular visível nas duas laterais
+                const frameLeft = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.045, 8, 16), frameMat);
+                frameLeft.position.set(-0.15, 0.72, -0.15);
+                bikeGroup.add(frameLeft);
+
+                const frameRight = frameLeft.clone();
+                frameRight.position.x = 0.15;
+                bikeGroup.add(frameRight);
+
+                // Assento de dois níveis em couro
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.62), matLeather);
+                seat.position.set(0, 0.92, -0.42);
+                bikeGroup.add(seat);
+
+                // Radiador e Bloco do motor esportivo visível
+                const radiator = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.38, 0.12), matChassisGrey);
+                radiator.position.set(0, 0.72, 0.45);
+                bikeGroup.add(radiator);
+
+                const motor = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.45, 0.52), matEngineMetal);
+                motor.position.set(0, 0.52, 0.1);
+                bikeGroup.add(motor);
+
+                // Farol frontal redondo neo-retro
+                const headLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.18, 12), matGlass);
+                headLamp.rotation.x = Math.PI / 2;
+                headLamp.position.set(0, 0.95, 0.74);
+                bikeGroup.add(headLamp);
+
+                // Guiador street fighter e espelhos retrovisores
+                addHandlebarsAndMirrors(1.15, 0.48, 0);
+
+                // Rodas esportivas de 17 polegadas
+                const wheelF = createRealisticWheel(0.42, 0.32);
+                wheelF.position.set(0, 0.42, 0.85);
+                bikeGroup.add(wheelF);
+
+                const wheelB = createRealisticWheel(0.42, 0.32);
+                wheelB.position.set(0, 0.42, -0.85);
+                bikeGroup.add(wheelB);
+
+                // Corrente de transmissão dourada
+                const chainGuard = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.85), new THREE.MeshPhongMaterial({ color: 0xffd54f, shininess: 60 }));
+                chainGuard.position.set(-0.22, 0.42, -0.4);
+                bikeGroup.add(chainGuard);
+
+            } else if (type === 3) {
+                // MODELO 3: SCOOTER RETRO (Bella)
+                const shield = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.82, 0.15), matPaint);
+                shield.position.set(0, 0.8, 0.6);
+                bikeGroup.add(shield);
+
+                const floorBoard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.08, 0.95), matPaint);
+                floorBoard.position.set(0, 0.45, 0.15);
+                bikeGroup.add(floorBoard);
+
+                const rearHull = new THREE.Mesh(new THREE.SphereGeometry(0.38, 16, 16), matPaint);
+                rearHull.scale.set(1.4, 1.3, 2.0);
+                rearHull.position.set(0, 0.82, -0.44);
+                bikeGroup.add(rearHull);
+
+                const matBrownLeather = new THREE.MeshLambertMaterial({ color: 0x5d4037 });
+                const seat = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.12, 0.72), matBrownLeather);
+                seat.position.set(0, 1.05, -0.32);
+                bikeGroup.add(seat);
+
+                addHandlebarsAndMirrors(1.22, 0.58, 0);
+
+                const spareWheel = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.08, 8, 16), matRubber);
+                spareWheel.position.set(0, 0.9, -0.9);
+                bikeGroup.add(spareWheel);
+
+                const wheelF = createRealisticWheel(0.28, 0.22);
+                wheelF.position.set(0, 0.28, 0.72);
+                bikeGroup.add(wheelF);
+
+                const wheelB = createRealisticWheel(0.28, 0.22);
+                wheelB.position.set(0, 0.28, -0.72);
+                bikeGroup.add(wheelB);
+
+            } else {
+                // MODELO 4: TRAIL ADVENTURE
+                const tank = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.68, 0.9), matPaint);
+                tank.position.set(0, 1.1, 0.1);
+                bikeGroup.add(tank);
+
+                const crashBarL = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.035, 8, 12), matChassisGrey);
+                crashBarL.position.set(-0.28, 0.92, 0.25);
+                bikeGroup.add(crashBarL);
+
+                const crashBarR = crashBarL.clone();
+                crashBarR.position.x = 0.28;
+                bikeGroup.add(crashBarR);
+
+                const highBeak = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.65, 4), matPaint);
+                highBeak.rotation.x = Math.PI / 2;
+                highBeak.position.set(0, 1.15, 0.82);
+                bikeGroup.add(highBeak);
+
+                const windshield = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.48, 0.08), matGlass);
+                windshield.position.set(0, 1.5, 0.48);
+                bikeGroup.add(windshield);
+
+                const highSeat = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.12, 0.68), matLeather);
+                highSeat.position.set(0, 1.12, -0.42);
+                bikeGroup.add(highSeat);
+
+                const boxL = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.52, 0.52), matChrome);
+                boxL.position.set(-0.46, 1.0, -0.74);
+                bikeGroup.add(boxL);
+
+                const boxR = boxL.clone();
+                boxR.position.x = 0.46;
+                bikeGroup.add(boxR);
+
+                addHandlebarsAndMirrors(1.42, 0.38, 0);
+
+                const wheelF = createRealisticWheel(0.48, 0.26);
+                wheelF.position.set(0, 0.48, 0.9);
+                bikeGroup.add(wheelF);
+
+                const wheelB = createRealisticWheel(0.48, 0.3);
+                wheelB.position.set(0, 0.48, -0.9);
+                bikeGroup.add(wheelB);
+            }
+
+            // Aplicar sombra a todos os componentes
+            bikeGroup.traverse(child => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+
+            return bikeGroup;
+        }
+
+        // --- INICIALIZAÇÃO DOS CONTEXTOS WEBGL INDEPENDENTES ---
+        function initEngine() {
+            const canvasGame = document.getElementById('gameCanvas');
+            const canvasPreview = document.getElementById('previewCanvas');
+
+            const width = window.innerWidth || 375;
+            const height = window.innerHeight || 667;
+
+            // 1. JOGO PRINCIPAL
+            mainRenderer = new THREE.WebGLRenderer({ canvas: canvasGame, antialias: true, alpha: false });
+            mainRenderer.setSize(width, height);
+            mainRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+            mainRenderer.shadowMap.enabled = true;
+
+            mainScene = new THREE.Scene();
+            mainScene.background = new THREE.Color(0x04050a);
+            mainScene.fog = new THREE.FogExp2(0x04050a, 0.01);
+
+            mainCamera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
+            adjustCameraFOV();
+            mainCamera.position.set(2.8, 2.0, 5.0);
+            mainCamera.lookAt(0, 0.7, 0);
+
+            // Iluminação do Jogo
+            const ambient = new THREE.AmbientLight(0x0f111a, 1.6);
+            mainScene.add(ambient);
+
+            const sunLight = new THREE.DirectionalLight(0xfff5e6, 1.5);
+            sunLight.position.set(30, 50, 15);
             sunLight.castShadow = true;
-            scene.add(sunLight);
+            mainScene.add(sunLight);
 
-            // Estrada
-            const roadGeo = new THREE.PlaneGeometry(16, 2000);
-            const roadMat = new THREE.MeshStandardMaterial({ map: createRoadTexture() });
-            road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2;
-            road.receiveShadow = true;
-            scene.add(road);
+            const sideLight = new THREE.DirectionalLight(0x1e88e5, 1.4);
+            sideLight.position.set(-20, 10, -5);
+            mainScene.add(sideLight);
 
-            // Moto
-            createMoto();
+            buildRealisticHighway();
 
-            // Gerar Nuvens Iniciais
-            for(let i=0; i<10; i++) createCloud(Math.random() * -100);
+            for(let z = -250; z < 50; z += 12) {
+                spawnCityBlock(z);
+            }
 
-            window.addEventListener('resize', onWindowResize);
-            window.addEventListener('touchstart', (e) => {
-                const x = e.touches[0].clientX;
-                if(x < window.innerWidth/2) moveLane(-1); else moveLane(1);
-            });
-            window.addEventListener('keydown', (e) => {
-                if(e.key === 'ArrowLeft') moveLane(-1);
-                if(e.key === 'ArrowRight') moveLane(1);
-            });
+            // 2. PREVIEW CIRCULAR DO MENU (FUNDO PRETO ABSOLUTO)
+            previewRenderer = new THREE.WebGLRenderer({ canvas: canvasPreview, antialias: true, alpha: false });
+            previewRenderer.setSize(160, 160);
+            previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+            previewScene = new THREE.Scene();
+            previewScene.background = new THREE.Color(0x000000); // Preto Absoluto
+
+            previewCamera = new THREE.PerspectiveCamera(38, 1, 0.1, 10);
+            previewCamera.position.set(2.4, 1.5, 3.1);
+            previewCamera.lookAt(0, 0.6, 0);
+
+            const previewLight1 = new THREE.DirectionalLight(0xffffff, 2.5);
+            previewLight1.position.set(5, 5, 5);
+            previewScene.add(previewLight1);
+
+            const previewLight2 = new THREE.DirectionalLight(0x1e88e5, 1.8);
+            previewLight2.position.set(-5, 2, -2);
+            previewScene.add(previewLight2);
+
+            // Luz suave focando a mota por baixo no preview
+            const previewUnderLight = new THREE.PointLight(0xffffff, 1.2, 5);
+            previewUnderLight.position.set(0, -0.5, 0);
+            previewScene.add(previewUnderLight);
+
+            updateActiveBikes();
+
+            // Configurar botões de navegação
+            document.getElementById('btn-prev').addEventListener('click', (e) => prevMoto(e));
+            document.getElementById('btn-next').addEventListener('click', (e) => nextMoto(e));
 
             animate();
         }
 
-        function createMoto() {
-            if(moto) scene.remove(moto);
-            moto = new THREE.Group();
-            const mat = new THREE.MeshStandardMaterial({ color: motoColor });
-            const darkMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-            const glassMat = new THREE.MeshStandardMaterial({ color: 0x333333, transparent: true, opacity: 0.6 });
-
-            // Tanque e Assento
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1, 2.2), mat);
-            body.position.y = 1;
-            body.castShadow = true;
-            moto.add(body);
-
-            // Painel/Vídro
-            const screen = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.4), glassMat);
-            screen.position.set(0, 1.6, 0.6);
-            moto.add(screen);
-
-            // Rodas
-            const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 20);
-            const wheelF = new THREE.Mesh(wheelGeo, darkMat);
-            wheelF.rotation.z = Math.PI / 2;
-            wheelF.position.set(0, 0.5, 1);
-            moto.add(wheelF);
-
-            const wheelB = new THREE.Mesh(wheelGeo, darkMat);
-            wheelB.rotation.z = Math.PI / 2;
-            wheelB.position.set(0, 0.5, -1);
-            moto.add(wheelB);
-
-            scene.add(moto);
-        }
-
-        function updateMotoColor() {
-            if(moto) {
-                moto.children[0].material.color.set(motoColor);
-            }
-        }
-
-        function createBuilding(zPos) {
-            const h = 15 + Math.random() * 25;
-            const w = 8 + Math.random() * 4;
-            const geo = new THREE.BoxGeometry(w, h, 10);
-            const mat = new THREE.MeshStandardMaterial({ 
-                map: createBuildingTexture(),
-                color: new THREE.Color(`hsl(${Math.random()*360}, 10%, 80%)`) 
-            });
-            const b = new THREE.Mesh(geo, mat);
-            const side = Math.random() > 0.5 ? 1 : -1;
-            b.position.set(side * (14 + w/2), h/2, zPos);
-            scene.add(b);
-            buildings.push(b);
-        }
-
-        function createCloud(zPos) {
-            const geo = new THREE.SphereGeometry(2 + Math.random()*2, 8, 8);
-            const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
-            const c = new THREE.Mesh(geo, mat);
-            c.position.set((Math.random()-0.5)*60, 15 + Math.random()*10, zPos);
-            scene.add(c);
-            clouds.push(c);
-        }
-
-        function createObstacle() {
-            const lane = Math.floor(Math.random() * 3) - 1;
-            const type = Math.random();
-            let obs;
-
-            if(type > 0.5) {
-                // Barreira
-                obs = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1.2, 0.5), new THREE.MeshStandardMaterial({ color: 0xe67e22 }));
-                obs.position.set(lane * laneWidth, 0.6, -100);
+        function adjustCameraFOV() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            if (width < height) {
+                mainCamera.fov = 72;
             } else {
-                // Cone
-                obs = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.6, 1.2, 12), new THREE.MeshStandardMaterial({ color: 0xff4400 }));
-                obs.position.set(lane * laneWidth, 0.6, -100);
+                mainCamera.fov = 52;
             }
-            obs.castShadow = true;
-            scene.add(obs);
-            obstacles.push(obs);
+            mainCamera.updateProjectionMatrix();
         }
 
-        function startGame() {
+        function buildRealisticHighway() {
+            const roadGeo = new THREE.PlaneGeometry(16, 2000);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#1a1c22';
+            ctx.fillRect(0, 0, 256, 1024);
+            
+            for (let i = 0; i < 6000; i++) {
+                ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.05})`;
+                ctx.fillRect(Math.random() * 256, Math.random() * 1024, 1.5, 1.5);
+            }
+
+            ctx.fillStyle = '#ffb300';
+            ctx.fillRect(124, 0, 3, 1024);
+            ctx.fillRect(129, 0, 3, 1024);
+
+            ctx.fillStyle = '#ffffff';
+            for (let y = 0; y < 1024; y += 80) {
+                ctx.fillRect(64, y, 4, 40);
+                ctx.fillRect(192, y, 4, 40);
+            }
+
+            ctx.fillRect(8, 0, 5, 1024);
+            ctx.fillRect(243, 0, 5, 1024);
+
+            const roadTex = new THREE.CanvasTexture(canvas);
+            roadTex.wrapS = THREE.RepeatWrapping;
+            roadTex.wrapT = THREE.RepeatWrapping;
+            roadTex.repeat.set(1, 45);
+
+            const roadMat = new THREE.MeshPhongMaterial({
+                map: roadTex,
+                roughness: 0.88,
+                metalness: 0.12
+            });
+
+            road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            mainScene.add(road);
+
+            const barrierGeo = new THREE.BoxGeometry(0.6, 1.1, 2000);
+            const barrierMat = new THREE.MeshLambertMaterial({ color: 0x333338 });
+            
+            const guardL = new THREE.Mesh(barrierGeo, barrierMat);
+            guardL.position.set(-8.3, 0.55, 0);
+            mainScene.add(guardL);
+
+            const guardR = guardL.clone();
+            guardR.position.x = 8.3;
+            mainScene.add(guardR);
+        }
+
+        function spawnCityBlock(zPos) {
+            const sides = [-1, 1];
+            
+            sides.forEach(side => {
+                const distance = 14 + Math.random() * 8;
+                const xPos = side * distance;
+
+                const w = 7 + Math.random() * 8;
+                const h = 25 + Math.random() * 45;
+                const d = 7 + Math.random() * 8;
+
+                const geo = new THREE.BoxGeometry(w, h, d);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#11131a';
+                ctx.fillRect(0, 0, 128, 256);
+
+                for (let y = 10; y < 256; y += 18) {
+                    for (let x = 8; x < 128; x += 16) {
+                        const randomLight = Math.random();
+                        if (randomLight < 0.35) {
+                            ctx.fillStyle = '#fff9c4';
+                        } else if (randomLight < 0.55) {
+                            ctx.fillStyle = '#b3e5fc';
+                        } else {
+                            ctx.fillStyle = '#06080e';
+                        }
+                        ctx.fillRect(x, y, 9, 11);
+                    }
+                }
+
+                const tex = new THREE.CanvasTexture(canvas);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+
+                const mat = new THREE.MeshLambertMaterial({
+                    map: tex
+                });
+
+                const building = new THREE.Mesh(geo, mat);
+                building.position.set(xPos, h / 2, zPos);
+                mainScene.add(building);
+                cityBuildings.push(building);
+            });
+
+            if (Math.random() < 0.35) {
+                const post = new THREE.Group();
+                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 6, 8), matChrome);
+                pole.position.y = 3;
+                post.add(pole);
+
+                const arm = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.1), matChrome);
+                arm.position.set(0.6 * (Math.random() > 0.5 ? 1 : -1), 6, 0);
+                post.add(arm);
+
+                post.position.set(Math.random() > 0.5 ? -8.1 : 8.1, 0, zPos);
+                mainScene.add(post);
+                cityBuildings.push(post);
+            }
+        }
+
+        // --- ATUALIZAÇÃO DA SELEÇÃO DE MOTAS ---
+        function updateActiveBikes() {
+            const currentType = MOTOS_DATABASE[activeMotoIndex].type;
+
+            if (mainBike) mainScene.remove(mainBike);
+            if (previewBike) previewScene.remove(previewBike);
+
+            mainBike = buildDetailedMotorcycle(currentType, motoColor);
+            mainScene.add(mainBike);
+
+            // Mota no Showroom começa com rotação zero para girar no loop
+            mainBike.position.set(0, 0, 0);
+            mainBike.rotation.set(0, 0, 0);
+
+            previewBike = buildDetailedMotorcycle(currentType, motoColor);
+            previewScene.add(previewBike);
+
+            previewBike.position.set(0, 0.15, 0);
+            previewBike.rotation.set(0, 0, 0);
+
+            document.getElementById('moto-name').innerText = MOTOS_DATABASE[activeMotoIndex].name;
+            document.getElementById('moto-desc').innerText = MOTOS_DATABASE[activeMotoIndex].desc;
+        }
+
+        function nextMoto(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            activeMotoIndex = (activeMotoIndex + 1) % MOTOS_DATABASE.length;
+            updateActiveBikes();
+            initAudio();
+            playSlipSound();
+        }
+
+        function prevMoto(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            activeMotoIndex = (activeMotoIndex - 1 + MOTOS_DATABASE.length) % MOTOS_DATABASE.length;
+            updateActiveBikes();
+            initAudio();
+            playSlipSound();
+        }
+
+        function changeMotoColor(hexColor, btnEl, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            motoColor = hexColor;
+
+            const parent = btnEl.parentElement.children;
+            for (let el of parent) {
+                el.style.borderColor = 'transparent';
+                el.style.transform = 'scale(1.0)';
+            }
+            btnEl.style.borderColor = '#ffffff';
+            btnEl.style.transform = 'scale(1.1)';
+
+            updateActiveBikes();
+            initAudio();
+        }
+
+        // --- TRÁFEGO REALISTA ---
+        function createTrafficObstacle() {
+            const lane = Math.floor(Math.random() * 3) - 1;
+            const randomVal = Math.random();
+            const obstacleGroup = new THREE.Group();
+            let obsType = "";
+
+            if (randomVal < 0.55) {
+                obsType = "car";
+                const carColor = new THREE.Color().setHSL(Math.random(), 0.7, 0.4);
+                const matCarPaint = new THREE.MeshPhongMaterial({ color: carColor, specular: 0xffffff, shininess: 70 });
+
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.6, 3.8), matCarPaint);
+                chassis.position.y = 0.45;
+                obstacleGroup.add(chassis);
+
+                const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.55, 2.0), new THREE.MeshLambertMaterial({ color: 0x0a0a0f }));
+                cabin.position.set(0, 1.0, -0.15);
+                obstacleGroup.add(cabin);
+
+                const lightGeo = new THREE.BoxGeometry(0.3, 0.12, 0.1);
+                const l1 = new THREE.Mesh(lightGeo, new THREE.MeshBasicMaterial({ color: 0xfff9c4 }));
+                l1.position.set(-0.7, 0.5, 1.91);
+                obstacleGroup.add(l1);
+
+                const l2 = l1.clone();
+                l2.position.x = 0.7;
+                obstacleGroup.add(l2);
+
+                const tireGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 16);
+                const r1 = new THREE.Mesh(tireGeo, matRubber);
+                r1.rotation.z = Math.PI / 2;
+                r1.position.set(-0.92, 0.35, 1.1);
+                obstacleGroup.add(r1);
+
+                const r2 = r1.clone(); r2.position.x = 0.92; obstacleGroup.add(r2);
+                const r3 = r1.clone(); r3.position.z = -1.1; obstacleGroup.add(r3);
+                const r4 = r3.clone(); r4.position.x = 0.92; obstacleGroup.add(r4);
+
+            } else if (randomVal < 0.8) {
+                obsType = "cone";
+
+                const base = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.08, 0.95), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+                base.position.y = 0.04;
+                obstacleGroup.add(base);
+
+                const body = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.38, 1.6, 12), new THREE.MeshLambertMaterial({ color: 0xe65100 }));
+                body.position.y = 0.85;
+                obstacleGroup.add(body);
+
+                const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, 0.45, 12), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+                stripe.position.y = 0.95;
+                obstacleGroup.add(stripe);
+
+            } else {
+                obsType = "banana";
+                const peelCore = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.04, 0.24), matYellow);
+                peelCore.rotation.y = Math.PI / 4;
+                obstacleGroup.add(peelCore);
+
+                for (let i = 0; i < 3; i++) {
+                    const petal = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.03, 0.16), matYellow);
+                    petal.position.x = Math.sin((i * Math.PI * 2) / 3) * 0.38;
+                    petal.position.z = Math.cos((i * Math.PI * 2) / 3) * 0.38;
+                    petal.rotation.y = (i * Math.PI * 2) / 3;
+                    obstacleGroup.add(petal);
+                }
+                obstacleGroup.position.y = 0.02;
+            }
+
+            obstacleGroup.position.set(lane * laneWidth, 0, -210);
+            obstacleGroup.userData = { type: obsType, hit: false };
+
+            mainScene.add(obstacleGroup);
+            obstacles.push(obstacleGroup);
+        }
+
+        // --- CICLO DE JOGO, CONTROLOS E CORRIDA ---
+        function startGame(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            initAudio();
+
             document.getElementById('menu-screen').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('menu-screen').style.display = 'none';
                 document.getElementById('game-ui').style.display = 'flex';
+                
+                showroomActive = false;
                 gameActive = true;
+                
+                // Força rotação Y em 180º (Math.PI) para virar a mota de costas para a câmara do jogador
+                if (mainBike) {
+                    mainBike.rotation.set(0, Math.PI, 0);
+                }
+                
+                mainCamera.position.set(0, 3.2, 7.0);
+                mainCamera.lookAt(0, 1.2, 0);
             }, 500);
         }
 
         function moveLane(dir) {
+            if (!gameActive || spinTimer > 0) return;
             targetLane = Math.max(-1, Math.min(1, targetLane + dir));
+            playSlipSound();
         }
 
+        function handleKeyboard(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                moveLane(-1);
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                moveLane(1);
+            }
+        }
+
+        // Loop Unificado Estável e Otimizado
         function animate() {
             requestAnimationFrame(animate);
+            gameTime += 0.01;
 
-            if (gameActive) {
-                score += speed;
-                document.getElementById('score-container').innerText = Math.floor(score) + " m";
-
-                // Suavização do Movimento e Inclinação
-                moto.position.x += (targetLane * laneWidth - moto.position.x) * 0.12;
-                moto.rotation.z = (moto.position.x - targetLane * laneWidth) * 0.15;
-                moto.rotation.y = (targetLane * laneWidth - moto.position.x) * 0.1;
-
-                // Scroll da Estrada
-                road.material.map.offset.y -= speed * 0.04;
-
-                // Gerenciamento de Objetos
-                if(Math.random() < 0.04) createBuilding(-120);
-                if(Math.random() < 0.01) createCloud(-150);
-                if(Math.random() < 0.025 && (obstacles.length === 0 || obstacles[obstacles.length-1].position.z > -50)) {
-                    createObstacle();
-                }
-
-                // Atualizar Obstáculos
-                for (let i = obstacles.length - 1; i >= 0; i--) {
-                    obstacles[i].position.z += speed;
-                    
-                    // Colisão
-                    const motoBox = new THREE.Box3().setFromObject(moto).expandByScalar(-0.35);
-                    const obsBox = new THREE.Box3().setFromObject(obstacles[i]);
-                    
-                    if (motoBox.intersectsBox(obsBox)) {
-                        endGame();
-                    }
-
-                    if (obstacles[i].position.z > 20) {
-                        scene.remove(obstacles[i]);
-                        obstacles.splice(i, 1);
-                    }
-                }
-
-                // Atualizar Prédios e Nuvens
-                [buildings, clouds].forEach(list => {
-                    for (let i = list.length - 1; i >= 0; i--) {
-                        list[i].position.z += speed * 0.8; // Efeito de paralaxe leve
-                        if (list[i].position.z > 40) {
-                            scene.remove(list[i]);
-                            list.splice(i, 1);
+            try {
+                // RENDERIZAR JOGO PRINCIPAL
+                if (mainRenderer && mainScene && mainCamera) {
+                    if (showroomActive) {
+                        if (mainBike) {
+                            mainBike.rotation.y = gameTime * 0.4;
+                            mainBike.position.y = Math.sin(gameTime * 2) * 0.04;
                         }
                     }
-                });
 
-                speed += 0.0001;
+                    if (gameActive) {
+                        score += speed * 0.5;
+                        document.getElementById('score-val').innerText = Math.floor(score) + " m";
+                        
+                        const speedKmh = Math.floor(speed * 290);
+                        document.getElementById('speed-val').innerText = speedKmh + " km/h";
+
+                        playEngineSound(speed);
+
+                        if (spinTimer > 0) {
+                            spinTimer--;
+                            if (mainBike) {
+                                mainBike.rotation.y += 0.42;
+                                mainBike.position.x += Math.sin(spinTimer * 0.5) * 0.12;
+                            }
+                            if (spinTimer === 0) {
+                                // Reseta para Math.PI (180 graus de costas para o jogador)
+                                if (mainBike) mainBike.rotation.y = Math.PI;
+                                document.getElementById('slip-alert').style.transform = 'scale(0)';
+                            }
+                        } else {
+                            if (mainBike) {
+                                mainBike.position.x += (targetLane * laneWidth - mainBike.position.x) * 0.16;
+                                const lean = (mainBike.position.x - targetLane * laneWidth) * 0.14;
+                                mainBike.rotation.z = lean;
+                                // Mantém a orientação básica da mota em 180º (Math.PI) e adiciona a inclinação curva
+                                mainBike.rotation.y = Math.PI - lean * 0.4;
+                            }
+                        }
+
+                        if (mainBike) {
+                            mainBike.position.y = Math.sin(gameTime * 20) * 0.02;
+                            mainCamera.position.x += (mainBike.position.x * 0.85 - mainCamera.position.x) * 0.1;
+                            mainCamera.lookAt(mainBike.position.x * 0.6, 1.2, 0);
+                        }
+
+                        if (road && road.material && road.material.map) {
+                            road.material.map.offset.y -= speed * 0.065;
+                        }
+
+                        for (let i = cityBuildings.length - 1; i >= 0; i--) {
+                            const block = cityBuildings[i];
+                            block.position.z += speed;
+                            if (block.position.z > 20) {
+                                block.position.z = -230;
+                            }
+                        }
+
+                        const spawnChance = Math.max(0.015, 0.03 - speed * 0.005);
+                        if (Math.random() < spawnChance && (obstacles.length === 0 || obstacles[obstacles.length - 1].position.z > -55)) {
+                            createTrafficObstacle();
+                        }
+
+                        for (let i = obstacles.length - 1; i >= 0; i--) {
+                            const obs = obstacles[i];
+                            obs.position.z += (obs.userData.type === "car") ? speed * 1.5 : speed;
+
+                            if (mainBike) {
+                                const bikeBox = new THREE.Box3().setFromObject(mainBike);
+                                const obsBox = new THREE.Box3().setFromObject(obs);
+                                bikeBox.expandByScalar(-0.16);
+
+                                if (bikeBox.intersectsBox(obsBox) && !obs.userData.hit) {
+                                    obs.userData.hit = true;
+                                    if (obs.userData.type === "banana") {
+                                        spinTimer = 45;
+                                        speed = Math.max(0.4, speed - 0.2);
+                                        playSlipSound();
+                                        document.getElementById('slip-alert').style.transform = 'scale(1)';
+                                        mainScene.remove(obs);
+                                        obstacles.splice(i, 1);
+                                        continue;
+                                    } else {
+                                        triggerCrash();
+                                    }
+                                }
+                            }
+
+                            if (obs.position.z > 20) {
+                                mainScene.remove(obs);
+                                obstacles.splice(i, 1);
+                            }
+                        }
+
+                        speed += 0.00015;
+                    }
+
+                    mainRenderer.render(mainScene, mainCamera);
+                }
+
+                // RENDERIZAR PREVIEW ISOLADO DO MENU
+                if (showroomActive && previewRenderer && previewScene && previewCamera) {
+                    if (previewBike) {
+                        previewBike.rotation.y = gameTime * 1.3; // Gira a mota suavemente no menu circular
+                        previewBike.position.y = Math.sin(gameTime * 2.5) * 0.04 + 0.01;
+                    }
+                    previewRenderer.render(previewScene, previewCamera);
+                }
+
+            } catch (err) {
+                console.warn("Recuperação de frame silenciosa: ", err);
             }
-            renderer.render(scene, camera);
         }
 
-        function endGame() {
+        function triggerCrash() {
             gameActive = false;
+            stopEngineSound();
+            playCrashSound();
+
             document.getElementById('game-ui').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'flex';
-            document.getElementById('final-stats').innerText = `Você percorreu ${Math.floor(score)} metros!`;
+            document.getElementById('final-stats').innerText = `${Math.floor(score)} m`;
+        }
+
+        function resetGame(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            obstacles.forEach(o => mainScene.remove(o));
+            obstacles = [];
+
+            score = 0;
+            speed = 0.5;
+            targetLane = 0;
+            if (mainBike) {
+                mainBike.position.set(0, 0, 0);
+                mainBike.rotation.set(0, 0, 0); // Volta ao Showroom livre
+            }
+
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('menu-screen').style.display = 'flex';
+            document.getElementById('menu-screen').style.opacity = '1';
+
+            showroomActive = true;
+            mainCamera.position.set(2.8, 2.0, 5.0);
+            mainCamera.lookAt(0, 0.7, 0);
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            adjustCameraFOV();
+            mainCamera.aspect = width / height;
+            mainCamera.updateProjectionMatrix();
+            mainRenderer.setSize(width, height);
         }
 
-        init();
+        window.addEventListener('load', () => {
+            initEngine();
+        });
+
+        if (document.readyState === 'complete') {
+            initEngine();
+        }
     </script>
 </body>
 </html>
-
