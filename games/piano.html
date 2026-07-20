@@ -1,312 +1,604 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-    <title>Piano Kids 🎹</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Piano de Brinquedo Premium & Autoplay Exato</title>
+    <!-- Tailwind CSS para base moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para tipografia de brinquedos de madeira -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        :root {
-            --bg: #0f172a;
-            --key-white: #ffffff;
-            --key-shadow: #e2e8f0;
-            --accent: #f43f5e;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-
         body {
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            background: var(--bg);
             font-family: 'Fredoka', sans-serif;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #ui-header {
-            height: 15vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-            z-index: 10;
-        }
-
-        h1 {
-            color: #fff;
-            font-size: clamp(1.2rem, 5vw, 2.5rem);
-            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            margin-bottom: 5px;
-        }
-
-        .hint {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.8rem;
-        }
-
-        #piano-container {
-            flex: 1;
-            position: relative;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 10px;
-        }
-
-        #gc {
-            width: 100%;
-            height: 100%;
+            user-select: none;
+            -webkit-user-select: none;
             touch-action: none;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            background: #1e293b;
+            background-color: #E6EDF2; /* Fundo suave azul-cinza escandinavo */
+        }
+        
+        /* GABINETE DO PIANO */
+        .piano-cabinet {
+            background: linear-gradient(135deg, #3B5A75 0%, #2E485E 100%);
+            box-shadow: 
+                0 25px 50px -12px rgba(30, 41, 59, 0.4),
+                inset 0 4px 0px rgba(255, 255, 255, 0.15),
+                inset 0 -8px 0px rgba(0, 0, 0, 0.2);
         }
 
-        #controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 100;
-        }
-
-        .btn-round {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* TECLAS BRANCAS - Altamente Estilizadas e Tridimensionais */
+        .key-white {
+            background: linear-gradient(to bottom, #FFFFFF 0%, #FCFBF9 80%, #F5F1EA 100%);
+            border: 1px solid #D0D9E0;
+            border-bottom: 16px solid #CBD5E0;
+            border-radius: 0 0 16px 16px;
+            position: relative;
             cursor: pointer;
-            backdrop-filter: blur(5px);
+            box-shadow: 
+                0 6px 10px rgba(0, 0, 0, 0.05),
+                inset 0 2px 0px rgba(255, 255, 255, 0.8),
+                inset 0 -10px 20px rgba(245, 241, 234, 0.5);
+            transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1), 
+                        border-bottom-width 0.08s cubic-bezier(0.25, 1, 0.5, 1), 
+                        box-shadow 0.08s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        /* Efeito de Pressão Realista */
+        .key-white.active, .key-white:active {
+            background: linear-gradient(to bottom, #FAFAFA 0%, #E6EEF4 100%);
+            transform: translateY(12px);
+            border-bottom-width: 4px;
+            box-shadow: 
+                0 2px 3px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0px rgba(255, 255, 255, 0.9);
+        }
+
+        /* TECLAS PRETAS - Elegantes e Geométricas */
+        .key-black {
+            background: linear-gradient(to bottom, #334155 0%, #1E293B 80%, #0F172A 100%);
+            border-left: 1px solid #475569;
+            border-right: 1px solid #475569;
+            border-bottom: 12px solid #020617;
+            border-radius: 0 0 8px 8px;
+            position: absolute;
+            cursor: pointer;
+            box-shadow: 
+                0 8px 12px rgba(0, 0, 0, 0.25),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transition: transform 0.08s cubic-bezier(0.25, 1, 0.5, 1), 
+                        border-bottom-width 0.08s cubic-bezier(0.25, 1, 0.5, 1), 
+                        box-shadow 0.08s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 20;
+        }
+
+        .key-black.active, .key-black:active {
+            background: linear-gradient(to bottom, #1E293B 0%, #0F172A 100%);
+            transform: translateY(8px) scaleX(0.98);
+            border-bottom-width: 3px;
+            box-shadow: 
+                0 3px 4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Brilho suave nas teclas acionadas pelo piloto automático */
+        .key-white.autoplay-highlight {
+            background: linear-gradient(to bottom, #E3F2FD 0%, #90CAF9 100%);
+            border-bottom-color: #64B5F6;
+        }
+
+        .key-black.autoplay-highlight {
+            background: linear-gradient(to bottom, #1E3A8A 0%, #3B82F6 100%);
+            border-bottom-color: #1D4ED8;
+        }
+
+        /* ANIMAÇÃO SHAKE DE BLOQUEIO */
+        @keyframes subtle-shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+        .shake-block {
+            animation: subtle-shake 0.3s ease-in-out;
         }
     </style>
 </head>
-<body>
+<body class="h-screen w-screen flex items-center justify-center p-3 md:p-6 overflow-hidden">
 
-<div id="controls">
-    <div class="btn-round" onclick="location.reload()">↺</div>
-</div>
+    <!-- Canvas para efeito de estrelas e notas musicais coloridas -->
+    <canvas id="canvasParticulas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
 
-<div id="ui-header">
-    <h1>🎹 PIANO KIDS</h1>
-    <p class="hint">Toca para ouvires as notas!</p>
-</div>
-
-<div id="piano-container">
-    <canvas id="gc"></canvas>
-</div>
-
-<script>
-    'use strict';
-
-    // Configurações de Áudio
-    let _ac = null;
-    const getAC = () => {
-        if (!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)();
-        if (_ac.state === 'suspended') _ac.resume();
-        return _ac;
-    };
-
-    const playNote = (freq) => {
-        const ac = getAC();
-        const osc = ac.createOscillator();
-        const gain = ac.createGain();
+    <!-- Estrutura Gigante e Unificada do Brinquedo (Cabinet) -->
+    <div class="relative z-10 w-full max-w-6xl h-[88vh] md:h-[80vh] piano-cabinet rounded-[36px] border-[6px] border-[#253A4D] flex flex-col p-3 md:p-5">
         
-        osc.type = 'triangle'; 
-        osc.frequency.setValueAtTime(freq, ac.currentTime);
-        
-        gain.gain.setValueAtTime(0, ac.currentTime);
-        gain.gain.linearRampToValueAtTime(0.4, ac.currentTime + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 1);
-        
-        osc.connect(gain);
-        gain.connect(ac.destination);
-        
-        osc.start();
-        osc.stop(ac.currentTime + 1);
-    };
+        <!-- Topo Decorativo (Madeira de Carvalho Natural de Brinquedo) -->
+        <div class="w-full h-8 md:h-10 bg-[#D4A373] rounded-t-2xl mb-3 md:mb-4 shadow-inner flex items-center justify-between px-6 border-b border-[#B88759]">
+            <div class="w-3 h-3 rounded-full bg-[#A37B55] shadow-inner"></div>
+            <div class="flex items-center gap-2">
+                <span id="playing-status" class="text-[10px] md:text-xs font-bold text-[#6F5234] tracking-widest uppercase flex items-center gap-2">
+                    🎹 MODO LIVRE
+                </span>
+            </div>
+            <div class="w-3 h-3 rounded-full bg-[#A37B55] shadow-inner"></div>
+        </div>
 
-    const NOTES = [
-        { n: 'Dó', f: 261.63, c: '#FF4D4D' },
-        { n: 'Ré', f: 293.66, c: '#FF944D' },
-        { n: 'Mi', f: 329.63, c: '#FFDB4D' },
-        { n: 'Fá', f: 349.23, c: '#4DFF4D' },
-        { n: 'Sol', f: 392.00, c: '#4DFFFF' },
-        { n: 'Lá', f: 440.00, c: '#4D4DFF' },
-        { n: 'Si', f: 493.88, c: '#B34DFF' },
-        { n: 'Dó²', f: 523.25, c: '#FF4DFF' }
-    ];
+        <!-- Painel Central: Sidebar (Esquerda) + Área do Piano (Direita) -->
+        <div class="flex-1 flex flex-col md:flex-row gap-3 md:gap-4 overflow-hidden h-full">
+            
+            <!-- SIDEBAR: Seletor de Músicas Clássicas -->
+            <div class="w-full md:w-56 bg-[#253A4D] rounded-2xl p-2.5 md:p-3 flex flex-row md:flex-col justify-between md:justify-start gap-2 border border-[#1A2A38] shadow-inner">
+                
+                <!-- Título do Painel -->
+                <div class="hidden md:block text-center border-b border-[#354F66] pb-2 mb-2">
+                    <span class="text-xs font-semibold text-[#8BB1D4] tracking-wider uppercase">Músicas Mágicas</span>
+                </div>
 
-    const canvas = document.getElementById('gc');
-    const ctx = canvas.getContext('2d');
-    let W, H, keyW, keyH, startX;
-    let activePointers = new Map();
-    let particles = [];
+                <!-- Botões de Melodia -->
+                <button onclick="playSong('brilha')" id="btn-brilha" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 bg-[#3A5670] hover:bg-[#486A8A] text-white text-xs md:text-sm font-bold py-2 px-3 md:py-3 md:px-4 rounded-xl transition-all shadow-md active:scale-95 border-b-4 border-[#283D50]">
+                    <span>⭐</span>
+                    <span class="hidden sm:inline md:inline">Estrelinha</span>
+                </button>
+                
+                <button onclick="playSong('jingle')" id="btn-jingle" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 bg-[#3A5670] hover:bg-[#486A8A] text-white text-xs md:text-sm font-bold py-2 px-3 md:py-3 md:px-4 rounded-xl transition-all shadow-md active:scale-95 border-b-4 border-[#283D50]">
+                    <span>🔔</span>
+                    <span class="hidden sm:inline md:inline">Jingle Bells</span>
+                </button>
+                
+                <button onclick="playSong('parabens')" id="btn-parabens" class="flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 bg-[#3A5670] hover:bg-[#486A8A] text-white text-xs md:text-sm font-bold py-2 px-3 md:py-3 md:px-4 rounded-xl transition-all shadow-md active:scale-95 border-b-4 border-[#283D50]">
+                    <span>🎂</span>
+                    <span class="hidden sm:inline md:inline">Parabéns</span>
+                </button>
 
-    // Função compatível para desenhar retângulos arredondados
-    function drawRoundedRect(x, y, width, height, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-    }
+                <!-- Botão de Parar / Voltar ao modo livre -->
+                <button onclick="stopSong()" id="btn-stop" class="flex-1 md:flex-none hidden items-center justify-center md:justify-start gap-2 bg-[#E07A5F] hover:bg-[#F28164] text-white text-xs md:text-sm font-bold py-2 px-3 md:py-3 md:px-4 rounded-xl transition-all shadow-md active:scale-95 border-b-4 border-[#B05B44]">
+                    <span>🛑</span>
+                    <span class="hidden sm:inline md:inline">Parar</span>
+                </button>
+            </div>
 
-    function resize() {
-        const dpr = window.devicePixelRatio || 1;
-        W = canvas.clientWidth;
-        H = canvas.clientHeight;
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        
-        keyW = Math.min(W / NOTES.length, 120);
-        keyH = H * 0.85;
-        startX = (W - (keyW * NOTES.length)) / 2;
-    }
+            <!-- TECLADO DO PIANO -->
+            <div class="flex-1 bg-[#152330] p-2 md:p-3.5 rounded-2xl border-4 border-[#1B2D3D] flex relative overflow-hidden shadow-inner">
+                
+                <!-- Feedback visual de concerto mágico -->
+                <div id="block-overlay" class="absolute inset-0 bg-[#152330]/20 pointer-events-none transition-opacity duration-300 opacity-0 z-30 flex items-center justify-center">
+                    <div class="bg-[#1E2B38]/95 border-2 border-[#D4A373] px-6 py-2 rounded-full shadow-lg text-white font-bold text-xs flex items-center gap-2 animate-bounce">
+                        <span>✨ Assistindo Concerto Mágico ✨</span>
+                    </div>
+                </div>
 
-    window.addEventListener('resize', resize);
+                <div id="teclado" class="relative w-full h-full flex">
+                    <!-- Gerado dinamicamente no script -->
+                </div>
+            </div>
+            
+        </div>
+    </div>
 
-    class Particle {
-        constructor(x, y, col) {
-            this.x = x;
-            this.y = y;
-            this.col = col;
-            this.vx = (Math.random() - 0.5) * 8;
-            this.vy = (Math.random() - 0.5) * 8 - 5;
-            this.life = 1;
-            this.r = Math.random() * 6 + 2;
-        }
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.vy += 0.2;
-            this.life -= 0.02;
-        }
-        draw() {
-            ctx.globalAlpha = this.life;
-            ctx.fillStyle = this.col;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = 1;
-        }
-    }
+    <script>
+        // --- MOTOR DE ÁUDIO SINTETIZADO (Web Audio API) ---
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
 
-    function getKeyAt(x, y) {
-        if (y < 0 || y > keyH) return -1;
-        const index = Math.floor((x - startX) / keyW);
-        if (index >= 0 && index < NOTES.length) return index;
-        return -1;
-    }
+        // Notas mapeadas perfeitamente para cobrir do Dó central (C4) até o Mi agudo (E5)
+        const NOTAS = [
+            { freq: 261.63, key: 'a', isBlack: false }, // Dó (C4)
+            { freq: 277.18, key: 'w', isBlack: true },  // Dó#
+            { freq: 293.66, key: 's', isBlack: false }, // Ré (D4)
+            { freq: 311.13, key: 'e', isBlack: true },  // Ré#
+            { freq: 329.63, key: 'd', isBlack: false }, // Mi (E4)
+            { freq: 349.23, key: 'f', isBlack: false }, // Fá (F4)
+            { freq: 369.99, key: 't', isBlack: true },  // Fá#
+            { freq: 392.00, key: 'g', isBlack: false }, // Sol (G4)
+            { freq: 415.30, key: 'y', isBlack: true },  // Sol#
+            { freq: 440.00, key: 'h', isBlack: false }, // Lá (A4)
+            { freq: 466.16, key: 'u', isBlack: true },  // Lá#
+            { freq: 493.88, key: 'j', isBlack: false }, // Si (B4)
+            { freq: 523.25, key: 'k', isBlack: false }, // Dó5 (C5)
+            { freq: 554.37, key: 'o', isBlack: true },  // Dó#5
+            { freq: 587.33, key: 'l', isBlack: false }, // Ré5 (D5)
+            { freq: 622.25, key: 'p', isBlack: true },  // Ré#5
+            { freq: 659.25, key: 'ç', isBlack: false }  // Mi5 (E5)
+        ];
 
-    const handlePointer = (e, isDown) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const keyIdx = getKeyAt(x, y);
-        
-        if (keyIdx !== -1) {
-            if (isDown) {
-                if (activePointers.get(e.pointerId) !== keyIdx) {
-                    activePointers.set(e.pointerId, keyIdx);
-                    playNote(NOTES[keyIdx].f);
-                    for(let i=0; i<12; i++) particles.push(new Particle(x, y, NOTES[keyIdx].c));
-                }
-            } else {
-                activePointers.delete(e.pointerId);
+        // MÚSICAS CLÁSSICAS RECONFIGURADAS COM AS SUAS NOTAS EXATAS
+        const PLAYLIST = {
+            // Parabéns pra Você: Sol Sol Lá Sol Dó Si / Sol Sol Lá Sol Ré Dó / Sol Sol Sol Mi Dó Si Lá / Fá Fá Mi Dó Ré Dó
+            parabens: [
+                // Sol Sol Lá Sol Dó Si
+                { note: 'g', d: 350 }, { note: 'g', d: 150 }, { note: 'h', d: 500 }, { note: 'g', d: 500 }, { note: 'k', d: 500 }, { note: 'j', d: 1000 },
+                
+                // Sol Sol Lá Sol Ré Dó
+                { note: 'g', d: 350 }, { note: 'g', d: 150 }, { note: 'h', d: 500 }, { note: 'g', d: 500 }, { note: 'l', d: 500 }, { note: 'k', d: 1000 },
+                
+                // Sol Sol Sol Mi Dó Si Lá (Salto oitava para o Sol agudo e Mi5)
+                { note: 'g', d: 350 }, { note: 'g', d: 150 }, { note: 'g', d: 500 }, { note: 'ç', d: 500 }, { note: 'k', d: 500 }, { note: 'j', d: 500 }, { note: 'h', d: 1000 },
+                
+                // Fá Fá Mi Dó Ré Dó
+                { note: 'f', d: 350 }, { note: 'f', d: 150 }, { note: 'd', d: 500 }, { note: 'k', d: 500 }, { note: 'l', d: 500 }, { note: 'k', d: 1000 }
+            ],
+            
+            // Brilha Brilha Estrelinha (Partitura exata em 4/4)
+            brilha: [
+                // Dó Dó Sol Sol Lá Lá Sol
+                { note: 'a', d: 500 }, { note: 'a', d: 500 }, { note: 'g', d: 500 }, { note: 'g', d: 500 }, { note: 'h', d: 500 }, { note: 'h', d: 500 }, { note: 'g', d: 1000 },
+                // Fá Fá Mi Mi Ré Ré Dó
+                { note: 'f', d: 500 }, { note: 'f', d: 500 }, { note: 'd', d: 500 }, { note: 'd', d: 500 }, { note: 's', d: 500 }, { note: 's', d: 500 }, { note: 'a', d: 1000 },
+                
+                // Sol Sol Fá Fá Mi Mi Ré
+                { note: 'g', d: 500 }, { note: 'g', d: 500 }, { note: 'f', d: 500 }, { note: 'f', d: 500 }, { note: 'd', d: 500 }, { note: 'd', d: 500 }, { note: 's', d: 1000 },
+                // Sol Sol Fá Fá Mi Mi Ré
+                { note: 'g', d: 500 }, { note: 'g', d: 500 }, { note: 'f', d: 500 }, { note: 'f', d: 500 }, { note: 'd', d: 500 }, { note: 'd', d: 500 }, { note: 's', d: 1000 },
+
+                // Dó Dó Sol Sol Lá Lá Sol
+                { note: 'a', d: 500 }, { note: 'a', d: 500 }, { note: 'g', d: 500 }, { note: 'g', d: 500 }, { note: 'h', d: 500 }, { note: 'h', d: 500 }, { note: 'g', d: 1000 },
+                // Fá Fá Mi Mi Ré Ré Dó
+                { note: 'f', d: 500 }, { note: 'f', d: 500 }, { note: 'd', d: 500 }, { note: 'd', d: 500 }, { note: 's', d: 500 }, { note: 's', d: 500 }, { note: 'a', d: 1000 }
+            ],
+            
+            // Jingle Bells (Versão Completa e Ritmicamente Maravilhosa)
+            jingle: [
+                // Mi Mi Mi
+                { note: 'd', d: 350 }, { note: 'd', d: 350 }, { note: 'd', d: 700 },
+                // Mi Mi Mi
+                { note: 'd', d: 350 }, { note: 'd', d: 350 }, { note: 'd', d: 700 },
+                // Mi Sol Dó Ré Mi
+                { note: 'd', d: 350 }, { note: 'g', d: 350 }, { note: 'a', d: 500 }, { note: 's', d: 200 }, { note: 'd', d: 1400 },
+
+                // Fá Fá Fá Fá
+                { note: 'f', d: 350 }, { note: 'f', d: 350 }, { note: 'f', d: 500 }, { note: 'f', d: 200 },
+                // Fá Mi Mi Mi Mi
+                { note: 'f', d: 350 }, { note: 'd', d: 350 }, { note: 'd', d: 350 }, { note: 'd', d: 200 }, { note: 'd', d: 200 },
+                // Mi Ré Ré Mi
+                { note: 'd', d: 350 }, { note: 's', d: 350 }, { note: 's', d: 350 }, { note: 'd', d: 350 },
+                // Ré Sol
+                { note: 's', d: 700 }, { note: 'g', d: 700 }
+            ]
+        };
+
+        let isAutoplayActive = false;
+        let currentSongTimeline = []; // Armazena timeouts ativos
+
+        function iniciarAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
             }
-        } else {
-            activePointers.delete(e.pointerId);
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
-    };
 
-    canvas.addEventListener('pointerdown', e => handlePointer(e, true));
-    canvas.addEventListener('pointermove', e => {
-        if (e.buttons > 0) handlePointer(e, true);
-    });
-    canvas.addEventListener('pointerup', e => activePointers.delete(e.pointerId));
-    canvas.addEventListener('pointercancel', e => activePointers.delete(e.pointerId));
-    canvas.addEventListener('pointerleave', e => activePointers.delete(e.pointerId));
+        // Som super límpido de carrilhão/piano de brinquedo
+        function tocarSom(freq) {
+            iniciarAudio();
+            const agora = audioCtx.currentTime;
 
-    function animate() {
-        ctx.clearRect(0, 0, W, H);
-        
-        const activeKeys = new Set(activePointers.values());
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, agora);
 
-        // Desenhar teclas
-        NOTES.forEach((note, i) => {
-            const x = startX + i * keyW;
-            const isActive = activeKeys.has(i);
-            const radius = 15;
-            
-            ctx.save();
-            
-            // Sombra e Brilho
-            ctx.shadowBlur = isActive ? 25 : 8;
-            ctx.shadowColor = isActive ? note.c : 'rgba(0,0,0,0.3)';
-            
-            // Tecla
-            const grad = ctx.createLinearGradient(x, 0, x, keyH);
-            grad.addColorStop(0, isActive ? note.c : '#ffffff');
-            grad.addColorStop(1, isActive ? '#ffffff' : '#e2e8f0');
-            
-            ctx.fillStyle = grad;
-            drawRoundedRect(x + 4, isActive ? 20 : 5, keyW - 8, keyH - (isActive ? 20 : 5), radius);
-            ctx.fill();
+            gainNode.gain.setValueAtTime(0, agora);
+            gainNode.gain.linearRampToValueAtTime(0.65, agora + 0.005);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, agora + 1.8);
 
-            // Texto
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = isActive ? '#fff' : '#475569';
-            ctx.font = 'bold 18px Fredoka';
-            ctx.textAlign = 'center';
-            ctx.fillText(note.n, x + keyW/2, keyH - 30);
+            // Segunda harmônica metálica simulando o sino batendo
+            const harmOsc = audioCtx.createOscillator();
+            const harmGain = audioCtx.createGain();
+            harmOsc.type = 'sine';
+            harmOsc.frequency.setValueAtTime(freq * 3.99, agora); 
             
-            // Ponto colorido
-            ctx.fillStyle = note.c;
-            ctx.beginPath();
-            ctx.arc(x + keyW/2, keyH - 60, 6, 0, Math.PI*2);
-            ctx.fill();
+            harmGain.gain.setValueAtTime(0, agora);
+            harmGain.gain.linearRampToValueAtTime(0.25, agora + 0.004);
+            harmGain.gain.exponentialRampToValueAtTime(0.001, agora + 0.3);
 
-            ctx.restore();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            harmOsc.connect(harmGain);
+            harmGain.connect(audioCtx.destination);
+
+            osc.start(agora);
+            osc.stop(agora + 1.9);
+
+            harmOsc.start(agora);
+            harmOsc.stop(agora + 0.35);
+        }
+
+        // --- SISTEMA DE GERAÇÃO DO TECLADO ---
+        const teclado = document.getElementById('teclado');
+
+        function criarTeclado() {
+            teclado.innerHTML = '';
+            const teclasBrancas = NOTAS.filter(n => !n.isBlack);
+            const teclasPretas = NOTAS.filter(n => n.isBlack);
+
+            // 1. Renderiza teclas brancas
+            teclasBrancas.forEach((nota) => {
+                const tecla = document.createElement('div');
+                tecla.className = 'key-white flex-1';
+                tecla.dataset.note = nota.key;
+
+                vincularEventos(tecla, nota);
+                teclado.appendChild(tecla);
+            });
+
+            // 2. Renderiza teclas pretas
+            teclasPretas.forEach((nota) => {
+                const indiceGlobal = NOTAS.findIndex(n => n.freq === nota.freq);
+                const notaBrancaAnterior = NOTAS[indiceGlobal - 1];
+                
+                const elementosBrancos = Array.from(teclado.querySelectorAll('.key-white'));
+                const elementoAlvo = elementosBrancos.find(el => el.dataset.note === notaBrancaAnterior.key);
+
+                if (elementoAlvo) {
+                    const teclaPreta = document.createElement('div');
+                    teclaPreta.className = 'key-black w-8 sm:w-11 md:w-14 h-[56%] md:h-[58%]';
+                    teclaPreta.dataset.note = nota.key;
+
+                    // Ajusta o alinhamento centralizado relativo entre as teclas brancas
+                    const indexNaBranca = elementosBrancos.indexOf(elementoAlvo);
+                    const percentualEsquerda = ((indexNaBranca + 1) * (100 / teclasBrancas.length)) - ((100 / teclasBrancas.length) * 0.28);
+                    teclaPreta.style.left = `${percentualEsquerda}%`;
+
+                    vincularEventos(teclaPreta, nota);
+                    teclado.appendChild(teclaPreta);
+                }
+            });
+        }
+
+        // --- MANIPULADORES DE TOQUE (TOQUE MULTI-DEDOS) ---
+        const teclasPressionadasAtualmente = new Set();
+
+        function vincularEventos(elemento, nota) {
+            // Mouse
+            elemento.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                tentarAtivarTecla(elemento, nota, e);
+            });
+
+            // Toque múltiplo
+            elemento.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                tentarAtivarTecla(elemento, nota, e);
+            }, { passive: false });
+        }
+
+        function tentarAtivarTecla(elemento, nota, evento) {
+            if (isAutoplayActive) {
+                shakerTeclado();
+                return;
+            }
+            ativarTecla(elemento, nota, evento);
+        }
+
+        function ativarTecla(elemento, nota, evento) {
+            tocarSom(nota.freq);
+            gerarParticulas(elemento, evento);
+
+            elemento.classList.add('active');
+            setTimeout(() => {
+                elemento.classList.remove('active');
+            }, 120);
+        }
+
+        // --- SISTEMA DE TOCAR SOZINHO (AUTOPLAY) ---
+        function playSong(songKey) {
+            iniciarAudio();
+            stopSong(); // Limpa reproduções anteriores se houver
+
+            isAutoplayActive = true;
+            document.getElementById('playing-status').innerText = `🎵 CONCERTO: ${songKey.toUpperCase()}`;
+            document.getElementById('block-overlay').classList.remove('opacity-0');
+            document.getElementById('btn-stop').classList.remove('hidden');
+            document.getElementById('btn-stop').classList.add('flex');
+
+            // Destacar botão selecionado
+            resetSidebarButtons();
+            const btn = document.getElementById(`btn-${songKey}`);
+            if (btn) btn.classList.add('ring-4', 'ring-[#FFD166]', 'scale-105');
+
+            const melodia = PLAYLIST[songKey];
+            let tempoAcumulado = 0;
+
+            melodia.forEach((passo) => {
+                const playTimeout = setTimeout(() => {
+                    const notaMapeada = NOTAS.find(n => n.key === passo.note);
+                    const el = document.querySelector(`[data-note="${passo.note}"]`);
+                    
+                    if (notaMapeada) {
+                        tocarSom(notaMapeada.freq);
+                        gerarParticulas(el);
+                        
+                        if (el) {
+                            el.classList.add('active', 'autoplay-highlight');
+                            setTimeout(() => {
+                                el.classList.remove('active', 'autoplay-highlight');
+                            }, passo.d - 50);
+                        }
+                    }
+                }, tempoAcumulado);
+
+                currentSongTimeline.push(playTimeout);
+                tempoAcumulado += passo.d;
+            });
+
+            // Finaliza a canção e retorna o piano de forma limpa para uso
+            const finalTimeout = setTimeout(() => {
+                stopSong();
+            }, tempoAcumulado + 1000);
+            currentSongTimeline.push(finalTimeout);
+        }
+
+        function stopSong() {
+            currentSongTimeline.forEach(timer => clearTimeout(timer));
+            currentSongTimeline = [];
+
+            isAutoplayActive = false;
+            
+            document.getElementById('playing-status').innerText = `🎹 MODO LIVRE`;
+            document.getElementById('block-overlay').classList.add('opacity-0');
+            document.getElementById('btn-stop').classList.add('hidden');
+            document.getElementById('btn-stop').classList.remove('flex');
+            
+            resetSidebarButtons();
+
+            // Limpa brilhos remanescentes nas teclas
+            document.querySelectorAll('.key-white, .key-black').forEach((el) => {
+                el.classList.remove('active', 'autoplay-highlight');
+            });
+        }
+
+        function resetSidebarButtons() {
+            ['btn-brilha', 'btn-jingle', 'btn-parabens'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.className = btn.className.replace('ring-4 ring-[#FFD166] scale-105', '');
+            });
+        }
+
+        function shakerTeclado() {
+            const pianoWrap = document.getElementById('teclado');
+            pianoWrap.classList.add('shake-block');
+            setTimeout(() => {
+                pianoWrap.classList.remove('shake-block');
+            }, 300);
+        }
+
+        // --- MAPEAMENTO DO TECLADO FÍSICO DO COMPUTADOR ---
+        window.addEventListener('keydown', (e) => {
+            const teclaPressionada = e.key.toLowerCase();
+            if (isAutoplayActive) {
+                shakerTeclado();
+                return;
+            }
+            if (teclasPressionadasAtualmente.has(teclaPressionada)) return;
+
+            const notaMapeada = NOTAS.find(n => n.key === teclaPressionada);
+            if (notaMapeada) {
+                teclasPressionadasAtualmente.add(teclaPressionada);
+                const el = document.querySelector(`[data-note="${teclaPressionada}"]`);
+                if (el) {
+                    el.classList.add('active');
+                    tocarSom(notaMapeada.freq);
+                    gerarParticulas(el);
+                }
+            }
         });
 
-        // Partículas
-        particles = particles.filter(p => p.life > 0);
-        particles.forEach(p => {
-            p.update();
-            p.draw();
+        window.addEventListener('keyup', (e) => {
+            const teclaPressionada = e.key.toLowerCase();
+            if (teclasPressionadasAtualmente.has(teclaPressionada)) {
+                teclasPressionadasAtualmente.delete(teclaPressionada);
+                const el = document.querySelector(`[data-note="${teclaPressionada}"]`);
+                if (el) {
+                    el.classList.remove('active');
+                }
+            }
         });
 
-        requestAnimationFrame(animate);
-    }
+        // --- SISTEMA DE PARTÍCULAS (Estrelas Brilhantes e Mágicas) ---
+        const canvas = document.getElementById('canvasParticulas');
+        const ctx = canvas.getContext('2d');
+        let listaParticulas = [];
 
-    // Inicialização segura
-    window.onload = () => {
-        resize();
-        animate();
-    };
-</script>
+        function redimensionarCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', redimensionarCanvas);
+        redimensionarCanvas();
+
+        const CORES_MENINO = [
+            '#4EA8DE', // Azul Vivo
+            '#48CAE4', // Turquesa
+            '#90E0EF', // Azul Bebê
+            '#52B788', // Verde Brinquedo
+            '#FFD166'  // Ouro/Estrela
+        ];
+
+        class Particula {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.tamanho = Math.random() * 12 + 6;
+                this.velocidadeX = (Math.random() - 0.5) * 6;
+                this.velocidadeY = -Math.random() * 5 - 2;
+                this.cor = CORES_MENINO[Math.floor(Math.random() * CORES_MENINO.length)];
+                this.opacidade = 1;
+                this.decaimento = Math.random() * 0.02 + 0.015;
+                this.rotacao = Math.random() * Math.PI;
+                this.velocidadeRotacao = (Math.random() - 0.5) * 0.1;
+            }
+
+            atualizar() {
+                this.x += this.velocidadeX;
+                this.y += this.velocidadeY;
+                this.opacidade -= this.decaimento;
+                this.rotacao += this.velocidadeRotacao;
+            }
+
+            desenhar() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotacao);
+                ctx.globalAlpha = this.opacidade;
+                ctx.fillStyle = this.cor;
+
+                // Estrela clássica estilizada de 4 pontas
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    ctx.lineTo(0, -this.tamanho);
+                    ctx.rotate(Math.PI / 4);
+                    ctx.lineTo(0, -this.tamanho / 3);
+                    ctx.rotate(Math.PI / 4);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function gerarParticulas(elemento, evento) {
+            if (!elemento) return;
+            const limites = elemento.getBoundingClientRect();
+            let x = limites.left + limites.width / 2;
+            let y = limites.top;
+
+            if (evento) {
+                if (evento.touches && evento.touches[0]) {
+                    x = evento.touches[0].clientX;
+                    y = evento.touches[0].clientY;
+                } else if (evento.clientX) {
+                    x = evento.clientX;
+                    y = evento.clientY;
+                }
+            }
+
+            for (let i = 0; i < 8; i++) {
+                listaParticulas.push(new Particula(x, y));
+            }
+        }
+
+        function animar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = listaParticulas.length - 1; i >= 0; i--) {
+                const p = listaParticulas[i];
+                p.atualizar();
+                p.desenhar();
+                if (p.opacidade <= 0) {
+                    listaParticulas.splice(i, 1);
+                }
+            }
+            requestAnimationFrame(animar);
+        }
+        animar();
+
+        // Inicializa o teclado na montagem inicial
+        window.onload = () => {
+            criarTeclado();
+        };
+    </script>
 </body>
 </html>
-
