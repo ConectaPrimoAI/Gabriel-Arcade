@@ -1,18 +1,26 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Holograma Orquestral Premium</title>
-    <!-- Three.js para renderização gráfica 3D -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Partículas - Instalação Interativa</title>
+    
+    <!-- Three.js para renderização de partículas 3D de alta performance -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- MediaPipe SDKs oficiais -->
+    <!-- SDKs Oficiais do MediaPipe Hands -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 
     <style>
+        :root {
+            --color-bg: #050505;
+            --color-text: #ffffff;
+            --color-sub: rgba(255, 255, 255, 0.5);
+            --color-border: rgba(255, 255, 255, 0.15);
+            --transition-smooth: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -20,13 +28,16 @@
             user-select: none;
             -webkit-user-select: none;
         }
+
         body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #000000;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--color-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--color-text);
         }
+
         #canvas-container {
             position: absolute;
             top: 0;
@@ -35,6 +46,7 @@
             height: 100vh;
             z-index: 1;
         }
+
         #webcam {
             position: absolute;
             width: 1px;
@@ -42,75 +54,103 @@
             opacity: 0;
             pointer-events: none;
         }
+
+        /* --- INTERFACE MINIMALISTA --- */
         
-        /* Indicador óptico minimalista de detecção da mão */
-        #hand-detector-status {
+        .interactive-ui {
+            opacity: 1;
+            transition: var(--transition-smooth);
+        }
+
+        .interactive-ui.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Cabeçalho Superior */
+        .movement-header {
             position: absolute;
-            top: 24px;
+            top: 40px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 5;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-align: center;
             pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.1);
-            transition: background-color 0.4s ease, box-shadow 0.4s ease;
-        }
-        .status-text {
-            font-size: 8px;
-            font-weight: 300;
-            letter-spacing: 0.35em;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.25);
-            transition: color 0.4s ease;
-        }
-        #hand-detector-status.active .status-dot {
-            background-color: #ffffff;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-        }
-        #hand-detector-status.active .status-text {
-            color: rgba(255, 255, 255, 0.8);
         }
 
-        /* Botão sutil para silenciar/ativar áudio com transição de fade-in */
-        #audio-toggle {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            z-index: 6;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.4);
-            padding: 8px 16px;
+        .movement-title {
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 0.4em;
+            text-transform: uppercase;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .gesture-subtitle {
             font-size: 8px;
+            font-weight: 400;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--color-sub);
+        }
+
+        /* Avisos Temporários de Conexão */
+        #notification-toast {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translate(-50%, -20px);
+            z-index: 7;
+            pointer-events: none;
+            font-size: 9px;
             letter-spacing: 0.2em;
             text-transform: uppercase;
-            border-radius: 20px;
-            cursor: pointer;
+            color: var(--color-text);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 20px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             opacity: 0;
-            pointer-events: none;
-            transition: opacity 1s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.3s ease, color 0.3s ease;
-            font-weight: 300;
-        }
-        #audio-toggle.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        #audio-toggle:hover {
-            border-color: rgba(255, 255, 255, 0.5);
-            color: rgba(255, 255, 255, 0.9);
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Tela de introdução premium */
-        #interactive-overlay {
+        #notification-toast.visible {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+
+        /* Rodapé de Controles */
+        .controls-footer {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+            display: flex;
+            gap: 40px;
+        }
+
+        .minimal-btn {
+            background: none;
+            border: none;
+            color: var(--color-sub);
+            font-size: 9px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: color 0.3s ease;
+        }
+
+        .minimal-btn:hover, .minimal-btn:active {
+            color: var(--color-text);
+        }
+
+        /* --- TELA DE BOAS-VINDAS / TUTORIAL SIMPLIFICADO --- */
+        #welcome-screen {
             position: absolute;
             inset: 0;
             z-index: 10;
@@ -118,298 +158,400 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: #000000;
-            color: #ffffff;
-            transition: opacity 1.5s cubic-bezier(0.25, 1, 0.5, 1);
-            cursor: pointer;
+            background: var(--color-bg);
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            padding: 24px;
         }
-        .intro-title {
-            font-size: 12px;
-            font-weight: 300;
+
+        .welcome-content {
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .welcome-subtitle {
+            font-size: 9px;
             letter-spacing: 0.5em;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 16px;
-            transition: color 0.3s ease;
+            color: var(--color-sub);
+            margin-bottom: 8px;
         }
-        #interactive-overlay:hover .intro-title {
-            color: #ffffff;
-        }
-        .intro-desc {
-            font-size: 9px;
+
+        .welcome-title {
+            font-size: 26px;
             font-weight: 300;
-            letter-spacing: 0.18em;
-            color: rgba(255, 255, 255, 0.4);
-            text-align: center;
-            max-width: 320px;
-            line-height: 2;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--color-text);
+            margin-bottom: 40px;
+        }
+
+        .guide-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            text-align: left;
+            margin-bottom: 48px;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .guide-indicator {
+            font-size: 22px;
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .guide-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .guide-headline {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--color-text);
+            margin-bottom: 2px;
+        }
+
+        .guide-body {
+            font-size: 10px;
+            color: var(--color-sub);
+            line-height: 1.4;
+        }
+
+        .action-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 16px 32px;
+            font-size: 10px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .action-btn:hover {
+            background: var(--color-sub);
+            color: #000000;
         }
     </style>
 </head>
 <body>
 
-    <div id="interactive-overlay" onclick="startExperience()">
-        <div class="intro-title">Iniciar Orquestra</div>
-        <div class="intro-desc">Mova-se diante da câmera ou deslize pela tela para reger as partículas e sons sintéticos.</div>
+    <!-- Onboarding / Tutorial Simplificado -->
+    <div id="welcome-screen">
+        <div class="welcome-content">
+            <span class="welcome-subtitle">Instalação Sensorial</span>
+            <h1 class="welcome-title">Partículas</h1>
+            
+            <div class="guide-steps">
+                <div class="guide-item">
+                    <span class="guide-indicator">✋</span>
+                    <div class="guide-details">
+                        <span class="guide-headline">Mão Aberta</span>
+                        <span class="guide-body">Espalha as partículas e toca sons suaves de brisa.</span>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-indicator">✊</span>
+                    <div class="guide-details">
+                        <span class="guide-headline">Mão Fechada</span>
+                        <span class="guide-body">Atrai e junta as partículas, abafando os sons.</span>
+                    </div>
+                </div>
+                <div class="guide-item">
+                    <span class="guide-indicator">☝️</span>
+                    <div class="guide-details">
+                        <span class="guide-headline">Apontar ou Tocar</span>
+                        <span class="guide-body">Guia o fluxo estelar e toca notas de cristal.</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="startMinimalExperience()">Entrar</button>
+        </div>
     </div>
 
-    <div id="hand-detector-status">
-        <div class="status-dot"></div>
-        <div class="status-text">MÃO CONECTADA</div>
+    <!-- HUD Superior Minimalista -->
+    <div id="hud-top" class="movement-header interactive-ui">
+        <div class="movement-title" id="movement-display-title">Fluxo I. Harmonia</div>
+        <div class="gesture-subtitle" id="gesture-display-subtitle">Interação livre</div>
     </div>
 
-    <button id="audio-toggle" onclick="toggleAudio()">ÁUDIO: ATIVO</button>
+    <!-- Avisos Temporários (Toast) -->
+    <div id="notification-toast">Iniciando...</div>
+
+    <!-- Controles Flutuantes Autohide -->
+    <div class="controls-footer interactive-ui" id="hud-bottom">
+        <button class="minimal-btn" onclick="nextSymphonyMovement()">Próximo Fluxo</button>
+        <button class="minimal-btn" id="sound-toggle-btn" onclick="toggleSymphonySound()">Som: Alto</button>
+    </div>
 
     <div id="canvas-container"></div>
     <video id="webcam" autoplay playsinline></video>
 
     <script>
-        // --- CONFIGURAÇÃO GLOBAL ---
+        // --- PARÂMETROS E ESTADOS GERAIS ---
         let experienceStarted = false;
         let audioEnabled = true;
-        let handScaleX = 16;
-        let handScaleY = 12;
+        let handScaleX = 13;
+        let handScaleY = 9;
 
-        const overlay = document.getElementById('interactive-overlay');
-        const detectorStatus = document.getElementById('hand-detector-status');
-        const audioBtn = document.getElementById('audio-toggle');
+        // Três movimentos físicos das partículas (mantendo-as puramente brancas)
+        let currentMovementIndex = 0;
+        const movementsList = [
+            { name: "Fluxo I. Harmonia", speed: 0.0007, size: 0.04 },
+            { name: "Fluxo II. Gravidade", speed: 0.0014, size: 0.03 },
+            { name: "Fluxo III. Outono", speed: 0.0010, size: 0.035 }
+        ];
 
-        // Referências para transições e rotação (evitando problemas de escopo)
-        let targetRotation = { x: 0, y: 0 };
-        let currentRotation = { x: 0, y: 0 };
+        // Referências DOM
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const hudTop = document.getElementById('hud-top');
+        const hudBottom = document.getElementById('hud-bottom');
+        const soundBtn = document.getElementById('sound-toggle-btn');
+        const movementDisplayTitle = document.getElementById('movement-display-title');
+        const gestureDisplaySubtitle = document.getElementById('gesture-display-subtitle');
+        const toast = document.getElementById('notification-toast');
 
-        // --- SISTEMA DE SÍNTESE CINEMÁTICO (WEB AUDIO API) ---
+        // Autohide inteligente dos controles da interface
+        let uiTimeout = null;
+        function resetUiInactivityTimer() {
+            if (!experienceStarted) return;
+            
+            hudTop.classList.remove('hidden');
+            hudBottom.classList.remove('hidden');
+            
+            clearTimeout(uiTimeout);
+            uiTimeout = setTimeout(() => {
+                hudTop.classList.add('hidden');
+                hudBottom.classList.add('hidden');
+            }, 3000);
+        }
+
+        window.addEventListener('mousemove', resetUiInactivityTimer);
+        window.addEventListener('touchstart', resetUiInactivityTimer);
+
+        // --- ENGENHARIA DE ÁUDIO MAIS ALTO & ACÚSTICO ---
         let audioCtx = null;
-        let mainFilterNode = null;
-        let masterGain = null;
-        
-        // Drone profundo de base
-        let droneOsc1 = null;
-        let droneOsc2 = null;
-        
-        // Sintetizador harmônico para movimentos (Vento espacial)
-        let windOsc1 = null;
-        let windGain = null;
+        let masterVolume = null;
+        let dynamicCompressor = null;
+        let acousticFilter = null;
+        let backgroundDrone1 = null;
+        let backgroundDrone2 = null;
+        let expressiveSynthOsc = null;
+        let expressiveSynthGain = null;
 
-        async function initAudio() {
+        // Escala Pentatônica de Fá Sustenido Maior (agradável e harmônica)
+        const pureScale = [185.00, 207.65, 233.08, 277.18, 311.13, 369.99, 415.30, 466.16];
+
+        async function initAcousticAudio() {
             try {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Desbloqueia explicitamente o áudio para iOS/Safari se estiver suspenso
                 if (audioCtx.state === 'suspended') {
                     await audioCtx.resume();
                 }
 
-                // Controle de ganho mestre
-                masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                // Volume mestre ampliado significativamente (de 0.18 para 0.45)
+                masterVolume = audioCtx.createGain();
+                masterVolume.gain.setValueAtTime(0.45, audioCtx.currentTime);
 
-                // Filtro passa-baixas dinâmico principal (controlado pelo gesto FIST)
-                mainFilterNode = audioCtx.createBiquadFilter();
-                mainFilterNode.type = 'lowpass';
-                mainFilterNode.frequency.setValueAtTime(2000, audioCtx.currentTime);
-                mainFilterNode.Q.setValueAtTime(1.0, audioCtx.currentTime);
+                // Compressor dinâmico profissional para evitar distorção e encorpar o áudio alto
+                dynamicCompressor = audioCtx.createDynamicsCompressor();
+                dynamicCompressor.threshold.setValueAtTime(-12, audioCtx.currentTime);
+                dynamicCompressor.knee.setValueAtTime(30, audioCtx.currentTime);
+                dynamicCompressor.ratio.setValueAtTime(4, audioCtx.currentTime);
+                dynamicCompressor.attack.setValueAtTime(0.05, audioCtx.currentTime);
+                dynamicCompressor.release.setValueAtTime(0.12, audioCtx.currentTime);
 
-                // Conexões básicas
-                mainFilterNode.connect(masterGain);
-                masterGain.connect(audioCtx.destination);
+                // Filtro passa-baixa suave para frequências limpas
+                acousticFilter = audioCtx.createBiquadFilter();
+                acousticFilter.type = 'lowpass';
+                acousticFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                acousticFilter.Q.setValueAtTime(0.8, audioCtx.currentTime);
 
-                // Geração de Drone Atmosférico (Notas harmônicas graves)
-                droneOsc1 = audioCtx.createOscillator();
-                droneOsc2 = audioCtx.createOscillator();
+                acousticFilter.connect(dynamicCompressor);
+                dynamicCompressor.connect(masterVolume);
+                masterVolume.connect(audioCtx.destination);
+
+                // Drones de fundo senoidais puros mais encorpados
+                backgroundDrone1 = audioCtx.createOscillator();
+                backgroundDrone2 = audioCtx.createOscillator();
                 const droneGain = audioCtx.createGain();
 
-                droneOsc1.type = 'sine';
-                droneOsc1.frequency.setValueAtTime(55, audioCtx.currentTime); // A1
-                droneOsc2.type = 'triangle';
-                droneOsc2.frequency.setValueAtTime(110.5, audioCtx.currentTime); // A2 levemente desafinado
-
-                droneGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-
-                droneOsc1.connect(droneGain);
-                droneOsc2.connect(droneGain);
-                droneGain.connect(mainFilterNode);
-
-                droneOsc1.start();
-                droneOsc2.start();
-
-                // Sintetizador do vento dinâmico (segue o eixo Y da mão)
-                windOsc1 = audioCtx.createOscillator();
-                windGain = audioCtx.createGain();
-
-                windOsc1.type = 'sine';
-                windOsc1.frequency.setValueAtTime(220, audioCtx.currentTime);
-                windGain.gain.setValueAtTime(0, audioCtx.currentTime); // Inicia silencioso
-
-                windOsc1.connect(windGain);
-                windGain.connect(mainFilterNode);
-                windOsc1.start();
-
-                // Exibe o controle de áudio com fade suave por classe CSS
-                audioBtn.classList.add('visible');
-            } catch (e) {
-                console.warn("Web Audio API não pôde ser iniciada:", e);
-            }
-        }
-
-        // Modulação do som baseado nas interações físicas do maestro
-        function updateAudioSynthesis(gesture, handY, velocityFactor) {
-            if (!audioCtx || !audioEnabled) return;
-
-            const now = audioCtx.currentTime;
-
-            // Filtro Passa-Baixas dinâmico conforme a compressão do punho
-            if (gesture === 'FIST') {
-                mainFilterNode.frequency.setTargetAtTime(120, now, 0.2);
-            } else if (gesture === 'OPEN_HAND') {
-                mainFilterNode.frequency.setTargetAtTime(3500, now, 0.3);
-            } else {
-                mainFilterNode.frequency.setTargetAtTime(1800, now, 0.4);
-            }
-
-            // Vento dinâmico reativo à altura Y da mão e sua velocidade geral
-            if (handActive) {
-                const targetFreq = 220 + (handY + 6) * 45; // Mapeia altura em frequência
-                const targetVolume = Math.min(0.015 + velocityFactor * 0.02, 0.04);
+                backgroundDrone1.type = 'sine';
+                backgroundDrone1.frequency.setValueAtTime(92.50, audioCtx.currentTime); // F#2
                 
-                windOsc1.frequency.setTargetAtTime(targetFreq, now, 0.15);
-                windGain.gain.setTargetAtTime(targetVolume, now, 0.1);
-            } else {
-                windGain.gain.setTargetAtTime(0, now, 0.4);
+                backgroundDrone2.type = 'sine';
+                backgroundDrone2.frequency.setValueAtTime(185.20, audioCtx.currentTime); // F#3
+
+                droneGain.gain.setValueAtTime(0.08, audioCtx.currentTime); // Drone mais presente
+
+                backgroundDrone1.connect(droneGain);
+                backgroundDrone2.connect(droneGain);
+                droneGain.connect(acousticFilter);
+
+                backgroundDrone1.start();
+                backgroundDrone2.start();
+
+                // Sintetizador interativo com ganho otimizado
+                expressiveSynthOsc = audioCtx.createOscillator();
+                expressiveSynthGain = audioCtx.createGain();
+
+                expressiveSynthOsc.type = 'sine';
+                expressiveSynthOsc.frequency.setValueAtTime(277.18, audioCtx.currentTime);
+                expressiveSynthGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+                expressiveSynthOsc.connect(expressiveSynthGain);
+                expressiveSynthGain.connect(acousticFilter);
+                expressiveSynthOsc.start();
+
+                triggerSoftPluck(277.18, 0.08, 1.8);
+            } catch (err) {
+                console.warn("Falha ao inicializar o áudio:", err);
             }
         }
 
-        // Disparo de gongo harmônico de cristal cristalino na supernova (✊ -> ✋)
-        function playSupernovaChime() {
+        function triggerSoftPluck(freq, vol = 0.08, duration = 2.2) {
             if (!audioCtx || !audioEnabled) return;
-
             const now = audioCtx.currentTime;
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            
+            gain.gain.setValueAtTime(vol, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            
+            osc.connect(gain);
+            gain.connect(acousticFilter);
+            
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+        }
 
-            // Criação de acorde metálico sutil
-            const frequencies = [220, 330, 440, 660, 880];
-            frequencies.forEach((freq, idx) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, now);
-
-                const startVol = 0.02 / (idx + 1);
-                gain.gain.setValueAtTime(startVol, now);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.5);
-
-                osc.connect(gain);
-                gain.connect(mainFilterNode);
-
-                osc.start(now);
-                osc.stop(now + 3.8);
+        function playSymphonySupernova() {
+            if (!audioCtx || !audioEnabled) return;
+            // Acorde estelar cristalino e encorpado
+            const chord = [277.18, 369.99, 466.16, 554.37];
+            chord.forEach((freq, i) => {
+                setTimeout(() => {
+                    triggerSoftPluck(freq, 0.05, 2.5);
+                }, i * 140);
             });
         }
 
-        function toggleAudio() {
+        function updateAudioModulations(gesture, handY, velocity) {
+            if (!audioCtx || !audioEnabled) return;
+            const now = audioCtx.currentTime;
+
+            // Filtro reativo aos gestos
+            if (gesture === 'FIST') {
+                acousticFilter.frequency.setTargetAtTime(150, now, 0.25); // Som aconchegante e fechado
+            } else if (gesture === 'OPEN_HAND') {
+                acousticFilter.frequency.setTargetAtTime(1400, now, 0.3); // Amplo e límpido
+            } else {
+                acousticFilter.frequency.setTargetAtTime(650, now, 0.35);
+            }
+
+            if (handActive || isTouching) {
+                const normY = Math.max(0, Math.min(1, (handY + 4.5) / 9));
+                const targetFreq = 185.00 + (normY * 260);
+                const targetVol = Math.min(0.02 + velocity * 0.06, 0.07); // Som expressivo mais presente
+
+                expressiveSynthOsc.frequency.setTargetAtTime(targetFreq, now, 0.15);
+                expressiveSynthGain.gain.setTargetAtTime(targetVol, now, 0.1);
+            } else {
+                expressiveSynthGain.gain.setTargetAtTime(0, now, 0.25);
+            }
+        }
+
+        function toggleSymphonySound() {
             audioEnabled = !audioEnabled;
             if (audioEnabled) {
-                masterGain.gain.setTargetAtTime(0.12, audioCtx.currentTime, 0.1);
-                audioBtn.textContent = "ÁUDIO: ATIVO";
-                audioBtn.style.borderColor = "rgba(255, 255, 255, 0.15)";
+                masterVolume.gain.setTargetAtTime(0.45, audioCtx.currentTime, 0.1);
+                soundBtn.innerText = "Som: Alto";
             } else {
-                masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                audioBtn.textContent = "ÁUDIO: MUTADO";
-                audioBtn.style.borderColor = "rgba(255, 255, 255, 0.05)";
+                masterVolume.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                soundBtn.innerText = "Som: Muto";
             }
         }
 
-        function startExperience() {
-            if (experienceStarted) return;
-            experienceStarted = true;
-            overlay.style.opacity = '0';
-            
-            // Aparecimento sutil do HUD detector
-            detectorStatus.style.opacity = '1';
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 1500);
 
-            initAudio();
-            initGestureSensor();
-        }
-
-        // --- SISTEMA DINÂMICO DE ESCALA RESPONSIVA ---
-        function updateMultipliers() {
-            const aspect = window.innerWidth / window.innerHeight;
-            if (aspect < 1) {
-                handScaleX = aspect * 11;
-                handScaleY = 11;
-            } else {
-                handScaleX = 14;
-                handScaleY = 10;
-            }
-        }
-        window.addEventListener('resize', updateMultipliers);
-        updateMultipliers();
-
-
-        // --- ENGINE GRÁFICA 3D (THREE.JS) ---
+        // --- ENGINE GRÁFICA DE PARTÍCULAS EM BRANCO PURO (THREE.JS) ---
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x000000, 0.004);
+        scene.fog = new THREE.FogExp2(0x050505, 0.008);
 
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 8;
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 7.5;
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         container.appendChild(renderer.domElement);
 
-        // Luzes neutras e esteticamente suaves
-        const ambientLight = new THREE.AmbientLight(0x0b0b0b);
+        const ambientLight = new THREE.AmbientLight(0x222222);
         scene.add(ambientLight);
 
-        const light1 = new THREE.PointLight(0xffffff, 1.4, 40);
-        light1.position.set(5, 5, 5);
-        scene.add(light1);
+        const spotLight = new THREE.PointLight(0xffffff, 1.5, 25);
+        spotLight.position.set(0, 4, 3);
+        scene.add(spotLight);
 
-        const light2 = new THREE.PointLight(0xffffff, 0.6, 40);
-        light2.position.set(-5, -5, 5);
-        scene.add(light2);
-
-        // Textura da partícula procedural
-        function createParticleTexture() {
+        // Textura suave circular difusa limpa
+        function createAcousticParticleTexture() {
             const canvas = document.createElement('canvas');
-            canvas.width = 32;
-            canvas.height = 32;
+            canvas.width = 16;
+            canvas.height = 16;
             const ctx = canvas.getContext('2d');
-            const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-            grad.addColorStop(0, 'rgba(255,255,255,1)');
-            grad.addColorStop(0.2, 'rgba(255,255,255,0.7)');
-            grad.addColorStop(0.6, 'rgba(255,255,255,0.1)');
+            const grad = ctx.createRadialGradient(8, 8, 0, 8, 8, 8);
+            grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+            grad.addColorStop(0.3, 'rgba(255,255,255,0.4)');
+            grad.addColorStop(0.8, 'rgba(255,255,255,0.06)');
             grad.addColorStop(1, 'rgba(255,255,255,0)');
             ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 32, 32);
+            ctx.fillRect(0, 0, 16, 16);
             const tex = new THREE.Texture(canvas);
             tex.needsUpdate = true;
             return tex;
         }
-        const particleTexture = createParticleTexture();
+        const cleanTexture = createAcousticParticleTexture();
 
-        // --- ALOCAÇÃO DE FÍSICA GLOBAL (EVITA ACÚMULO DE LIXO DE MEMÓRIA) ---
-        const particleCount = 12000;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const particleCount = isMobile ? 3000 : 5500;
+
         const particleGeometry = new THREE.BufferGeometry();
-        
         const positions = new Float32Array(particleCount * 3);
         const originalPositions = new Float32Array(particleCount * 3);
         const velocities = new Float32Array(particleCount * 3);
+        
+        // Todas as partículas configuradas com o valor cromático 1.0 (Branco Puro #ffffff)
         const colors = new Float32Array(particleCount * 3);
-        const originalColors = new Float32Array(particleCount * 3);
+        colors.fill(1.0); 
 
-        // Fibonacci esférico
         for (let i = 0; i < particleCount * 3; i += 3) {
             const idx = i / 3;
             const phi = Math.acos(1 - 2 * (idx + 0.5) / particleCount);
             const theta = Math.PI * (1 + Math.sqrt(5)) * idx;
-            const r = 2.4 + (Math.random() - 0.5) * 0.12;
+            const r = 2.0 + (Math.random() - 0.5) * 0.15;
 
             const x = r * Math.sin(phi) * Math.cos(theta);
             const y = r * Math.sin(phi) * Math.sin(theta);
@@ -426,27 +568,18 @@
             velocities[i] = 0;
             velocities[i+1] = 0;
             velocities[i+2] = 0;
-
-            const shade = 0.85 + Math.random() * 0.15;
-            colors[i] = shade;
-            colors[i+1] = shade;
-            colors[i+2] = shade;
-
-            originalColors[i] = shade;
-            originalColors[i+1] = shade;
-            originalColors[i+2] = shade;
         }
 
         particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         particleGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
         const particleMaterial = new THREE.PointsMaterial({
-            size: 0.05,
-            map: particleTexture,
+            size: isMobile ? 0.07 : 0.045,
+            map: cleanTexture,
             vertexColors: true,
             transparent: true,
             opacity: 0.8,
-            blending: THREE.AdditiveBlending,
+            blending: THREE.AdditiveBlending, // Mistura de luz branca para aumentar brilho natural nos clusters
             depthWrite: false
         });
 
@@ -454,123 +587,163 @@
         scene.add(hologramPoints);
 
 
-        // --- RASTREAMENTO ÓPTICO E AMORTECEDOR DE PERDA DE SINAL ---
+        // --- RASTREAMENTO ÓPTICO SUAVE E RESILIENTE ---
         let currentGesture = 'NONE';
         let previousGesture = 'NONE';
-        let activeMode = 'NORMAL'; 
         
         let handPos = new THREE.Vector3(0, 0, 0);
         let targetHandPos = new THREE.Vector3(0, 0, 0);
         let handActive = false;
 
-        // Amortecedor/Tempo de carência ao perder o rastreamento da mão
-        let trackingGraceCounter = 0;
-        const MAX_GRACE_FRAMES = 24; // Cerca de 400ms de transição suave em caso de falha de leitura
+        let graceFrameCount = 0;
+        const GRACE_MAX = 15;
 
-        const webcam = document.getElementById('webcam');
+        const gestureListHistory = [];
+        const HIST_LEN = 5;
 
-        function initGestureSensor() {
+        function getSmoothedGesture(raw) {
+            gestureListHistory.push(raw);
+            if (gestureListHistory.length > HIST_LEN) {
+                gestureListHistory.shift();
+            }
+            const counts = {};
+            let maxCount = 0;
+            let finalGesture = 'NONE';
+            for (const g of gestureListHistory) {
+                counts[g] = (counts[g] || 0) + 1;
+                if (counts[g] > maxCount) {
+                    maxCount = counts[g];
+                    finalGesture = g;
+                }
+            }
+            return finalGesture;
+        }
+
+        function updateSubtitleDisplay(gName) {
+            let label = "Interação livre";
+            if (gName === 'FIST') label = "Material condensado";
+            if (gName === 'OPEN_HAND') label = "Expansão estelar";
+            if (gName === 'POINTING') label = "Fluxo magnético";
+            gestureDisplaySubtitle.innerText = label;
+        }
+
+        function showNotification(message) {
+            toast.innerText = message;
+            toast.classList.add('visible');
+            setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        const webcamElement = document.getElementById('webcam');
+
+        function initGestureTracking() {
+            // Permissão prévia nativa robusta antes de carregar o MediaPipe
+            navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } })
+                .then((stream) => {
+                    webcamElement.srcObject = stream;
+                    setupMediaPipeHands();
+                })
+                .catch(() => {
+                    console.log("Câmera indisponível ou permissão negada. Toque ativado.");
+                    showNotification("Interação por toque ativa");
+                });
+        }
+
+        function setupMediaPipeHands() {
             const hands = new Hands({
                 locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
             });
 
             hands.setOptions({
                 maxNumHands: 1,
-                modelComplexity: 1,
-                minDetectionConfidence: 0.65,
-                minTrackingConfidence: 0.65
+                modelComplexity: 0, // Máxima performance móvel
+                minDetectionConfidence: 0.55,
+                minTrackingConfidence: 0.55
             });
 
-            hands.onResults(onHandResults);
+            hands.onResults(onHandResultCallback);
 
-            const cameraHelper = new Camera(webcam, {
+            const cameraHelper = new Camera(webcamElement, {
                 onFrame: async () => {
                     if (experienceStarted) {
-                        await hands.send({ image: webcam });
+                        try {
+                            await hands.send({ image: webcamElement });
+                        } catch (e) {
+                            // Erros de transmissão silenciados
+                        }
                     }
                 },
-                width: 640,
-                height: 480
+                width: isMobile ? 240 : 320,
+                height: isMobile ? 180 : 240
             });
             
-            cameraHelper.start().catch(() => {
-                // Câmera inativa, usando backup manual por toque
-            });
+            cameraHelper.start()
+                .then(() => showNotification("Câmera conectada"))
+                .catch(() => showNotification("Interação por toque ativa"));
         }
 
-        function onHandResults(results) {
+        function onHandResultCallback(results) {
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const landmarks = results.multiHandLandmarks[0];
+                const marks = results.multiHandLandmarks[0];
+                graceFrameCount = GRACE_MAX;
 
-                trackingGraceCounter = MAX_GRACE_FRAMES; // Reinicia o amortecedor de sinal
+                targetHandPos.x = (1 - marks[9].x - 0.5) * handScaleX;
+                targetHandPos.y = -(marks[9].y - 0.5) * handScaleY;
+                targetHandPos.z = -marks[9].z * 8;
 
-                targetHandPos.x = (1 - landmarks[9].x - 0.5) * handScaleX;
-                targetHandPos.y = -(landmarks[9].y - 0.5) * handScaleY;
-                targetHandPos.z = -landmarks[9].z * 10;
-                
                 if (!handActive) {
                     handActive = true;
-                    detectorStatus.classList.add('active');
                 }
 
-                const distance = (p1, p2) => Math.hypot(
-                    landmarks[p1].x - landmarks[p2].x,
-                    landmarks[p1].y - landmarks[p2].y,
-                    landmarks[p1].z - landmarks[p2].z
-                );
+                const getLengthRatio = (tip, knuckle) => {
+                    const wrist = marks[0];
+                    const distTip = Math.hypot(marks[tip].x - wrist.x, marks[tip].y - wrist.y);
+                    const distKnuckle = Math.hypot(marks[knuckle].x - wrist.x, marks[knuckle].y - wrist.y);
+                    return distTip / (distKnuckle + 0.001);
+                };
 
-                const isIndexExtended = landmarks[8].y < landmarks[6].y;
-                const isMiddleExtended = landmarks[12].y < landmarks[10].y;
-                const isRingExtended = landmarks[16].y < landmarks[14].y;
-                const isPinkyExtended = landmarks[20].y < landmarks[18].y;
+                const isIndex = getLengthRatio(8, 5) > 1.25;
+                const isMiddle = getLengthRatio(12, 9) > 1.25;
+                const isRing = getLengthRatio(16, 13) > 1.25;
+                const isPinky = getLengthRatio(20, 17) > 1.25;
 
-                let detected = 'NONE';
+                let rawDetected = 'NONE';
 
-                if (isIndexExtended && isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-                    detected = 'PEACE'; 
-                } else if (landmarks[4].y < landmarks[3].y && landmarks[4].y < landmarks[5].y && !isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-                    detected = 'THUMB_UP'; 
-                } else if (!isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-                    detected = 'FIST'; 
-                } else if (isIndexExtended && isMiddleExtended && isRingExtended && isPinkyExtended) {
-                    detected = 'OPEN_HAND'; 
-                } else if (isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
-                    detected = 'POINTING'; 
+                if (!isIndex && !isMiddle && !isRing && !isPinky) {
+                    rawDetected = 'FIST';
+                } else if (isIndex && isMiddle && isRing && isPinky) {
+                    rawDetected = 'OPEN_HAND';
+                } else if (isIndex && !isMiddle && !isRing && !isPinky) {
+                    rawDetected = 'POINTING';
                 }
 
-                // Orquestração da Supernova (✊ -> ✋)
-                if (previousGesture === 'FIST' && detected === 'OPEN_HAND') {
-                    triggerSupernova();
-                    playSupernovaChime();
+                const smoothed = getSmoothedGesture(rawDetected);
+
+                // Gesto Rápido de Supernova (✊ -> ✋)
+                if (previousGesture === 'FIST' && smoothed === 'OPEN_HAND') {
+                    triggerCelestialExplosion();
+                    playSymphonySupernova();
                 }
 
-                if (detected === 'PEACE' && activeMode !== 'EXPLORER') {
-                    activeMode = 'EXPLORER';
-                } else if (detected === 'THUMB_UP' && activeMode !== 'NORMAL') {
-                    activeMode = 'NORMAL';
-                    resetOrientation();
+                if (smoothed !== 'NONE') {
+                    previousGesture = smoothed;
+                    updateSubtitleDisplay(smoothed);
                 }
-
-                if (detected !== 'NONE') {
-                    previousGesture = detected;
-                }
-                currentGesture = detected;
+                currentGesture = smoothed;
             } else {
-                // Aplica o amortecedor antes de resetar o sinal
-                if (trackingGraceCounter > 0) {
-                    trackingGraceCounter--;
+                if (graceFrameCount > 0) {
+                    graceFrameCount--;
                 } else {
-                    if (handActive) {
-                        handActive = false;
-                        detectorStatus.classList.remove('active');
-                    }
+                    handActive = false;
                     currentGesture = 'NONE';
+                    updateSubtitleDisplay('NONE');
                 }
             }
         }
 
-        // --- EXPLOSÃO MATEMATICAMENTE OTIMIZADA (SUPERNOVA) ---
-        function triggerSupernova() {
+        // --- SISTEMA FÍSICO DE EXPULSÃO DE PARTÍCULAS ---
+        function triggerCelestialExplosion() {
             const pos = hologramPoints.geometry.attributes.position.array;
             
             for (let i = 0; i < particleCount * 3; i += 3) {
@@ -578,11 +751,9 @@
                 const y = pos[i+1];
                 const z = pos[i+2];
 
-                const distSq = x*x + y*y + z*z + 0.002;
+                const distSq = x*x + y*y + z*z + 0.01;
                 const invDist = 1 / Math.sqrt(distSq);
-                
-                // Força radial aleatória para maior distribuição das partículas
-                const force = (2.4 + Math.random() * 1.8) * invDist;
+                const force = (2.2 + Math.random() * 1.6) * invDist;
                 
                 velocities[i] += x * invDist * force;
                 velocities[i+1] += y * invDist * force;
@@ -590,19 +761,16 @@
             }
         }
 
-        function resetOrientation() {
-            targetRotation.x = 0;
-            targetRotation.y = 0;
-        }
 
-
-        // --- INTERATIVIDADE DE TOQUE (FALLBACK SEAMLESS) ---
+        // --- MANIPULAÇÃO POR TOQUE / CLIQUE (FALLBACK) ---
         let isTouching = false;
 
-        window.addEventListener('mousedown', () => {
-            if (!handActive && experienceStarted) {
+        window.addEventListener('mousedown', (e) => {
+            if (!handActive && experienceStarted && e.target.tagName !== 'BUTTON') {
                 isTouching = true;
                 currentGesture = 'POINTING';
+                updateSubtitleDisplay('POINTING');
+                triggerSoftPluck(277.18, 0.06, 1.5);
             }
         });
 
@@ -610,55 +778,58 @@
             if (!handActive && experienceStarted) {
                 if (currentGesture === 'FIST') {
                     currentGesture = 'OPEN_HAND';
-                    triggerSupernova();
-                    playSupernovaChime();
-                    setTimeout(() => { currentGesture = 'NONE'; }, 200);
+                    updateSubtitleDisplay('OPEN_HAND');
+                    triggerCelestialExplosion();
+                    playSymphonySupernova();
+                    setTimeout(() => { currentGesture = 'NONE'; updateSubtitleDisplay('NONE'); }, 300);
                 } else {
                     currentGesture = 'NONE';
+                    updateSubtitleDisplay('NONE');
                 }
                 isTouching = false;
             }
         });
 
         window.addEventListener('touchstart', (e) => {
-            if (overlay.style.display === 'none') {
+            if (welcomeScreen.style.display === 'none' && e.target.tagName !== 'BUTTON') {
                 isTouching = true;
-                if (e.touches.length === 2) {
-                    activeMode = activeMode === 'NORMAL' ? 'EXPLORER' : 'NORMAL';
-                    if (activeMode === 'NORMAL') resetOrientation();
-                } else {
-                    currentGesture = 'POINTING';
-                    updateTouchCoords(e);
-                }
+                currentGesture = 'POINTING';
+                updateSubtitleDisplay('POINTING');
+                updateTouchPositions(e);
+                triggerSoftPluck(277.18, 0.05, 1.5);
             }
         });
 
         window.addEventListener('touchmove', (e) => {
             if (isTouching) {
-                updateTouchCoords(e);
+                updateTouchPositions(e);
             }
         });
 
         window.addEventListener('touchend', () => {
             if (isTouching && !handActive) {
                 currentGesture = 'NONE';
+                updateSubtitleDisplay('NONE');
                 isTouching = false;
             }
         });
 
-        window.addEventListener('dblclick', () => {
-            if (!handActive && experienceStarted) {
+        // Toque duplo rápido simula o pulso gravitacional de forma simples
+        window.addEventListener('dblclick', (e) => {
+            if (!handActive && experienceStarted && e.target.tagName !== 'BUTTON') {
                 currentGesture = 'FIST';
+                updateSubtitleDisplay('FIST');
                 setTimeout(() => {
                     currentGesture = 'OPEN_HAND';
-                    triggerSupernova();
-                    playSupernovaChime();
-                    setTimeout(() => { currentGesture = 'NONE'; }, 300);
-                }, 400);
+                    updateSubtitleDisplay('OPEN_HAND');
+                    triggerCelestialExplosion();
+                    playSymphonySupernova();
+                    setTimeout(() => { currentGesture = 'NONE'; updateSubtitleDisplay('NONE'); }, 300);
+                }, 350);
             }
         });
 
-        function updateTouchCoords(e) {
+        function updateTouchPositions(e) {
             if (e.touches.length > 0) {
                 targetHandPos.x = (e.touches[0].clientX / window.innerWidth - 0.5) * handScaleX;
                 targetHandPos.y = -(e.touches[0].clientY / window.innerHeight - 0.5) * handScaleY;
@@ -666,79 +837,86 @@
         }
 
         window.addEventListener('mousemove', (e) => {
-            if (!handActive) {
+            if (!handActive && experienceStarted) {
                 targetHandPos.x = (e.clientX / window.innerWidth - 0.5) * handScaleX;
                 targetHandPos.y = -(e.clientY / window.innerHeight - 0.5) * handScaleY;
             }
         });
 
 
-        // --- LAÇO DE COMPILAÇÃO E ATUALIZAÇÃO FÍSICA ---
+        // --- CONTROLE DE MUDANÇA DOS MOVIMENTOS SINFÔNICOS ---
+        function nextSymphonyMovement() {
+            currentMovementIndex = (currentMovementIndex + 1) % movementsList.length;
+            applyMovementDetails();
+        }
+
+        function applyMovementDetails() {
+            const m = movementsList[currentMovementIndex];
+            movementDisplayTitle.innerText = m.name;
+            triggerSoftPluck(pureScale[currentMovementIndex % pureScale.length] * 2, 0.08, 2.2);
+        }
+
+        function startMinimalExperience() {
+            if (experienceStarted) return;
+            experienceStarted = true;
+
+            welcomeScreen.style.opacity = '0';
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                resetUiInactivityTimer();
+            }, 1200);
+
+            initAcousticAudio();
+            initGestureTracking();
+        }
+
+
+        // --- LOOP DE ATUALIZAÇÃO FÍSICA E FRAME LOOP ---
         const clock = new THREE.Clock();
         
-        // Declarações estáticas globais de processamento (Zero GC Allocation)
         let dt = 0;
         let elapsed = 0;
         let pArray = null;
         let vArray = null;
-        let cArray = null;
         let prevX = 0, prevY = 0;
         let handVelocityFactor = 0;
 
         function animate() {
             requestAnimationFrame(animate);
 
-            dt = Math.min(clock.getDelta(), 0.1); 
+            dt = Math.min(clock.getDelta(), 0.06); 
             elapsed = clock.getElapsedTime();
             
-            // Medidor de velocidade e inércia do maestro para a síntese sonora
             if (handActive) {
                 handVelocityFactor = Math.hypot(handPos.x - prevX, handPos.y - prevY);
                 prevX = handPos.x;
                 prevY = handPos.y;
             } else {
-                handVelocityFactor *= 0.95;
+                handVelocityFactor *= 0.94;
             }
 
-            // Interpolação de inércia fluida
             handPos.lerp(targetHandPos, 0.08);
 
-            // Vinculação de referências otimizadas
             pArray = hologramPoints.geometry.attributes.position.array;
             vArray = velocities;
-            cArray = hologramPoints.geometry.attributes.color.array;
 
-            // Envio das informações físicas para a síntese Web Audio
-            updateAudioSynthesis(currentGesture, handPos.y, handVelocityFactor);
+            updateAudioModulations(currentGesture, handPos.y, handVelocityFactor);
 
-            // Modos de orientação de conjunto
-            if (activeMode === 'EXPLORER') {
-                targetRotation.y = handPos.x * 0.35;
-                targetRotation.x = -handPos.y * 0.35;
-                
-                currentRotation.x = THREE.MathUtils.lerp(currentRotation.x, targetRotation.x, 0.06);
-                currentRotation.y = THREE.MathUtils.lerp(currentRotation.y, targetRotation.y, 0.06);
+            // Rotação sutil do holograma branco
+            const m = movementsList[currentMovementIndex];
+            hologramPoints.rotation.x = THREE.MathUtils.lerp(hologramPoints.rotation.x, 0, 0.05);
+            hologramPoints.rotation.y += m.speed;
 
-                hologramPoints.rotation.x = currentRotation.x;
-                hologramPoints.rotation.y = currentRotation.y;
-            } else {
-                hologramPoints.rotation.x = THREE.MathUtils.lerp(hologramPoints.rotation.x, 0, 0.05);
-                hologramPoints.rotation.y += 0.0015;
-            }
-
-            // Variação orgânica do brilho e tamanho com base na compressão ou expansão
+            // Escala de tamanho das partículas de acordo com os gestos ativos
             if (currentGesture === 'FIST') {
-                light1.intensity = THREE.MathUtils.lerp(light1.intensity, 3.8, 0.1);
-                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, 0.038, 0.1);
+                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, m.size * 0.5, 0.12);
             } else if (currentGesture === 'OPEN_HAND') {
-                light1.intensity = THREE.MathUtils.lerp(light1.intensity, 1.8, 0.1);
-                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, 0.055, 0.1);
+                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, m.size * 1.5, 0.12);
             } else {
-                light1.intensity = THREE.MathUtils.lerp(light1.intensity, 1.4, 0.1);
-                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, 0.05, 0.1);
+                particleMaterial.size = THREE.MathUtils.lerp(particleMaterial.size, m.size, 0.12);
             }
 
-            // Loop de cálculo físico e modificador cromático dinâmico (CPU extremamente otimizada)
+            // Simulação física suave de massa gravitacional
             for (let i = 0; i < particleCount * 3; i += 3) {
                 const xOrig = originalPositions[i];
                 const yOrig = originalPositions[i+1];
@@ -752,48 +930,44 @@
                 let vy = vArray[i+1];
                 let vz = vArray[i+2];
 
-                // Força de atração original elástica
-                const springK = 0.82; 
+                const springK = 0.8; 
                 let ax = (xOrig - x) * springK;
                 let ay = (yOrig - y) * springK;
                 let az = (zOrig - z) * springK;
 
                 if (currentGesture === 'FIST') {
-                    // Colapso gravitacional com micro-vibrações
-                    const pulse = 0.11 + Math.sin(elapsed * 15.0) * 0.015;
+                    const pulse = 0.06 + Math.sin(elapsed * 10.0) * 0.01;
                     ax += (xOrig * pulse - x) * 2.8;
                     ay += (yOrig * pulse - y) * 2.8;
                     az += (zOrig * pulse - z) * 2.8;
 
                 } else if (currentGesture === 'POINTING' || isTouching) {
-                    // Atração centrípeta forte ao ponto
                     const dx = handPos.x - x;
                     const dy = handPos.y - y;
                     const dz = handPos.z - z;
-                    const dSq = dx*dx + dy*dy + dz*dz + 0.1;
+                    const dSq = dx*dx + dy*dy + dz*dz + 0.15;
                     const dist = Math.sqrt(dSq);
 
-                    const pull = Math.min(2.2 / dSq, 2.0);
+                    const pull = Math.min(1.8 / dSq, 1.6);
                     ax += (dx / dist) * pull;
                     ay += (dy / dist) * pull;
                     az += (dz / dist) * pull;
 
                 } else if (currentGesture === 'OPEN_HAND') {
-                    // Ondulação harmônica
-                    const wavePhase = (xOrig * 1.5 + yOrig * 1.5) + elapsed * 3.2;
-                    const waveZ = Math.sin(wavePhase) * 0.5;
-                    az += (waveZ - z) * 1.3;
+                    const wavePhase = (xOrig * 1.2 + yOrig * 1.2) + elapsed * 2.2;
+                    const waveZ = Math.sin(wavePhase) * 0.35;
+                    az += (waveZ - z) * 1.0;
                     
-                    const expand = 1.4;
-                    ax += (xOrig * expand - x) * 0.6;
-                    ay += (yOrig * expand - y) * 0.6;
+                    const expand = 1.35;
+                    ax += (xOrig * expand - x) * 0.5;
+                    ay += (yOrig * expand - y) * 0.5;
                 }
 
                 vx += ax * dt;
                 vy += ay * dt;
                 vz += az * dt;
 
-                const drag = 0.925;
+                const drag = 0.92;
                 vx *= drag;
                 vy *= drag;
                 vz *= drag;
@@ -805,30 +979,9 @@
                 vArray[i] = vx;
                 vArray[i+1] = vy;
                 vArray[i+2] = vz;
-
-                // --- SISTEMA DE COLORAÇÃO DINÂMICA POR VELOCIDADE (COM CLAMPING DE SEGURANÇA) ---
-                const speedSq = vx*vx + vy*vy + vz*vz;
-                const origRed = originalColors[i];
-                const origGreen = originalColors[i+1];
-                const origBlue = originalColors[i+2];
-
-                if (speedSq > 1.5) {
-                    // Partículas rápidas ganham luminescência azul-ciano etérea
-                    const glowFactor = Math.min((speedSq - 1.5) * 0.15, 0.9);
-                    cArray[i] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i], origRed * 0.4, glowFactor)));
-                    cArray[i+1] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i+1], origGreen * 0.85, glowFactor)));
-                    cArray[i+2] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i+2], 1.0, glowFactor)));
-                } else {
-                    // Retorno suave às cores originais neutras (lerp lento de amortecimento)
-                    cArray[i] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i], origRed, 0.05)));
-                    cArray[i+1] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i+1], origGreen, 0.05)));
-                    cArray[i+2] = Math.max(0.0, Math.min(1.0, THREE.MathUtils.lerp(cArray[i+2], origBlue, 0.05)));
-                }
             }
 
             hologramPoints.geometry.attributes.position.needsUpdate = true;
-            hologramPoints.geometry.attributes.color.needsUpdate = true;
-
             renderer.render(scene, camera);
         }
 
@@ -838,9 +991,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        animate();
+        window.onload = function() {
+            animate();
+        };
 
     </script>
 </body>
 </html>
-
